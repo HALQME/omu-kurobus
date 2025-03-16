@@ -3,9 +3,8 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "generate-search-index": "node --loader ts-node/esm src/utils/generateSearchIndex.ts",
-    "build": "npm run generate-search-index && astro build",
+    "dev": "USE_MOCK_API=true astro dev",
+    "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -15,18 +14,13 @@
     "@tailwindcss/vite": "^4.0.12",
     "@types/canvas-confetti": "^1.9.0",
     "astro": "^5.5.2",
+    "canvas-confetti": "^1.9.3",
     "fuse.js": "^7.1.0",
-    "moji": "^0.5.1",
-    "n-gram": "^2.0.2",
+    "nanostores": "^0.11.4",
     "node-fetch": "^3.3.2",
-    "tailwindcss": "^4.0.12",
-    "tiny-segmenter": "^0.2.0",
-    "ts-node": "^10.9.2"
+    "tailwindcss": "^4.0.12"
   },
   "devDependencies": {
-    "@types/moji": "^0.5.3",
-    "@types/node": "^22.13.10",
-    "@types/tiny-segmenter": "^0.2.0",
-    "ts-node": "^10.9.2"
+    "@types/node": "^22.13.10"
   }
 }

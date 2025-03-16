@@ -1,36 +1,167 @@
 ---
-import type { Course, SearchQuery } from "@/types/schema";
+import type { Course, SearchResult } from "@/types/schema";
 interface Props {
     target: "search" | "submit";
 }
 const { target } = Astro.props;
 import { AVAILABLE_PAIRS, CLASS_IDs } from "@/utils/const";
-import { search, getAutocompleteSuggestions } from "@/utils/search";
+import { search } from "@/utils/search";
+export const prerender = false;
 
-export const prerender = true;
+declare global {
+    interface Window {
+        handleInput: (inputId: string, field: "course" | "teacher") => void;
+        clearSuggestions: (inputId: string) => void;
+        selectSuggestion: (inputId: string, suggestion: string) => void;
+        handleClassCodeInput: (value: string) => void;
+        handleClassCodeSelect: (value: string) => void;
+    }
+}
 
+// コースコードから部局コードへのパース
 function parseClassCode(code: string): string {
     if (!code) return "";
+
+    // フルコースコード (例: 20241KDA040001) の場合
     if (code.length === 14) {
-        return code.substring(4, 6);
+        const deptCode = code.substring(5, 7); // "KD" from "KDA"
+        return `1${deptCode.substring(0, 2)}`; // "1KD"
     }
+    // items.id形式の場合はそのまま返す
     return code;
+}
+
+// 入力値を保持するための変数を初期化
+let year: string | undefined;
+let semester: string | undefined;
+let course: string | undefined;
+let teacher: string | undefined;
+let capmus: string[] = [];
+let class_code: string | undefined;
+let year_semester_value: string | undefined;
+
+// 検索結果を保存する変数
+let searchResults: SearchResult[] = [];
+let searchError: string | null = null;
+
+if (Astro.request.method === "POST") {
+    try {
+        const data = await Astro.request.formData();
+
+        year_semester_value = data.get("year_semester")?.toString();
+        if (year_semester_value) {
+            const parts = year_semester_value.split("/");
+            year = parts[0];
+            semester = parts[1];
+        } else {
+            const defaultPair = AVAILABLE_PAIRS().find(
+                (pair: { type: string }) => pair.type == target
+            );
+            if (defaultPair) {
+                year = defaultPair.path.year;
+                semester = defaultPair.path.semester;
+                year_semester_value = `${year}/${semester}`;
+            }
+        }
+
+        if (data.has("course")) {
+            course = data.get("course")?.toString();
+        }
+        if (data.has("teacher")) {
+            teacher = data.get("teacher")?.toString();
+        }
+        if (data.has("campus")) {
+            capmus = data.getAll("campus").map((value) => value.toString());
+        }
+        if (data.has("class-code")) {
+            class_code = data.get("class-code")?.toString();
+        }
+
+        // 検索パラメータが揃ったら検索を実行
+        if (year && semester) {
+            try {
+                // 適切なURLを構築
+                const courseUrl = new URL(
+                    `api/courses/${year}/${semester}/data.json`,
+                    Astro.url.origin
+                );
+                console.log("Fetching courses from:", courseUrl.toString());
+
+                const response = await fetch(courseUrl);
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to fetch courses: ${response.status}`
+                    );
+                }
+
+                const json = await response.json();
+                const courses = Array.isArray(json)
+                    ? json
+                    : (json.data as Course[]);
+                console.log("Fetched courses:", courses.length);
+
+                // 検索実行前のパラメータをログ
+                const searchParams = {
+                    year,
+                    semester,
+                    course,
+                    teacher,
+                    campus: capmus, // 複数キャンパス対応
+                    class_code:
+                        class_code && class_code.length === 14
+                            ? parseClassCode(class_code)
+                            : class_code,
+                };
+                console.log("Search params:", searchParams);
+
+                // 検索実行
+                searchResults = await search(
+                    {
+                        ...searchParams,
+                        campus: searchParams.campus as (
+                            | "0"
+                            | "1"
+                            | "2"
+                            | "3"
+                        )[],
+                    },
+                    courses
+                );
+                console.log("Search results:", {
+                    params: searchParams,
+                    resultsCount: searchResults.length,
+                    sampleResults: searchResults.slice(0, 3),
+                });
+            } catch (error) {
+                console.error("Error during search:", error);
+                searchError =
+                    error instanceof Error
+                        ? error.message
+                        : "Unknown error occurred";
+                searchResults = [];
+            }
+        }
+    } catch (error) {
+        if (error instanceof Error) {
+            console.error(error.message);
+            searchError = error.message;
+        }
+    }
 }
 ---
 
-<div class="max-w-3xl mx-auto">
+<astro-search-from data-target={target}>
     <form
-        id="searchForm"
-        class="bg-white dark:bg-gray-900 rounded-lg p-6 space-y-4 transition-colors"
-        onsubmit="return false;"
+        class="bg-white dark:bg-gray-900 rounded-lg p-6 max-w-3xl mx-auto space-y-4 transition-colors"
+        method="POST"
+        astro-data={target}
     >
         <div class="mb-4">
             <label
                 for="year_semester"
                 class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
+                >年・学期</label
             >
-                年・学期
-            </label>
             <select
                 id="year_semester"
                 name="year_semester"
@@ -39,12 +170,16 @@ function parseClassCode(code: string): string {
                 {
                     AVAILABLE_PAIRS().map(
                         (pair) =>
-                            pair.type === target && (
+                            pair.type == target && (
                                 <option
                                     value={`${pair.path.year}/${pair.path.semester}`}
+                                    selected={
+                                        year_semester_value ===
+                                        `${pair.path.year}/${pair.path.semester}`
+                                    }
                                 >
-                                    {pair.path.year}年度{" "}
-                                    {pair.path.semester === "0"
+                                    {pair.path.year}年度
+                                    {pair.path.semester == "0"
                                         ? "前期"
                                         : "後期"}
                                 </option>
@@ -53,18 +188,17 @@ function parseClassCode(code: string): string {
                 }
             </select>
         </div>
-
         <div class="mb-4 relative">
             <label
                 for="course"
                 class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
+                >授業名</label
             >
-                授業名
-            </label>
             <input
                 id="course"
                 name="course"
                 type="text"
+                value={course || ""}
                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 autocomplete="off"
                 oninput="handleInput('course', 'course')"
@@ -76,18 +210,17 @@ function parseClassCode(code: string): string {
             >
             </div>
         </div>
-
         <div class="mb-4 relative">
             <label
                 for="teacher"
                 class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
+                >教員名</label
             >
-                教員名
-            </label>
             <input
                 id="teacher"
                 name="teacher"
                 type="text"
+                value={teacher || ""}
                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 autocomplete="off"
                 oninput="handleInput('teacher', 'teacher')"
@@ -99,49 +232,77 @@ function parseClassCode(code: string): string {
             >
             </div>
         </div>
-
         <div class="mb-4">
             <label
                 for="campus"
                 class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
+                >キャンパス</label
             >
-                キャンパス
-            </label>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 checkbox-group">
-                {
-                    [
-                        { value: "0", label: "中百舌鳥C" },
-                        { value: "1", label: "杉本C" },
-                        { value: "2", label: "遠隔授業" },
-                        { value: "3", label: "その他" },
-                    ].map(({ value, label }) => (
-                        <div class="flex items-center space-x-2 checkbox-item">
-                            <input
-                                type="checkbox"
-                                id={`campus-${value}`}
-                                name="campus"
-                                value={value}
-                                class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
-                            />
-                            <label
-                                for={`campus-${value}`}
-                                class="text-gray-700 dark:text-gray-300"
-                            >
-                                {label}
-                            </label>
-                        </div>
-                    ))
-                }
+                <div class="flex items-center space-x-2 checkbox-item">
+                    <input
+                        type="checkbox"
+                        id="campus-0"
+                        name="campus"
+                        value="0"
+                        checked={capmus.includes("0")}
+                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
+                    />
+                    <label
+                        for="campus-0"
+                        class="text-gray-700 dark:text-gray-300">中百舌鳥</label
+                    >
+                </div>
+                <div class="flex items-center space-x-2 checkbox-item">
+                    <input
+                        type="checkbox"
+                        id="campus-1"
+                        name="campus"
+                        value="1"
+                        checked={capmus.includes("1")}
+                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
+                    />
+                    <label
+                        for="campus-1"
+                        class="text-gray-700 dark:text-gray-300">杉本</label
+                    >
+                </div>
+                <div class="flex items-center space-x-2 checkbox-item">
+                    <input
+                        type="checkbox"
+                        id="campus-2"
+                        name="campus"
+                        value="2"
+                        checked={capmus.includes("2")}
+                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
+                    />
+                    <label
+                        for="campus-2"
+                        class="text-gray-700 dark:text-gray-300">遠隔授業</label
+                    >
+                </div>
+                <div class="flex items-center space-x-2 checkbox-item">
+                    <input
+                        type="checkbox"
+                        id="campus-3"
+                        name="campus"
+                        value="3"
+                        checked={capmus.includes("3")}
+                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
+                    />
+                    <label
+                        for="campus-3"
+                        class="text-gray-700 dark:text-gray-300">その他</label
+                    >
+                </div>
             </div>
         </div>
-
         <div class="mb-4">
             <label
                 for="class-code"
                 class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
+                >設置部局</label
             >
-                設置部局
-            </label>
             <div class="flex flex-col sm:flex-row gap-2">
                 <div class="relative flex-1">
                     <input
@@ -151,8 +312,11 @@ function parseClassCode(code: string): string {
                         placeholder="設置部局のIDを入力"
                         autocomplete="off"
                         oninput="handleClassCodeInput(this.value)"
+                        value={class_code?.length === 14
+                            ? class_code.slice(5, 8)
+                            : class_code || ""}
                         maxlength="4"
-                        data-error-message="2〜4文字のIDのみ許可されています"
+                        data-error-message="3〜4文字のIDのみ許可されています"
                     />
                     <div
                         id="class-code-error"
@@ -175,24 +339,50 @@ function parseClassCode(code: string): string {
                                         label={group.group}
                                         class="font-medium"
                                     >
-                                        {group.items.map((item) => (
+                                        {group.items.map(
+                                            (item: {
+                                                id:
+                                                    | string
+                                                    | number
+                                                    | string[]
+                                                    | null
+                                                    | undefined;
+                                                name: unknown;
+                                            }) => (
+                                                <option
+                                                    value={item.id}
+                                                    selected={
+                                                        class_code === item.id
+                                                    }
+                                                    data-name={item.name}
+                                                >
+                                                    {item.name}
+                                                </option>
+                                            )
+                                        )}
+                                    </optgroup>
+                                ) : (
+                                    group.items.map(
+                                        (item: {
+                                            id:
+                                                | string
+                                                | number
+                                                | string[]
+                                                | null
+                                                | undefined;
+                                            name: unknown;
+                                        }) => (
                                             <option
                                                 value={item.id}
+                                                selected={
+                                                    class_code === item.id
+                                                }
                                                 data-name={item.name}
                                             >
                                                 {item.name}
                                             </option>
-                                        ))}
-                                    </optgroup>
-                                ) : (
-                                    group.items.map((item) => (
-                                        <option
-                                            value={item.id}
-                                            data-name={item.name}
-                                        >
-                                            {item.name}
-                                        </option>
-                                    ))
+                                        )
+                                    )
                                 )
                             )
                         }
@@ -200,58 +390,210 @@ function parseClassCode(code: string): string {
                 </div>
             </div>
         </div>
-
         <div class="mt-6">
             <button
-                type="submit"
                 class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600"
             >
                 検索
             </button>
         </div>
     </form>
+    {/* 検索結果表示部分 */}
+    {
+        Astro.request.method === "POST" && (
+            <div class="mt-8">
+                {searchError && (
+                    <div class="p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg mb-6">
+                        <p class="font-medium">エラーが発生しました</p>
+                    </div>
+                )}
+                {!searchError && searchResults.length === 0 && (
+                    <div class="p-4 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-lg">
+                        <p>
+                            検索条件に一致する授業が見つかりませんでした。検索条件を変更してお試しください。
+                        </p>
+                    </div>
+                )}
+                {searchResults.length > 0 && (
+                    <div>
+                        {/* 検索結果を一致度で分類 */}
+                        {(() => {
+                            // 教員名を省略する関数
+                            const truncateTeacherName = (
+                                name: string,
+                                maxLength: number = 15
+                            ) => {
+                                return name && name.length > maxLength
+                                    ? `${name.substring(0, maxLength)}...`
+                                    : name;
+                            };
 
-    <div id="searchResults" class="mt-8"></div>
-</div>
+                            // スコアによって検索結果を分類
+                            const highMatchResults = searchResults.filter(
+                                (r) => !r.score || r.score < 0.333
+                            );
+                            const lowMatchResults = searchResults.filter(
+                                (r) =>
+                                    r.score && r.score >= 0.2 && r.score < 0.65
+                            );
+
+                            return (
+                                <>
+                                    <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">
+                                        検索結果: {searchResults.length}件
+                                    </h2>
+
+                                    {/* 一致度の高い結果を表示 */}
+                                    {highMatchResults.length > 0 && (
+                                        <div class="space-y-4 mb-6">
+                                            {highMatchResults.map((result) => (
+                                                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
+                                                    <div class="flex justify-between items-start mb-2">
+                                                        <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                                                            {result.name}
+                                                        </h3>
+                                                        <span class="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded">
+                                                            {result.code ||
+                                                                "コード不明"}
+                                                        </span>
+                                                    </div>
+                                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                                        <div class="flex">
+                                                            <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                                                                教員:
+                                                            </span>
+                                                            <span
+                                                                class="text-gray-800 dark:text-gray-200 flex-1"
+                                                                title={
+                                                                    result.teachers ||
+                                                                    ""
+                                                                }
+                                                            >
+                                                                {truncateTeacherName(
+                                                                    result.teachers
+                                                                ) || "記載なし"}
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex">
+                                                            <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                                                                キャンパス:
+                                                            </span>
+                                                            <span class="text-gray-800 dark:text-gray-200 flex-1">
+                                                                {result.campus ||
+                                                                    "記載なし"}
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex">
+                                                            <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                                                                時限:
+                                                            </span>
+                                                            <span class="text-gray-800 dark:text-gray-200 flex-1">
+                                                                {result.period ||
+                                                                    "記載なし"}
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex">
+                                                            <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                                                                年度・学期:
+                                                            </span>
+                                                            <span class="text-gray-800 dark:text-gray-200 flex-1">
+                                                                {result.semester ||
+                                                                    "記載なし"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* 一致度の低い結果を「もしかして」セクションとして表示 */}
+                                    {lowMatchResults.length > 0 && (
+                                        <div class="mt-8">
+                                            <h3 class="text-lg font-medium mb-3 text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">
+                                                もしかして
+                                            </h3>
+                                            <div class="space-y-3">
+                                                {lowMatchResults.map(
+                                                    (result) => (
+                                                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 shadow-sm opacity-80 hover:opacity-100 transition-opacity">
+                                                            <div class="flex justify-between items-start mb-1">
+                                                                <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">
+                                                                    {
+                                                                        result.name
+                                                                    }
+                                                                </h4>
+                                                                <span class="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
+                                                                    {result.code ||
+                                                                        "コード不明"}
+                                                                </span>
+                                                            </div>
+                                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1 text-sm">
+                                                                <div class="flex">
+                                                                    <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                                                                        教員:
+                                                                    </span>
+                                                                    <span
+                                                                        class="text-gray-600 dark:text-gray-300 flex-1"
+                                                                        title={
+                                                                            result.teachers ||
+                                                                            ""
+                                                                        }
+                                                                    >
+                                                                        {truncateTeacherName(
+                                                                            result.teachers,
+                                                                            12
+                                                                        ) ||
+                                                                            "記載なし"}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="flex">
+                                                                    <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                                                                        キャンパス:
+                                                                    </span>
+                                                                    <span class="text-gray-600 dark:text-gray-300 flex-1">
+                                                                        {result.campus ||
+                                                                            "記載なし"}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="flex">
+                                                                    <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                                                                        時限:
+                                                                    </span>
+                                                                    <span class="text-gray-600 dark:text-gray-300 flex-1">
+                                                                        {result.period ||
+                                                                            "記載なし"}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="flex">
+                                                                    <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                                                                        年度・学期:
+                                                                    </span>
+                                                                    <span class="text-gray-600 dark:text-gray-300 flex-1">
+                                                                        {result.semester ||
+                                                                            "記載なし"}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
+                    </div>
+                )}
+            </div>
+        )
+    }
+</astro-search-from>
 
 <script>
-    import { search, getAutocompleteSuggestions } from "@/utils/search";
-    import type { SearchQuery } from "@/types/schema";
+    import { getAutocompleteSuggestions } from "@/utils/suggest";
     import type { Course } from "@/types/schema";
-
-    declare global {
-        interface Window {
-            handleInput: (inputId: string, field: "course" | "teacher") => void;
-            clearSuggestions: (inputId: string) => void;
-            selectSuggestion: (inputId: string, suggestion: string) => void;
-            handleClassCodeInput: (value: string) => void;
-            handleClassCodeSelect: (value: string) => void;
-            courseData: Course[];
-        }
-    }
-
-    async function initializeCourseData() {
-        try {
-            const yearSemesterSelect = document.getElementById("year_semester");
-            if (!(yearSemesterSelect instanceof HTMLSelectElement)) return;
-
-            const [year, semester] = yearSemesterSelect.value.split("/");
-            const courseUrl = new URL(
-                `course/${year}/${semester}/search.json`,
-                window.location.origin
-            );
-            const response = await fetch(courseUrl);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch courses: ${response.status}`);
-            }
-            const json = await response.json();
-            window.courseData = Array.isArray(json) ? json : json.data;
-        } catch (error) {
-            console.error("Error loading course data:", error);
-            window.courseData = [];
-        }
-    }
-
     interface Suggestion {
         text: string;
         score: number | undefined;
@@ -261,362 +603,298 @@ function parseClassCode(code: string): string {
             classCode?: string;
         };
     }
+    class AstroSearchForm extends HTMLElement {
+        constructor() {
+            super();
+            let courseData: Course[] = [];
 
-    function getCampusName(campus: string): string {
-        const campusMap: { [key: string]: string } = {
-            "0": "中百舌鳥",
-            "1": "杉本",
-            "2": "遠隔",
-            "3": "その他",
-        };
-        return campusMap[campus] || campus;
-    }
+            function parseClassCode(code: string): string {
+                if (!code) return "";
 
-    const suggestionCache = new Map<
-        string,
-        { data: any[]; timestamp: number }
-    >();
-    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-    let debounceTimer: ReturnType<typeof setTimeout>;
-    const DEBOUNCE_DELAY = 300;
-
-    function getCachedSuggestions(cacheKey: string): any[] | null {
-        const cached = suggestionCache.get(cacheKey);
-        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-            return cached.data;
-        }
-        return null;
-    }
-
-    function cacheSuggestions(cacheKey: string, data: any[]) {
-        suggestionCache.set(cacheKey, {
-            data,
-            timestamp: Date.now(),
-        });
-    }
-
-    async function handleInput(inputId: string, field: "course" | "teacher") {
-        const input = document.getElementById(inputId) as HTMLInputElement;
-        const suggestionsDiv = document.getElementById(
-            `${inputId}-suggestions`
-        );
-        if (!(suggestionsDiv instanceof HTMLDivElement)) return;
-
-        clearTimeout(debounceTimer);
-        const searchText = input.value.trim();
-        if (!searchText || searchText.length < 2) {
-            suggestionsDiv.innerHTML = "";
-            suggestionsDiv.classList.add("hidden");
-            return;
-        }
-
-        debounceTimer = setTimeout(async () => {
-            try {
-                const cacheKey = `${field}:${searchText}`;
-                let suggestions = getCachedSuggestions(cacheKey);
-                if (!suggestions && window.courseData) {
-                    suggestions = await getAutocompleteSuggestions(
-                        searchText,
-                        window.courseData,
-                        field
-                    );
-                    if (suggestions) cacheSuggestions(cacheKey, suggestions);
+                if (code.length === 14) {
+                    return code.substring(5, 8);
                 }
-                if (suggestions && suggestions.length > 0) {
+
+                if (code.length >= 3 && code.length <= 4) {
+                    return code;
+                }
+
+                return code;
+            }
+
+            async function fetchCourseData() {
+                try {
+                    if (courseData.length > 0) return; // 既にデータがある場合は再取得しない
+
+                    const yearSemesterSelect = document.getElementById(
+                        "year_semester"
+                    ) as HTMLSelectElement;
+                    const selectedValue = yearSemesterSelect.value;
+                    if (!selectedValue) {
+                        console.error("Year/semester not selected");
+                        return;
+                    }
+
+                    const [year, semester] = selectedValue.split("/");
+                    if (!year || !semester) {
+                        console.error("Invalid year/semester format");
+                        return;
+                    }
+
+                    const courseUrl = `${window.location.origin}/api/courses/${year}/${semester}/data.json`;
+
+                    const response = await fetch(courseUrl);
+                    if (!response.ok) {
+                        throw new Error(
+                            `Failed to fetch course data: ${response.status}`
+                        );
+                    }
+
+                    const json = await response.json();
+                    courseData = Array.isArray(json) ? json : json.data || [];
+                    console.log(
+                        `Loaded ${courseData.length} courses for ${year}/${semester}`
+                    );
+                } catch (error) {
+                    console.error("Failed to fetch course data:", error);
+                }
+            }
+
+            async function handleInput(
+                inputId: string,
+                field: "course" | "teacher"
+            ) {
+                const input = document.getElementById(
+                    inputId
+                ) as HTMLInputElement;
+                const suggestionsDiv = document.getElementById(
+                    `${inputId}-suggestions`
+                ) as HTMLDivElement;
+
+                if (!courseData.length) {
+                    await fetchCourseData();
+                }
+
+                const searchText = input.value.trim();
+                if (!searchText) {
+                    suggestionsDiv.innerHTML = "";
+                    suggestionsDiv.classList.add("hidden");
+                    return;
+                }
+
+                const suggestions = await getAutocompleteSuggestions(
+                    searchText,
+                    courseData,
+                    field
+                );
+
+                if (suggestions.length > 0) {
                     suggestionsDiv.innerHTML = suggestions
                         .map(
                             (suggestion: Suggestion) => `
-              <div
-                class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white"
-                onclick="selectSuggestion('${inputId}', '${suggestion.text.replace(/'/g, "\\'")}')"
-                role="option"
-                aria-selected="false"
-              >
-                <div class="font-medium">${suggestion.text}</div>
-                ${
-                    suggestion.details
-                        ? `<div class="text-sm text-gray-600 dark:text-gray-400">
-                        ${suggestion.details.teachers ? `教員: ${suggestion.details.teachers}` : ""} 
-                        ${suggestion.details.campus ? `/ ${suggestion.details.campus}` : ""} 
-                        ${suggestion.details.classCode ? `/ ${parseClassCode(suggestion.details.classCode)}` : ""}
-                      </div>`
-                        : ""
-                }
-              </div>
-            `
+                    <div
+                        class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white"
+                        onclick="selectSuggestion('${inputId}', '${suggestion.text.replace(/'/g, "\\'")}')"
+                        role="option"
+                        aria-selected="false"
+                    >
+                        <div class="font-medium">${suggestion.text}</div>
+                        ${
+                            suggestion.details
+                                ? `
+                            <div class="text-sm text-gray-600 dark:text-gray-400">
+                                ${suggestion.details.teachers ? `教員: ${suggestion.details.teachers}` : ""}
+                                ${suggestion.details.campus ? `/ ${suggestion.details.campus}` : ""}
+                                ${field !== "teacher" && suggestion.details.classCode ? `/ ${parseClassCode(suggestion.details.classCode)}` : ""}
+                            </div>
+                        `
+                                : ""
+                        }
+                    </div>
+                `
                         )
                         .join("");
                     suggestionsDiv.classList.remove("hidden");
                 } else {
                     suggestionsDiv.classList.add("hidden");
                 }
-            } catch (error) {
-                console.error("Error fetching suggestions:", error);
-                suggestionsDiv.classList.add("hidden");
             }
-        }, DEBOUNCE_DELAY);
-    }
 
-    function parseClassCode(code: string): string {
-        if (!code) return "";
-        if (code.length === 14) {
-            return code.substring(4, 6);
-        }
-        return code;
-    }
+            async function selectSuggestion(
+                inputId: string,
+                suggestion: string
+            ) {
+                const input = document.getElementById(
+                    inputId
+                ) as HTMLInputElement;
+                input.value = suggestion;
 
-    async function handleFormSubmit(event: Event) {
-        event.preventDefault();
-        const form = event.target as HTMLFormElement;
-        const formData = new FormData(form);
-        const yearSemester = formData.get("year_semester")?.toString() || "";
-        const [year = "", semester = ""] = yearSemester.split("/");
-
-        const searchParams: SearchQuery = {
-            year,
-            semester,
-            course: formData.get("course")?.toString() || "",
-            teacher: formData.get("teacher")?.toString() || "",
-            campus: formData.getAll("campus").map((v) => v.toString())[0] as
-                | "0"
-                | "1"
-                | "2"
-                | "3"
-                | undefined,
-            class_code: formData.get("class-code")?.toString() || "",
-        };
-
-        try {
-            if (window.courseData) {
-                const results = await search(searchParams, window.courseData);
-                const resultsContainer =
-                    document.getElementById("searchResults");
-                if (resultsContainer) {
-                    resultsContainer.innerHTML = renderSearchResults(results);
-                }
-            }
-        } catch (error) {
-            console.error("Error during search:", error);
-            const resultsContainer = document.getElementById("searchResults");
-            if (resultsContainer) {
-                resultsContainer.innerHTML = `
-          <div class="text-red-500 dark:text-red-400">
-            検索中にエラーが発生しました。もう一度お試しください。
-          </div>
-        `;
-            }
-        }
-    }
-
-    function renderSearchResults(results: Course[]): string {
-        if (results.length === 0) return "";
-        return `
-      <div class="mt-8 space-y-4">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-          検索結果 (${results.length}件)
-        </h2>
-        <div class="grid gap-4">
-          ${results
-              .map(
-                  (result) => `
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                ${result.name}
-              </h3>
-              <div class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                <p>教員: ${result.teachers}</p>
-                <p>キャンパス: ${getCampusName(result.campus)}</p>
-                <p>時間割コード: ${result.id}</p>
-                ${
-                    result.description
-                        ? `
-                  <p class="mt-2 text-gray-500 dark:text-gray-400">
-                    ${result.description}
-                  </p>`
-                        : ""
-                }
-              </div>
-            </div>
-          `
-              )
-              .join("")}
-        </div>
-      </div>
-    `;
-    }
-
-    async function selectSuggestion(inputId: string, suggestion: string) {
-        try {
-            const input = document.getElementById(inputId) as HTMLInputElement;
-            input.value = suggestion;
-            const cacheKey = `${inputId}:${suggestion}`;
-            const cachedSuggestions = getCachedSuggestions(cacheKey);
-            let details;
-            if (cachedSuggestions && cachedSuggestions[0]?.details) {
-                details = cachedSuggestions[0].details;
-            } else if (window.courseData) {
                 const suggestions = await getAutocompleteSuggestions(
                     suggestion,
-                    window.courseData,
+                    courseData,
                     inputId as "course" | "teacher"
                 );
+
                 if (suggestions.length > 0 && suggestions[0].details) {
-                    details = suggestions[0].details;
-                    cacheSuggestions(cacheKey, suggestions);
-                }
-            }
-            if (details) {
-                if (inputId === "course" && details.teachers) {
-                    const teacherInput = document.getElementById(
-                        "teacher"
-                    ) as HTMLInputElement;
-                    teacherInput.value = details.teachers;
-                }
-                if (details.campus) {
-                    document
-                        .querySelectorAll('input[name="campus"]')
-                        .forEach((element) => {
-                            (element as HTMLInputElement).checked = false;
+                    const details = suggestions[0].details;
+                    if (inputId === "course" && details.teachers) {
+                        const teacherInput = document.getElementById(
+                            "teacher"
+                        ) as HTMLInputElement;
+                        teacherInput.value = details.teachers;
+                    }
+
+                    if (details.campus) {
+                        document
+                            .querySelectorAll('input[name="campus"]')
+                            .forEach((element: Element) => {
+                                const checkbox = element as HTMLInputElement;
+                                checkbox.checked = false;
+                            });
+
+                        const campusMap: { [key: string]: string } = {
+                            中百舌鳥: "0",
+                            杉本: "1",
+                            遠隔: "2",
+                            その他: "3",
+                        };
+
+                        const campuses = details.campus.split("・");
+                        campuses.forEach((campus) => {
+                            const campusId = campusMap[campus];
+                            if (campusId) {
+                                const checkbox = document.getElementById(
+                                    `campus-${campusId}`
+                                ) as HTMLInputElement;
+                                if (checkbox) checkbox.checked = true;
+                            }
                         });
-                    const campusMap: { [key: string]: string } = {
-                        中百舌鳥: "0",
-                        杉本: "1",
-                        遠隔: "2",
-                        その他: "3",
-                    };
-                    const campuses = details.campus.split("・");
-                    campuses.forEach((campus: string) => {
-                        const campusId = campusMap[campus];
-                        if (campusId) {
-                            const checkbox = document.getElementById(
-                                `campus-${campusId}`
-                            ) as HTMLInputElement;
-                            if (checkbox) checkbox.checked = true;
+                    }
+
+                    if (inputId === "course" && details.classCode) {
+                        const classCodeInput = document.getElementById(
+                            "class-code-text"
+                        ) as HTMLInputElement;
+                        const classCodeSelect = document.getElementById(
+                            "class-code"
+                        ) as HTMLSelectElement;
+
+                        const parsedCode = parseClassCode(details.classCode);
+                        classCodeInput.value = parsedCode;
+
+                        const options = Array.from(classCodeSelect.options);
+                        const matchingOption = options.find((option) => {
+                            if (!option.value) return false;
+                            const optionCode = parseClassCode(option.value);
+                            return optionCode === parsedCode;
+                        });
+
+                        if (matchingOption) {
+                            classCodeSelect.value = matchingOption.value;
                         }
-                    });
+
+                        const errorDiv = document.getElementById(
+                            "class-code-error"
+                        ) as HTMLDivElement;
+                        errorDiv.classList.add("hidden");
+                    }
                 }
-                if (details.classCode) {
-                    const parsedCode = parseClassCode(details.classCode);
-                    const classCodeSelect = document.getElementById(
-                        "class-code"
-                    ) as HTMLSelectElement;
-                    const classCodeInput = document.getElementById(
-                        "class-code-text"
-                    ) as HTMLInputElement;
-                    classCodeSelect.value = parsedCode;
-                    classCodeInput.value = parsedCode;
+
+                clearSuggestions(inputId);
+            }
+
+            function clearSuggestions(inputId: string) {
+                const suggestionsDiv = document.getElementById(
+                    `${inputId}-suggestions`
+                );
+                if (suggestionsDiv) {
+                    suggestionsDiv.innerHTML = "";
+                    suggestionsDiv.classList.add("hidden");
                 }
             }
-        } catch (error) {
-            console.error("Error fetching suggestion details:", error);
-        }
-        clearSuggestions(inputId);
-    }
 
-    function clearSuggestions(inputId: string) {
-        const suggestionsDiv = document.getElementById(
-            `${inputId}-suggestions`
-        );
-        if (suggestionsDiv) {
-            suggestionsDiv.innerHTML = "";
-            suggestionsDiv.classList.add("hidden");
-        }
-    }
+            function handleClassCodeInput(value: string) {
+                const select = document.getElementById(
+                    "class-code"
+                ) as HTMLSelectElement;
+                const input = document.getElementById(
+                    "class-code-text"
+                ) as HTMLInputElement;
+                const errorDiv = document.getElementById(
+                    "class-code-error"
+                ) as HTMLDivElement;
 
-    function handleClassCodeInput(value: string) {
-        const select = document.getElementById(
-            "class-code"
-        ) as HTMLSelectElement;
-        const input = document.getElementById(
-            "class-code-text"
-        ) as HTMLInputElement;
-        const errorDiv = document.getElementById(
-            "class-code-error"
-        ) as HTMLDivElement;
+                let parsedInput = value.toUpperCase();
 
-        let parsedInput = value.toUpperCase();
-        if (
-            parsedInput.length > 0 &&
-            parsedInput.length !== 2 &&
-            parsedInput.length !== 3 &&
-            parsedInput.length !== 4
-        ) {
-            errorDiv.textContent =
-                input.dataset.errorMessage ||
-                "2〜4文字のIDのみ許可されています";
-            errorDiv.classList.remove("hidden");
-            parsedInput = parsedInput.slice(0, 4);
-        } else {
-            errorDiv.classList.add("hidden");
-        }
-
-        if (parsedInput !== value) {
-            input.value = parsedInput;
-        }
-
-        if (parsedInput.length >= 2 && 4 >= parsedInput.length ) {
-            let found = false;
-            const options = Array.from(select.options);
-            for (const option of options) {
-                if (!option.value) continue;
-                const optionCode = parseClassCode(option.value);
-                const normalizedInput = parsedInput.replace(/^1/, "");
                 if (
-                    optionCode === normalizedInput ||
-                    option.value === parsedInput
+                    parsedInput.length > 0 &&
+                    parsedInput.length !== 3 &&
+                    parsedInput.length !== 4
                 ) {
-                    select.value = option.value;
-                    found = true;
-                    break;
+                    errorDiv.textContent =
+                        input.dataset.errorMessage ||
+                        "3〜4文字のIDのみ許可されています";
+                    errorDiv.classList.remove("hidden");
+
+                    parsedInput = parsedInput.slice(0, 4);
+                } else {
+                    errorDiv.classList.add("hidden");
+                }
+
+                if (parsedInput !== value) {
+                    input.value = parsedInput;
+                }
+
+                if (parsedInput.length === 3 || parsedInput.length === 4) {
+                    const options = Array.from(select.options);
+                    const matchingOption = options.find((option) => {
+                        if (!option.value) return false;
+                        const optionCode = parseClassCode(option.value);
+                        return optionCode === parsedInput;
+                    });
+
+                    if (matchingOption) {
+                        select.value = matchingOption.value;
+                        errorDiv.classList.add("hidden");
+                    } else if (parsedInput.length > 0) {
+                        errorDiv.textContent = "一致する設置部局がありません";
+                        errorDiv.classList.remove("hidden");
+                    }
+                } else {
+                    select.value = "";
                 }
             }
-            if (found) {
+
+            function handleClassCodeSelect(value: string) {
+                const input = document.getElementById(
+                    "class-code-text"
+                ) as HTMLInputElement;
+                const errorDiv = document.getElementById(
+                    "class-code-error"
+                ) as HTMLDivElement;
+
+                input.value = parseClassCode(value);
                 errorDiv.classList.add("hidden");
-            } else if (parsedInput.length > 0) {
-                errorDiv.textContent = "一致する設置部局がありません";
-                errorDiv.classList.remove("hidden");
             }
-        } else {
-            select.value = "";
+
+            window.handleInput = handleInput;
+            window.clearSuggestions = clearSuggestions;
+            window.selectSuggestion = selectSuggestion;
+            window.handleClassCodeInput = handleClassCodeInput;
+            window.handleClassCodeSelect = handleClassCodeSelect;
+
+            window.addEventListener("astro:page-swap", async () => {
+                courseData = [];
+                await fetchCourseData();
+            });
+
+            if (document.getElementById("class-code")) {
+                handleClassCodeSelect(
+                    (document.getElementById("class-code") as HTMLSelectElement)
+                        .value
+                );
+            }
         }
     }
-
-    function handleClassCodeSelect(value: string) {
-        const input = document.getElementById(
-            "class-code-text"
-        ) as HTMLInputElement;
-        const errorDiv = document.getElementById(
-            "class-code-error"
-        ) as HTMLDivElement;
-        input.value = parseClassCode(value);
-        errorDiv.classList.add("hidden");
-    }
-
-    function initializeClientSide() {
-        Object.assign(window, {
-            handleInput,
-            clearSuggestions,
-            selectSuggestion,
-            handleClassCodeInput,
-            handleClassCodeSelect,
-        });
-
-        initializeCourseData();
-
-        const form = document.getElementById("searchForm");
-        if (form) {
-            form.addEventListener("submit", handleFormSubmit);
-        }
-
-        document
-            .getElementById("year_semester")
-            ?.addEventListener("change", initializeCourseData);
-
-        const classCode = document.getElementById("class-code");
-        if (classCode instanceof HTMLSelectElement) {
-            handleClassCodeSelect(classCode.value);
-        }
-    }
-
-    window.addEventListener("load", initializeClientSide);
+    customElements.define("astro-search-from", AstroSearchForm);
 </script>

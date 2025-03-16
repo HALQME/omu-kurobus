@@ -143,3 +143,14 @@ export const AVAILABLE_PAIRS = () => {
     }
     return pairs;
 };
+
+export const CAMPUS_NAME = (campus: string | undefined): string | undefined => {
+    const campusMap: { [key: string]: string } = {
+        "0": "中百舌鳥",
+        "1": "杉本",
+        "2": "遠隔用",
+        "3": "その他",
+    };
+    if (campus === undefined) return undefined;
+    return campusMap[campus] || campus;
+};
