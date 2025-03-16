@@ -1,0 +1,24 @@
+---
+import "@/styles/global.css";
+import Head from "@/components/head.astro";
+import { ClientRouter, fade, slide } from "astro:transitions";
+
+interface Props {
+    title: string;
+    description: string;
+}
+const props = Astro.props;
+---
+
+<html lang="ja" class="scroll-smooth">
+    <Head title={props.title} description={props.description} />
+    <ClientRouter />
+    <div transition:animate={fade({ duration: "0.4s" })}></div>
+    <body
+        class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen transition-colors duration-300"
+    >
+        <div class="max-w-4xl mx-auto px-4 py-8">
+            <slot />
+        </div>
+    </body>
+</html>
