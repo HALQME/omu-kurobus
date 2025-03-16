@@ -10,7 +10,7 @@ const fuseOptions = {
     keys: [
         {
             name: "name",
-            weight: 0.6,
+            weight: 0.9,
         },
         {
             name: "teachers",
@@ -51,9 +51,6 @@ export async function search(
                         teachers: query.teacher ?? "",
                     },
                     {
-                        id: query.class_code ?? "",
-                    },
-                    {
                         semester: query.semester ?? "",
                     },
                 ],
@@ -85,7 +82,8 @@ export async function search(
     }
 
     console.log("Final results count:", results.length);
-    const parsedResults = results.map((result) => ({
+    const parsedResults = results
+        .map((result) => ({
         name: result.item.name,
         code: result.item.id,
         score: result.score,
@@ -93,7 +91,8 @@ export async function search(
         campus: result.item.campus,
         semester: result.item.semester,
         period: result.item.period,
-    }));
+        }))
+        .sort((a, b) => (a.score ?? 0) - (b.score ?? 0));
 
     return parsedResults;
 }
