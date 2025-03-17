@@ -4,7 +4,7 @@ interface Props {
     target: "search" | "submit";
 }
 const { target } = Astro.props;
-import { AVAILABLE_PAIRS } from "@/utils/const";
+import { AVAILABLE_PAIRS, CLASS_IDs } from "@/utils/const";
 import { search } from "@/utils/search";
 import { parseClassCode } from "@/utils/common";
 export const prerender = false;
@@ -177,7 +177,6 @@ if (Astro.request.method === "POST") {
                 autocomplete="off"
                 oninput="handleInput('course', 'course')"
                 onblur="setTimeout(() => clearSuggestions('course'), 200)"
-                required
             />
             <div
                 id="course-suggestions"
@@ -207,73 +206,103 @@ if (Astro.request.method === "POST") {
             >
             </div>
         </div>
-        <div class="mb-4 relative">
-            <label
-                for="campus"
-                class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
-                >キャンパス</label
+        <details class="text-gray-700 dark:text-gray-300">
+            <summary class="font-medium cursor-pointer">絞り込み</summary>
+            <p
+                class="w-full px-4 py-2 mb-2 mt-2 text-gray-900 dark:text-gray-300 bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 font-medium rounded-md shadow-sm"
             >
-            <input
-                id="campus"
-                name="campus"
-                type="text"
-                value={campus || ""}
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                autocomplete="off"
-                oninput="handleInput('campus', 'campus')"
-                onblur="setTimeout(() => clearSuggestions('campus'), 200)"
-            />
-            <div
-                id="campus-suggestions"
-                class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden"
-            >
-            </div>
-        </div>
-        {
-            /*
-        <div class="mb-4">
-            <label
-                for="class-code"
-                class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
-                >設置部局</label
-            >
-            <div class="flex flex-col sm:flex-row gap-2">
-                <div class="relative flex-1">
-                    <input
-                        type="text"
-                        id="class-code-text"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white h-10"
-                        placeholder="設置部局のIDを入力"
-                        autocomplete="off"
-                        oninput="handleClassCodeInput(this.value)"
-                        value={class_code?.length === 14
-                            ? class_code.slice(5, 8)
-                            : class_code || ""}
-                        maxlength="4"
-                        data-error-message="3〜4文字のIDのみ許可されています"
-                    />
-                    <div
-                        id="class-code-error"
-                        class="text-red-500 text-sm mt-1 hidden"
-                    >
-                    </div>
+                より詳しく検索できます。 単体では検索できません！
+            </p>
+            <div class="mb-4 relative">
+                <label
+                    for="campus"
+                    class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
+                    >キャンパス</label
+                >
+                <input
+                    id="campus"
+                    name="campus"
+                    type="text"
+                    value={campus || ""}
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    autocomplete="off"
+                    oninput="handleInput('campus', 'campus')"
+                    onblur="setTimeout(() => clearSuggestions('campus'), 200)"
+                />
+                <div
+                    id="campus-suggestions"
+                    class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden"
+                >
                 </div>
-                <div class="sm:w-64 w-full">
-                    <select
-                        id="class-code"
-                        name="class-code"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white h-10"
-                        onchange="handleClassCodeSelect(this.value)"
-                    >
-                        <option value="">選択してください</option>
-                        {
-                            CLASS_IDs.map((group) =>
-                                group.group ? (
-                                    <optgroup
-                                        label={group.group}
-                                        class="font-medium"
-                                    >
-                                        {group.items.map(
+            </div>
+
+            <div class="mb-4">
+                <label
+                    for="class-code"
+                    class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
+                    >設置部局</label
+                >
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="relative flex-1">
+                        <input
+                            type="text"
+                            id="class-code-text"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white h-10"
+                            placeholder="設置部局のIDを入力"
+                            autocomplete="off"
+                            oninput="handleClassCodeInput(this.value)"
+                            value={class_code?.length === 14
+                                ? class_code.slice(5, 8)
+                                : class_code || ""}
+                            maxlength="4"
+                            data-error-message="3〜4文字のIDのみ許可されています"
+                        />
+                        <div
+                            id="class-code-error"
+                            class="text-red-500 text-sm mt-1 hidden"
+                        >
+                        </div>
+                    </div>
+                    <div class="sm:w-64 w-full">
+                        <select
+                            id="class-code"
+                            name="class-code"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white h-10"
+                            onchange="handleClassCodeSelect(this.value)"
+                        >
+                            <option value="">選択してください</option>
+                            {
+                                CLASS_IDs.map((group) =>
+                                    group.group ? (
+                                        <optgroup
+                                            label={group.group}
+                                            class="font-medium"
+                                        >
+                                            {group.items.map(
+                                                (item: {
+                                                    id:
+                                                        | string
+                                                        | number
+                                                        | string[]
+                                                        | null
+                                                        | undefined;
+                                                    name: unknown;
+                                                }) => (
+                                                    <option
+                                                        value={item.id}
+                                                        selected={
+                                                            class_code ===
+                                                            item.id
+                                                        }
+                                                        data-name={item.name}
+                                                    >
+                                                        {item.name}
+                                                    </option>
+                                                )
+                                            )}
+                                        </optgroup>
+                                    ) : (
+                                        group.items.map(
                                             (item: {
                                                 id:
                                                     | string
@@ -293,39 +322,15 @@ if (Astro.request.method === "POST") {
                                                     {item.name}
                                                 </option>
                                             )
-                                        )}
-                                    </optgroup>
-                                ) : (
-                                    group.items.map(
-                                        (item: {
-                                            id:
-                                                | string
-                                                | number
-                                                | string[]
-                                                | null
-                                                | undefined;
-                                            name: unknown;
-                                        }) => (
-                                            <option
-                                                value={item.id}
-                                                selected={
-                                                    class_code === item.id
-                                                }
-                                                data-name={item.name}
-                                            >
-                                                {item.name}
-                                            </option>
                                         )
                                     )
                                 )
-                            )
-                        }
-                    </select>
+                            }
+                        </select>
+                    </div>
                 </div>
             </div>
-        </div>
-        */
-        }
+        </details>
         <div class="mt-6">
             <button
                 type="submit"
@@ -373,11 +378,11 @@ if (Astro.request.method === "POST") {
 
                             // スコアによって検索結果を分類
                             const highMatchResults = searchResults.filter(
-                                (r) => !r.score || r.score < 0.333
+                                (r) => !r.score || r.score < 0.33
                             );
                             const lowMatchResults = searchResults.filter(
                                 (r) =>
-                                    r.score && r.score >= 0.2 && r.score < 0.65
+                                    r.score && r.score >= 0.33 && r.score < 0.65
                             );
 
                             return (
@@ -390,6 +395,7 @@ if (Astro.request.method === "POST") {
                                     {highMatchResults.length > 0 && (
                                         <div class="space-y-4 mb-6">
                                             {highMatchResults.map((result) => (
+                                                <span style="display:none">{result.score ?? ""}</span>
                                                 <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
                                                     <div class="flex justify-between items-start mb-2">
                                                         <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400">
@@ -460,6 +466,7 @@ if (Astro.request.method === "POST") {
                                                 {lowMatchResults.map(
                                                     (result) => (
                                                         <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 shadow-sm opacity-80 hover:opacity-100 transition-opacity">
+                                                            <span style="display:none">{result.score ?? ""}</span>
                                                             <div class="flex justify-between items-start mb-1">
                                                                 <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">
                                                                     {
