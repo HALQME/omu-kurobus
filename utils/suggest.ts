@@ -13,15 +13,6 @@ interface SuggestionResult {
     };
 }
 
-export const normalizeClassCode = (classCode: string): string => {
-    if (classCode.length <= 3) {
-        return classCode.padStart(3, "1");
-    } else if (4 <= classCode.length && classCode.length < 7) {
-        return classCode.substring(4, 6).padStart(3, "1");
-    } else {
-        return classCode.substring(4, 7);
-    }
-};
 
 export const getAutocompleteSuggestions = (
     searchText: string,
@@ -56,9 +47,7 @@ export const getAutocompleteSuggestions = (
                 const teacherInfo = teacherMap.get(teacher)!;
                 teacherInfo.courses.add(course.name);
                 teacherInfo.campuses.add(course.campus);
-                teacherInfo.classCodes.add(
-                    normalizeClassCode(parseClassCode(course.id))
-                );
+                teacherInfo.classCodes.add(parseClassCode(course.id));
             });
         });
 
@@ -122,7 +111,7 @@ export const getAutocompleteSuggestions = (
                 details: {
                     teachers: course.teachers,
                     campus: CAMPUS_NAME(course.campus),
-                    classCode: normalizeClassCode(parseClassCode(course.id)),
+                    classCode: parseClassCode(course.id),
                 },
             }));
     }

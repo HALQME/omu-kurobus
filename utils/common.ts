@@ -10,9 +10,12 @@ export const extractTeachers = (teachersString: string): string[] => {
         .filter(Boolean);
 };
 
-export function parseClassCode(id: string): string {
-    if (id.length === 14) {
-        return `${id.substring(4, 7)}`;
+export const parseClassCode = (classCode: string): string => {
+    if (classCode.length <= 3) {
+        return classCode.padStart(3, "1");
+    } else if (4 <= classCode.length && classCode.length < 7) {
+        return classCode.substring(4, 6).padStart(3, "1");
+    } else {
+        return classCode.substring(4, 7);
     }
-    return id;
-}
+};
