@@ -47,3 +47,10 @@ export const SearchResultSchema = z.object({
     period: z.string(),
 });
 export type SearchResult = z.infer<typeof SearchResultSchema>;
+
+export const SuggestionResultSchema = z.object({
+    text: z.string(),
+    score: z.number().optional(),
+});
+
+export type SuggestionResult = z.infer<typeof SuggestionResultSchema>;

@@ -690,29 +690,35 @@ if (Astro.request.method === "POST") {
 
                 if (suggestions.length > 0) {
                     suggestionsDiv.innerHTML = suggestions
-                        .map(
-                            (suggestion: Suggestion) => `
+                        .map((suggestion) => {
+                            const score = suggestion.score || 0;
+                            let matchClass = "";
+
+                            if (score < 0.1) {
+                                matchClass = "border-l-4 border-green-500";
+                            } else if (score < 0.4) {
+                                matchClass = "border-l-4 border-sky-500";
+                            } else if (score < 0.6) {
+                                matchClass = "border-l-4 border-yellow-500";
+                            } else if (score < 0.8) {
+                                matchClass = "border-l-4 border-orange-500";
+                            } else {
+                                matchClass =
+                                    "border-l-4 border-gray-300 dark:border-gray-600";
+                            }
+
+                            return `
                     <div
-                        class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white"
+                        class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white ${matchClass}"
                         onclick="selectSuggestion('${inputId}', '${suggestion.text.replace(/'/g, "\\'")}')"
                         role="option"
                         aria-selected="false"
                     >
                         <div class="font-medium">${suggestion.text}</div>
-                        ${
-                            suggestion.details
-                                ? `
-                            <div class="text-sm text-gray-600 dark:text-gray-400">
-                                ${suggestion.details.teachers ? `教員: ${suggestion.details.teachers}` : ""}
-                                ${suggestion.details.campus ? `/ ${suggestion.details.campus}` : ""}
-                                ${field !== "teacher" && suggestion.details.classCode ? `/ ${parseClassCode(suggestion.details.classCode)}` : ""}
-                            </div>
-                        `
-                                : ""
-                        }
+
                     </div>
-                `
-                        )
+                `;
+                        })
                         .join("");
                     suggestionsDiv.classList.remove("hidden");
                 } else {
@@ -735,64 +741,8 @@ if (Astro.request.method === "POST") {
                     inputId as "course" | "teacher"
                 );
 
-                if (suggestions.length > 0 && suggestions[0].details) {
-                    const details = suggestions[0].details;
-                    if (inputId === "course" && details.teachers) {
-                        const teacherInput = document.getElementById(
-                            "teacher"
-                        ) as HTMLInputElement;
-                        teacherInput.value = details.teachers;
-                    }
-
-                    if (details.campus) {
-                        document
-                            .querySelectorAll('input[name="campus"]')
-                            .forEach((element: Element) => {
-                                const checkbox = element as HTMLInputElement;
-                                checkbox.checked = false;
-                            });
-
-                        const campusMap: { [key: string]: string } = {
-                            中百舌鳥: "0",
-                            杉本: "1",
-                            遠隔: "2",
-                            その他: "3",
-                        };
-
-                        const campuses = details.campus.split("・");
-                        campuses.forEach((campus) => {
-                            const campusId = campusMap[campus];
-                            if (campusId) {
-                                const checkbox = document.getElementById(
-                                    `campus-${campusId}`
-                                ) as HTMLInputElement;
-                                if (checkbox) checkbox.checked = true;
-                            }
-                        });
-                    }
-
-                    if (inputId === "course" && details.classCode) {
-                        const classCodeInput = document.getElementById(
-                            "class-code-text"
-                        ) as HTMLInputElement;
-                        const classCodeSelect = document.getElementById(
-                            "class-code"
-                        ) as HTMLSelectElement;
-
-                        const parsedCode = parseClassCode(details.classCode);
-                        classCodeInput.value = parsedCode;
-
-                        const options = Array.from(classCodeSelect.options);
-                        const matchingOption = options.find((option) => {
-                            if (!option.value) return false;
-                            const optionCode = parseClassCode(option.value);
-                            return optionCode === parsedCode;
-                        });
-
-                        if (matchingOption) {
-                            classCodeSelect.value = matchingOption.value;
-                        }
-
+                if (suggestions.length > 0) {
+                    if (inputId === "course") {
                         const errorDiv = document.getElementById(
                             "class-code-error"
                         ) as HTMLDivElement;
