@@ -9,19 +9,19 @@ const fuseOptions = {
     keys: [
         {
             name: "name",
-            weight: 0.9,
+            weight: 0.75,
         },
         {
             name: "teachers",
-            weight: 0.3,
+            weight: 0.75,
         },
         {
             name: "id",
-            weight: 0.1,
+            weight: 0.6,
         },
         {
             name: "campus",
-            weight: 0.3,
+            weight: 0.6,
         },
         {
             name: "semester",
@@ -92,6 +92,9 @@ export async function search(
             semester: result.item.semester,
             period: result.item.period,
         }))
+        .filter(
+            (v, i, arr) => arr.findIndex((item) => item.code === v.code) === i
+        )
         .sort((a, b) => (a.score ?? 0) - (b.score ?? 0));
 
     return parsedResults;
