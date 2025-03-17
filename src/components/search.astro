@@ -4,13 +4,17 @@ interface Props {
     target: "search" | "submit";
 }
 const { target } = Astro.props;
-import { AVAILABLE_PAIRS, CLASS_IDs } from "@/utils/const";
+import { AVAILABLE_PAIRS } from "@/utils/const";
 import { search } from "@/utils/search";
+import { parseClassCode } from "@/utils/common";
 export const prerender = false;
 
 declare global {
     interface Window {
-        handleInput: (inputId: string, field: "course" | "teacher") => void;
+        handleInput: (
+            inputId: string,
+            field: "course" | "teacher" | "campus"
+        ) => void;
         clearSuggestions: (inputId: string) => void;
         selectSuggestion: (inputId: string, suggestion: string) => void;
         handleClassCodeInput: (value: string) => void;
@@ -18,25 +22,12 @@ declare global {
     }
 }
 
-// コースコードから部局コードへのパース
-function parseClassCode(code: string): string {
-    if (!code) return "";
-
-    // フルコースコード (例: 20241KDA040001) の場合
-    if (code.length === 14) {
-        const deptCode = code.substring(5, 7); // "KD" from "KDA"
-        return `1${deptCode.substring(0, 2)}`; // "1KD"
-    }
-    // items.id形式の場合はそのまま返す
-    return code;
-}
-
 // 入力値を保持するための変数を初期化
 let year: string | undefined;
 let semester: string | undefined;
 let course: string | undefined;
 let teacher: string | undefined;
-let capmus: string[] = [];
+let campus: string | undefined;
 let class_code: string | undefined;
 let year_semester_value: string | undefined;
 
@@ -71,7 +62,7 @@ if (Astro.request.method === "POST") {
             teacher = data.get("teacher")?.toString();
         }
         if (data.has("campus")) {
-            capmus = data.getAll("campus").map((value) => value.toString());
+            campus = data.get("campus")?.toString();
         }
         if (data.has("class-code")) {
             class_code = data.get("class-code")?.toString();
@@ -85,7 +76,6 @@ if (Astro.request.method === "POST") {
                     `api/courses/${year}/${semester}/data.json`,
                     Astro.url.origin
                 );
-                console.log("Fetching courses from:", courseUrl.toString());
 
                 const response = await fetch(courseUrl);
                 if (!response.ok) {
@@ -98,7 +88,6 @@ if (Astro.request.method === "POST") {
                 const courses = Array.isArray(json)
                     ? json
                     : (json.data as Course[]);
-                console.log("Fetched courses:", courses.length);
 
                 // 検索実行前のパラメータをログ
                 const searchParams = {
@@ -106,32 +95,17 @@ if (Astro.request.method === "POST") {
                     semester,
                     course,
                     teacher,
-                    campus: capmus, // 複数キャンパス対応
-                    class_code:
-                        class_code && class_code.length === 14
-                            ? parseClassCode(class_code)
-                            : class_code,
+                    campus,
+                    class_code: class_code && parseClassCode(class_code),
                 };
-                console.log("Search params:", searchParams);
 
                 // 検索実行
                 searchResults = await search(
                     {
                         ...searchParams,
-                        campus: searchParams.campus as (
-                            | "0"
-                            | "1"
-                            | "2"
-                            | "3"
-                        )[],
                     },
                     courses
                 );
-                console.log("Search results:", {
-                    params: searchParams,
-                    resultsCount: searchResults.length,
-                    sampleResults: searchResults.slice(0, 3),
-                });
             } catch (error) {
                 console.error("Error during search:", error);
                 searchError =
@@ -203,6 +177,7 @@ if (Astro.request.method === "POST") {
                 autocomplete="off"
                 oninput="handleInput('course', 'course')"
                 onblur="setTimeout(() => clearSuggestions('course'), 200)"
+                required
             />
             <div
                 id="course-suggestions"
@@ -232,71 +207,30 @@ if (Astro.request.method === "POST") {
             >
             </div>
         </div>
-        <div class="mb-4">
+        <div class="mb-4 relative">
             <label
                 for="campus"
                 class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
                 >キャンパス</label
             >
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 checkbox-group">
-                <div class="flex items-center space-x-2 checkbox-item">
-                    <input
-                        type="checkbox"
-                        id="campus-0"
-                        name="campus"
-                        value="0"
-                        checked={capmus.includes("0")}
-                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
-                    />
-                    <label
-                        for="campus-0"
-                        class="text-gray-700 dark:text-gray-300">中百舌鳥</label
-                    >
-                </div>
-                <div class="flex items-center space-x-2 checkbox-item">
-                    <input
-                        type="checkbox"
-                        id="campus-1"
-                        name="campus"
-                        value="1"
-                        checked={capmus.includes("1")}
-                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
-                    />
-                    <label
-                        for="campus-1"
-                        class="text-gray-700 dark:text-gray-300">杉本</label
-                    >
-                </div>
-                <div class="flex items-center space-x-2 checkbox-item">
-                    <input
-                        type="checkbox"
-                        id="campus-2"
-                        name="campus"
-                        value="2"
-                        checked={capmus.includes("2")}
-                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
-                    />
-                    <label
-                        for="campus-2"
-                        class="text-gray-700 dark:text-gray-300">遠隔授業</label
-                    >
-                </div>
-                <div class="flex items-center space-x-2 checkbox-item">
-                    <input
-                        type="checkbox"
-                        id="campus-3"
-                        name="campus"
-                        value="3"
-                        checked={capmus.includes("3")}
-                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
-                    />
-                    <label
-                        for="campus-3"
-                        class="text-gray-700 dark:text-gray-300">その他</label
-                    >
-                </div>
+            <input
+                id="campus"
+                name="campus"
+                type="text"
+                value={campus || ""}
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                autocomplete="off"
+                oninput="handleInput('campus', 'campus')"
+                onblur="setTimeout(() => clearSuggestions('campus'), 200)"
+            />
+            <div
+                id="campus-suggestions"
+                class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden"
+            >
             </div>
         </div>
+        {
+            /*
         <div class="mb-4">
             <label
                 for="class-code"
@@ -390,11 +324,20 @@ if (Astro.request.method === "POST") {
                 </div>
             </div>
         </div>
+        */
+        }
         <div class="mt-6">
             <button
-                class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600"
+                type="submit"
+                class="w-full px-4 py-2 mb-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600"
             >
                 検索
+            </button>
+            <button
+                type="reset"
+                class="w-full px-4 py-2 bg-gray-600 hover:bg-red-700 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-red-500 dark:hover:bg-red-600"
+            >
+                リセット
             </button>
         </div>
     </form>
@@ -594,15 +537,6 @@ if (Astro.request.method === "POST") {
 <script>
     import { getAutocompleteSuggestions } from "@/utils/suggest";
     import type { Course } from "@/types/schema";
-    interface Suggestion {
-        text: string;
-        score: number | undefined;
-        details?: {
-            teachers?: string;
-            campus?: string;
-            classCode?: string;
-        };
-    }
     class AstroSearchForm extends HTMLElement {
         constructor() {
             super();
@@ -652,9 +586,6 @@ if (Astro.request.method === "POST") {
 
                     const json = await response.json();
                     courseData = Array.isArray(json) ? json : json.data || [];
-                    console.log(
-                        `Loaded ${courseData.length} courses for ${year}/${semester}`
-                    );
                 } catch (error) {
                     console.error("Failed to fetch course data:", error);
                 }
@@ -662,7 +593,7 @@ if (Astro.request.method === "POST") {
 
             async function handleInput(
                 inputId: string,
-                field: "course" | "teacher"
+                field: "course" | "teacher" | "campus"
             ) {
                 const input = document.getElementById(
                     inputId

@@ -4,7 +4,6 @@ import {
     type Course,
     type SearchResult,
 } from "@/types/schema";
-import { CAMPUS_NAME } from "./const";
 
 const fuseOptions = {
     keys: [
@@ -40,57 +39,58 @@ export async function search(
     courses: Course[]
 ): Promise<SearchResult[]> {
     const fuse = new Fuse(courses, fuseOptions);
-    let results = fuse.search({
-        $or: [
-            {
-                $and: [
-                    {
-                        name: query.course ?? "",
-                    },
-                    {
-                        teachers: query.teacher ?? "",
-                    },
-                    {
-                        semester: query.semester ?? "",
-                    },
-                ],
-            },
-            {
-                $or: [
-                    {
-                        campus: CAMPUS_NAME(query.campus?.[0]) ?? "",
-                    },
-                    {
-                        campus: CAMPUS_NAME(query.campus?.[1]) ?? "",
-                    },
-                    {
-                        campus: CAMPUS_NAME(query.campus?.[2]) ?? "",
-                    },
-                    {
-                        campus: CAMPUS_NAME(query.campus?.[3]) ?? "",
-                    },
-                ],
-            },
-        ],
-    });
+    let fuseQuery = {};
 
-    // Sort results by relevance
-    if (query.course?.trim() || query.teacher?.trim()) {
+    const baseConditions = [
+        {
+            name: query.course ?? "",
+        },
+        {
+            teachers: query.teacher ?? "",
+        },
+    ];
+
+    if (query.campus && query.class_code) {
+        fuseQuery = {
+            $and: [
+                {
+                    $or: baseConditions,
+                },
+                {
+                    campus: query.campus,
+                },
+                {
+                    id: query.class_code,
+                },
+            ],
+        };
+    } else if (query.campus) {
+        fuseQuery = {
+            $and: [
+                {
+                    $or: baseConditions,
+                },
+                {
+                    campus: query.campus,
+                },
+            ],
+        };
     } else {
-        // テキスト検索がない場合は、名前でソート
-        results.sort((a, b) => a.item.name.localeCompare(b.item.name, "ja"));
+        fuseQuery = {
+            $or: baseConditions,
+        };
     }
+    let results = fuse.search(fuseQuery);
 
-    console.log("Final results count:", results.length);
     const parsedResults = results
         .map((result) => ({
-        name: result.item.name,
-        code: result.item.id,
-        score: result.score,
-        teachers: result.item.teachers,
-        campus: result.item.campus,
-        semester: result.item.semester,
-        period: result.item.period,
+            name: result.item.name,
+            code: result.item.id,
+            score: result.score,
+            teachers: result.item.teachers,
+            campus: result.item.campus,
+            semester: result.item.semester,
+            period: result.item.period,
         }))
         .sort((a, b) => (a.score ?? 0) - (b.score ?? 0));
 
