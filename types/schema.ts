@@ -32,7 +32,7 @@ export const SearchQuerySchema = z.object({
     semester: z.string(),
     course: z.string().optional(),
     teacher: z.string().optional(),
-    campus: z.array(z.string()).optional(),
+    campus: z.string().optional(),
     class_code: z.string().optional(),
 });
 export type SearchQuery = z.infer<typeof SearchQuerySchema>;
