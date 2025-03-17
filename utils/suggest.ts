@@ -13,24 +13,14 @@ interface SuggestionResult {
     };
 }
 
-// 部局IDを3〜4字に統一する関数
-const normalizeClassCode = (classCode: string): string => {
-    // 部局IDは通常、クラスコードの先頭部分と考えられます
-    const match = classCode.match(/^([A-Za-z]+)(\d.*)$/);
-    if (!match) return classCode;
-
-    const [_, departmentId, rest] = match;
-
-    // 部局IDが2文字以下なら、3文字になるまで0埋め
-    if (departmentId.length < 3) {
-        return departmentId.padEnd(3, "0") + rest;
+export const normalizeClassCode = (classCode: string): string => {
+    if (classCode.length <= 3) {
+        return classCode.padStart(3, "1");
+    } else if (4 <= classCode.length && classCode.length < 7) {
+        return classCode.substring(4, 6).padStart(3, "1");
+    } else {
+        return classCode.substring(4, 7);
     }
-    // 部局IDが5文字以上なら、先頭4文字に制限
-    else if (departmentId.length > 4) {
-        return departmentId.substring(0, 4) + rest;
-    }
-
-    return classCode;
 };
 
 export const getAutocompleteSuggestions = (
