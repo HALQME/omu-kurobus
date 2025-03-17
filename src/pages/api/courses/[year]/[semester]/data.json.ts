@@ -3,7 +3,7 @@ import { type ResponseData } from "@/types/schema";
 import { AVAILABLE_PAIRS } from "@/utils/const";
 import fetch from "node-fetch";
 import https from "node:https";
-import { generateMockData } from "./_mock";
+import { generateMockData } from "@/utils/_mock";
 export const prerender = true;
 
 // 証明書検証をスキップするHTTPSエージェントを作成
