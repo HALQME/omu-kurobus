@@ -41,7 +41,7 @@ export const CLASS_IDs = [
             { id: "1AK", name: "農学部" },
             { id: "1AL", name: "獣医学部" },
             { id: "1AM", name: "医学部" },
-            { id: "1AP", name: "歯学部" },
+            { id: "1AP", name: "看護学部" },
             { id: "1AQ", name: "生活科学部" },
         ],
     },
