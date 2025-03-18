@@ -180,9 +180,8 @@ const matchScore = (score: number | undefined) => {
             />
             <div
                 id="course-suggestions"
-                class={styles.suggestions}
+                class={`${styles.suggestions} hidden`}
                 role="listbox"
-                style="display: none;"
             >
             </div>
         </div>
@@ -202,9 +201,8 @@ const matchScore = (score: number | undefined) => {
             />
             <div
                 id="teacher-suggestions"
-                class={styles.suggestions}
+                class={`${styles.suggestions} hidden`}
                 role="listbox"
-                style="display: none;"
             >
             </div>
         </div>
@@ -234,9 +232,8 @@ const matchScore = (score: number | undefined) => {
                     />
                     <div
                         id="campus-suggestions"
-                        class={styles.suggestions}
+                        class={`${styles.suggestions} hidden`}
                         role="listbox"
-                        style="display: none;"
                     >
                     </div>
                 </div>
@@ -647,6 +644,12 @@ const matchScore = (score: number | undefined) => {
                     const yearSemesterSelect = document.getElementById(
                         "year_semester"
                     ) as HTMLSelectElement;
+
+                    if (!yearSemesterSelect) {
+                        console.error("Year/semester select element not found");
+                        return;
+                    }
+
                     const selectedValue = yearSemesterSelect.value;
                     if (!selectedValue) {
                         console.error("Year/semester not selected");
@@ -660,6 +663,7 @@ const matchScore = (score: number | undefined) => {
                     }
 
                     const courseUrl = `${window.location.origin}/api/courses/${year}/${semester}/data.json`;
+                    console.log("Fetching courses from:", courseUrl);
 
                     const response = await fetch(courseUrl);
                     if (!response.ok) {
@@ -670,6 +674,7 @@ const matchScore = (score: number | undefined) => {
 
                     const json = await response.json();
                     courseData = Array.isArray(json) ? json : json.data || [];
+                    console.log(`Loaded ${courseData.length} courses`);
                 } catch (error) {
                     console.error("Failed to fetch course data:", error);
                 }
@@ -685,6 +690,13 @@ const matchScore = (score: number | undefined) => {
                 const suggestionsDiv = document.getElementById(
                     `${inputId}-suggestions`
                 ) as HTMLDivElement;
+
+                if (!input || !suggestionsDiv) {
+                    console.error(
+                        `Element not found: ${inputId} or ${inputId}-suggestions`
+                    );
+                    return;
+                }
 
                 if (!courseData.length) {
                     await fetchCourseData();
@@ -725,46 +737,32 @@ const matchScore = (score: number | undefined) => {
                             return `
                     <div
                         class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white ${matchClass}"
-                        onclick="selectSuggestion('${inputId}', '${suggestion.text.replace(/'/g, "\\'")}')"
+                        onclick="window.selectSuggestion('${inputId}', '${suggestion.text.replace(/'/g, "\\'")}')"
                         role="option"
                         aria-selected="false"
                     >
                         <div class="font-medium">${suggestion.text}</div>
-
                     </div>
                 `;
                         })
                         .join("");
                     suggestionsDiv.classList.remove("hidden");
                 } else {
+                    suggestionsDiv.innerHTML = "";
                     suggestionsDiv.classList.add("hidden");
                 }
             }
 
-            async function selectSuggestion(
-                inputId: string,
-                suggestion: string
-            ) {
+            function selectSuggestion(inputId: string, suggestion: string) {
                 const input = document.getElementById(
                     inputId
                 ) as HTMLInputElement;
-                input.value = suggestion;
-
-                const suggestions = await getAutocompleteSuggestions(
-                    suggestion,
-                    courseData,
-                    inputId as "course" | "teacher"
-                );
-
-                if (suggestions.length > 0) {
-                    if (inputId === "course") {
-                        const errorDiv = document.getElementById(
-                            "class-code-error"
-                        ) as HTMLDivElement;
-                        errorDiv.classList.add("hidden");
-                    }
+                if (!input) {
+                    console.error(`Input element not found: ${inputId}`);
+                    return;
                 }
 
+                input.value = suggestion;
                 clearSuggestions(inputId);
             }
 
@@ -847,6 +845,9 @@ const matchScore = (score: number | undefined) => {
             window.selectSuggestion = selectSuggestion;
             window.handleClassCodeInput = handleClassCodeInput;
             window.handleClassCodeSelect = handleClassCodeSelect;
+
+            // ページ読み込み後にすぐにデータを取得
+            fetchCourseData();
 
             window.addEventListener("astro:page-swap", async () => {
                 courseData = [];

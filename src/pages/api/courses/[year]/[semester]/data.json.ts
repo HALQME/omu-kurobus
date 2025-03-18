@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { type Course, type ResponseData } from "@/types/schema";
+import { type Course, type CourseEmbed } from "@/types/schema";
 import { AVAILABLE_PAIRS } from "@/utils/const";
 import fetch from "node-fetch";
 import { generateMockData } from "@/utils/_mock";
@@ -43,7 +43,7 @@ const fetchData = async (year: string, semester: string) => {
     return res.json() as unknown as Course[];
 };
 
-const embeddedData = async (data: Course[]) => {
+const embeddedData = (data: Course[]): CourseEmbed[] => {
     return data.map((course) => {
         return {
             id: course.id,
