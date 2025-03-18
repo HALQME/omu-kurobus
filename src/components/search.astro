@@ -7,7 +7,6 @@ interface Props {
 const { target } = Astro.props;
 import { AVAILABLE_PAIRS, CLASS_IDs } from "@/utils/const";
 import { search } from "@/utils/search";
-import { parseClassCode } from "@/utils/common";
 export const prerender = false;
 
 declare global {
@@ -96,7 +95,7 @@ if (Astro.request.method === "POST") {
                     course,
                     teacher,
                     campus,
-                    class_code: class_code && parseClassCode(class_code),
+                    class_code: class_code && class_code,
                 };
 
                 // 検索実行
@@ -253,12 +252,18 @@ const matchScore = (score: number | undefined) => {
                                     ? class_code.slice(5, 8)
                                     : class_code || ""}
                                 maxlength="4"
-                                data-error-message="3〜4文字のIDのみ許可されています"
+                                data-error-message=""
                                 aria-describedby="class-code-error"
+                            />
+                            <input
+                                type="hidden"
+                                id="custom-class-code"
+                                name="class-code"
+                                value={class_code || ""}
                             />
                             <div
                                 id="class-code-error"
-                                class="text-red-500 dark:text-red-400 text-sm mt-1 hidden"
+                                class="text-yellow-600 dark:text-yellow-300 text-sm mt-1 hidden"
                                 role="alert"
                             >
                             </div>
@@ -269,7 +274,6 @@ const matchScore = (score: number | undefined) => {
                             >
                             <select
                                 id="class-code"
-                                name="class-code"
                                 class={`${styles.input} ${styles.inputFocus}`}
                                 onchange="handleClassCodeSelect(this.value)"
                                 aria-label="設置部局の選択"
@@ -614,25 +618,12 @@ const matchScore = (score: number | undefined) => {
 
 <script>
     import { getAutocompleteSuggestions } from "@/utils/suggest";
-    import type { Course } from "@/types/schema";
+    import type { CourseEmbed } from "@/types/schema";
+    import { parseClassCode } from "@/utils/common";
     class AstroSearchForm extends HTMLElement {
         constructor() {
             super();
-            let courseData: Course[] = [];
-
-            function parseClassCode(code: string): string {
-                if (!code) return "";
-
-                if (code.length === 14) {
-                    return code.substring(5, 8);
-                }
-
-                if (code.length >= 3 && code.length <= 4) {
-                    return code;
-                }
-
-                return code;
-            }
+            let courseData: CourseEmbed[] = [];
 
             async function fetchCourseData() {
                 try {
@@ -783,6 +774,9 @@ const matchScore = (score: number | undefined) => {
                 const errorDiv = document.getElementById(
                     "class-code-error"
                 ) as HTMLDivElement;
+                const hiddenInput = document.getElementById(
+                    "custom-class-code"
+                ) as HTMLInputElement;
 
                 let parsedInput = value.toUpperCase();
 
@@ -793,10 +787,8 @@ const matchScore = (score: number | undefined) => {
                 ) {
                     errorDiv.textContent =
                         input.dataset.errorMessage ||
-                        "3〜4文字のIDのみ許可されています";
+                        "❌ 3〜4文字のIDのみ許可されています";
                     errorDiv.classList.remove("hidden");
-
-                    parsedInput = parsedInput.slice(0, 4);
                 } else {
                     errorDiv.classList.add("hidden");
                 }
@@ -804,6 +796,8 @@ const matchScore = (score: number | undefined) => {
                 if (parsedInput !== value) {
                     input.value = parsedInput;
                 }
+
+                hiddenInput.value = parsedInput;
 
                 if (parsedInput.length === 3 || parsedInput.length === 4) {
                     const options = Array.from(select.options);
@@ -813,15 +807,36 @@ const matchScore = (score: number | undefined) => {
                         return optionCode === parsedInput;
                     });
 
+                    // 完全一致するオプションを探す
                     if (matchingOption) {
                         select.value = matchingOption.value;
                         errorDiv.classList.add("hidden");
                     } else if (parsedInput.length > 0) {
-                        errorDiv.textContent = "一致する設置部局がありません";
+                        const partialMatchOption = options.find((option) => {
+                            if (!option.value) return false;
+                            const optionCode = option.value;
+
+                            return (
+                                optionCode.startsWith(parsedInput) ||
+                                parsedInput.startsWith(optionCode)
+                            );
+                        });
+
+                        // エラーメッセージを設定して表示
+                        errorDiv.textContent = partialMatchOption
+                            ? "⚠️ 部分一致する既定の部局があります。"
+                            : "❗ 一致する既定の部局がありません。";
                         errorDiv.classList.remove("hidden");
+
+                        // 一致するものがない場合、セレクトをクリア
+                        if (!partialMatchOption) {
+                            select.value = "";
+                        }
                     }
                 } else {
                     select.value = "";
+                    hiddenInput.value =
+                        parsedInput.length === 0 ? "" : parsedInput;
                 }
             }
 
@@ -829,12 +844,15 @@ const matchScore = (score: number | undefined) => {
                 const input = document.getElementById(
                     "class-code-text"
                 ) as HTMLInputElement;
-                const errorDiv = document.getElementById(
-                    "class-code-error"
-                ) as HTMLDivElement;
+                const hiddenInput = document.getElementById(
+                    "custom-class-code"
+                ) as HTMLInputElement;
 
-                input.value = parseClassCode(value);
-                errorDiv.classList.add("hidden");
+                input.value = value;
+                hiddenInput.value = value;
+                document
+                    .getElementById("class-code-error")
+                    ?.classList.add("hidden");
             }
 
             window.handleInput = handleInput;
