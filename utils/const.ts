@@ -39,7 +39,23 @@ export const CLASS_IDs = [
     },
 ];
 
-export const AVAILABLE_PAIRS = () => {
+export const PATH_PAIRS = () => {
+    const submits = SUBMIT_PAIRS();
+    const searches = SEARCH_PAIRS();
+    const negatives = NEGATIVE_PAIRS();
+
+    const paris = [...submits, ...searches];
+    return paris.filter(
+        (pair) =>
+            negatives.some(
+                (negative) =>
+                    negative.year === pair.path.year &&
+                    negative.semester === pair.path.semester
+            ) === false
+    );
+};
+
+const SUBMIT_PAIRS = () => {
     const now = new Date();
     const currentYear = now.getFullYear();
     const month = now.getMonth();
@@ -57,143 +73,95 @@ export const AVAILABLE_PAIRS = () => {
             pairs = [
                 {
                     type: "submit",
-                    path: { year: academicYear.toString(), semester: "1" },
-                },
-                {
-                    type: "search",
                     path: {
-                        year: (academicYear - 1).toString(),
-                        semester: "0",
-                    },
-                },
-            ];
-            break;
-        case 3: // 4月
-        case 4: // 5月
-            pairs = [
-                {
-                    type: "search",
-                    path: {
-                        year: (academicYear - 1).toString(),
-                        semester: "0",
+                        year: academicYear.toString(),
+                        semester: "1",
                     },
                 },
             ];
             break;
         case 6: // 7月
+        case 7: // 8月
             pairs = [
                 {
                     type: "submit",
                     path: { year: academicYear.toString(), semester: "0" },
                 },
-                {
-                    type: "search",
-                    path: {
-                        year: (academicYear - 1).toString(),
-                        semester: "0",
-                    },
-                },
-            ];
-            break;
-        case 7: // 8月
-        case 8: // 9月
-            pairs = [
-                {
-                    type: "search",
-                    path: {
-                        year: (academicYear - 1).toString(),
-                        semester: "0",
-                    },
-                },
-                {
-                    type: "search",
-                    path: {
-                        year: (academicYear - 1).toString(),
-                        semester: "1",
-                    },
-                },
             ];
             break;
         default:
-            pairs = [
-                {
-                    type: "search",
-                    path: {
-                        year: (academicYear - 1).toString(),
-                        semester: "0",
-                    },
-                },
-                {
-                    type: "search",
-                    path: {
-                        year: (academicYear - 1).toString(),
-                        semester: "1",
-                    },
-                },
-            ];
             break;
     }
     return pairs;
 };
 
-export const ARCHIVED_PAIRS = async () => {
-    try {
-        const data_index = await fetch(
-            "https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/index.json"
-        );
+const data = await fetch(
+    "https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/index.json"
+).then((res) => res.json());
 
-        if (!data_index.ok) {
-            console.error("Failed to fetch archive index:", data_index.status);
-            return [];
+const SEARCH_PAIRS = () => {
+    const availablePairs = SUBMIT_PAIRS();
+
+    const archivedPairs: {
+        type: "submit" | "search";
+        path: { year: string; semester: string };
+    }[] = [];
+
+    for (const yearData of data) {
+        for (const semester of yearData.semester) {
+            archivedPairs.push({
+                type: "search",
+                path: {
+                    year: yearData.year.toString(),
+                    semester: semester,
+                },
+            });
         }
-
-        const data = await data_index.json();
-
-        const availablePairs = AVAILABLE_PAIRS();
-        let oldestAvailablePair = availablePairs.reduce((oldest, current) => {
-            const currentYear = parseInt(current.path.year);
-            const oldestYear = parseInt(oldest.path.year);
-
-            if (currentYear < oldestYear) return current;
-            if (currentYear > oldestYear) return oldest;
-
-            // 同じ年なら学期で比較
-            return parseInt(current.path.semester) <
-                parseInt(oldest.path.semester)
-                ? current
-                : oldest;
-        }, availablePairs[0]);
-
-        const oldestYear = parseInt(oldestAvailablePair.path.year);
-        const oldestSemester = parseInt(oldestAvailablePair.path.semester);
-
-        const archivedPairs = [];
-
-        for (const yearData of data) {
-            for (const semester of yearData.semester) {
-                const semesterNum = parseInt(semester);
-
-                if (
-                    yearData.year < oldestYear ||
-                    (yearData.year === oldestYear &&
-                        semesterNum < oldestSemester)
-                ) {
-                    archivedPairs.push({
-                        type: "archive",
-                        path: {
-                            year: yearData.year.toString(),
-                            semester: semester,
-                        },
-                    });
-                }
-            }
-        }
-
-        return archivedPairs;
-    } catch (error) {
-        console.error("Error fetching archived pairs:", error);
-        return [];
     }
+
+    return archivedPairs.filter(
+        (pair) =>
+            !availablePairs.some(
+                (availablePair) =>
+                    availablePair.path.year === pair.path.year &&
+                    availablePair.path.semester === pair.path.semester
+            )
+    );
+};
+
+const NEGATIVE_PAIRS = () => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const month = now.getMonth();
+
+    const academicYear = month <= 2 ? currentYear - 1 : currentYear;
+
+    let pairs: {
+        year: string;
+        semester: string;
+    }[] = [];
+
+    if (month <= 2) {
+        pairs = [
+            {
+                year: (academicYear + 1).toString(),
+                semester: "1",
+            },
+            {
+                year: (academicYear + 1).toString(),
+                semester: "0",
+            },
+        ];
+    } else if (month <= 6) {
+        pairs = [
+            {
+                year: academicYear.toString(),
+                semester: "1",
+            },
+        ];
+    }
+
+    return pairs;
 };
 
 export const CAMPUS_NAME = (campus: string | undefined): string | undefined => {
@@ -206,3 +174,4 @@ export const CAMPUS_NAME = (campus: string | undefined): string | undefined => {
     if (campus === undefined) return undefined;
     return campusMap[campus] || campus;
 };
+

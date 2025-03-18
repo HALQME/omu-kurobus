@@ -1,12 +1,12 @@
 import type { APIRoute } from "astro";
 import { type Course, type CourseEmbed } from "@/types/schema";
-import { AVAILABLE_PAIRS } from "@/utils/const";
+import { PATH_PAIRS } from "@/utils/const";
 import fetch from "node-fetch";
 import MockData from "test/_embed_data.json";
 export const prerender = true;
 
 export function getStaticPaths() {
-    const availableYears = AVAILABLE_PAIRS();
+    const availableYears = PATH_PAIRS();
     return availableYears.map(({ type, path }) => ({
         params: { year: path.year, semester: path.semester, type },
     }));
