@@ -858,13 +858,6 @@ const matchScore = (score: number | undefined) => {
                 courseData = [];
                 await fetchCourseData();
             });
-
-            if (document.getElementById("class-code")) {
-                handleClassCodeSelect(
-                    (document.getElementById("class-code") as HTMLSelectElement)
-                        .value
-                );
-            }
         }
     }
     customElements.define("astro-search-from", AstroSearchForm);
