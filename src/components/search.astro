@@ -74,8 +74,7 @@ if (Astro.request.method === "POST") {
             try {
                 // 適切なURLを構築
                 const courseUrl = new URL(
-                    `api/courses/${year}/${semester}/data.json`,
-                    Astro.url.origin
+                    `https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/${year}/${semester}/data.json`
                 );
 
                 const response = await fetch(courseUrl);

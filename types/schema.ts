@@ -13,6 +13,14 @@ export const CourseSchema = z.object({
 });
 export type Course = z.infer<typeof CourseSchema>;
 
+export const CourseEmbedSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    teachers: z.string(),
+    campus: z.string(),
+});
+export type CourseEmbed = z.infer<typeof CourseEmbedSchema>;
+
 export const ResponseSchema = z.object({
     code: z.number(),
     msg: z.string(),
