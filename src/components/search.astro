@@ -205,114 +205,81 @@ const matchScore = (score: number | undefined) => {
             >
             </div>
         </div>
-        <details class={styles.detailsPanel}>
-            <summary class={styles.detailsSummary}> フィルター </summary>
-            <p
-                class="text-center mt-2.5 p-1.5 rounded-md bg-cyan-300/20 dark:bg-cyan-700/20 text-gray-600 dark:text-gray-300"
-            >
-                キャンパスや設置部局で絞り込むことができます。これのみでの検索はできません。
-            </p>
-            <div class="pt-3 space-y-4">
-                <div class="relative">
-                    <label for="campus" class={styles.label}>キャンパス</label>
-                    <input
-                        id="campus"
-                        name="campus"
-                        type="text"
-                        value={campus || ""}
-                        class={`${styles.input} ${styles.inputFocus}`}
-                        autocomplete="off"
-                        oninput="handleInput('campus', 'campus')"
-                        onblur="setTimeout(() => clearSuggestions('campus'), 200)"
-                        aria-describedby="campus-suggestions"
-                        placeholder="キャンパス名を入力してください"
-                    />
-                    <div
-                        id="campus-suggestions"
-                        class={`${styles.suggestions} hidden`}
-                        role="listbox"
-                    >
-                    </div>
+        <div class="pt-3 space-y-4">
+            <div class="relative">
+                <label for="campus" class={styles.label}>キャンパス</label>
+                <input
+                    id="campus"
+                    name="campus"
+                    type="text"
+                    value={campus || ""}
+                    class={`${styles.input} ${styles.inputFocus}`}
+                    autocomplete="off"
+                    oninput="handleInput('campus', 'campus')"
+                    onblur="setTimeout(() => clearSuggestions('campus'), 200)"
+                    aria-describedby="campus-suggestions"
+                    placeholder="キャンパス名を入力してください"
+                />
+                <div
+                    id="campus-suggestions"
+                    class={`${styles.suggestions} hidden`}
+                    role="listbox"
+                >
                 </div>
+            </div>
 
-                <div>
-                    <label for="class-code-text" class={styles.label}
-                        >設置部局</label
-                    >
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <div class="relative flex-1">
-                            <input
-                                type="text"
-                                id="class-code-text"
-                                class={`${styles.input} ${styles.inputFocus}`}
-                                placeholder="部局IDを入力 (3-4文字)"
-                                autocomplete="off"
-                                oninput="handleClassCodeInput(this.value)"
-                                value={class_code?.length === 14
-                                    ? class_code.slice(5, 8)
-                                    : class_code || ""}
-                                maxlength="4"
-                                data-error-message=""
-                                aria-describedby="class-code-error"
-                            />
-                            <input
-                                type="hidden"
-                                id="custom-class-code"
-                                name="class-code"
-                                value={class_code || ""}
-                            />
-                            <div
-                                id="class-code-error"
-                                class="text-yellow-600 dark:text-yellow-300 text-sm mt-1 hidden"
-                                role="alert"
-                            >
-                            </div>
+            <div>
+                <label for="class-code-text" class={styles.label}
+                    >設置部局</label
+                >
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="relative flex-1">
+                        <input
+                            type="text"
+                            id="class-code-text"
+                            class={`${styles.input} ${styles.inputFocus}`}
+                            placeholder="部局IDを入力 (3-4文字)"
+                            autocomplete="off"
+                            oninput="handleClassCodeInput(this.value)"
+                            value={class_code?.length === 14
+                                ? class_code.slice(5, 8)
+                                : class_code || ""}
+                            maxlength="4"
+                            data-error-message=""
+                            aria-describedby="class-code-error"
+                        />
+                        <input
+                            type="hidden"
+                            id="custom-class-code"
+                            name="class-code"
+                            value={class_code || ""}
+                        />
+                        <div
+                            id="class-code-error"
+                            class="text-yellow-600 dark:text-yellow-300 text-sm mt-1 hidden"
+                            role="alert"
+                        >
                         </div>
-                        <div class="sm:w-64 w-full">
-                            <label for="class-code" class="sr-only"
-                                >設置部局の選択</label
-                            >
-                            <select
-                                id="class-code"
-                                class={`${styles.input} ${styles.inputFocus}`}
-                                onchange="handleClassCodeSelect(this.value)"
-                                aria-label="設置部局の選択"
-                            >
-                                <option value="">選択してください</option>
-                                {
-                                    CLASS_IDs.map((group) =>
-                                        group.group ? (
-                                            <optgroup
-                                                label={group.group}
-                                                class="font-medium"
-                                            >
-                                                {group.items.map(
-                                                    (item: {
-                                                        id:
-                                                            | string
-                                                            | number
-                                                            | string[]
-                                                            | null
-                                                            | undefined;
-                                                        name: unknown;
-                                                    }) => (
-                                                        <option
-                                                            value={item.id}
-                                                            selected={
-                                                                class_code ===
-                                                                item.id
-                                                            }
-                                                            data-name={
-                                                                item.name
-                                                            }
-                                                        >
-                                                            {item.name}
-                                                        </option>
-                                                    )
-                                                )}
-                                            </optgroup>
-                                        ) : (
-                                            group.items.map(
+                    </div>
+                    <div class="sm:w-64 w-full">
+                        <label for="class-code" class="sr-only"
+                            >設置部局の選択</label
+                        >
+                        <select
+                            id="class-code"
+                            class={`${styles.input} ${styles.inputFocus}`}
+                            onchange="handleClassCodeSelect(this.value)"
+                            aria-label="設置部局の選択"
+                        >
+                            <option value="">選択してください</option>
+                            {
+                                CLASS_IDs.map((group) =>
+                                    group.group ? (
+                                        <optgroup
+                                            label={group.group}
+                                            class="font-medium"
+                                        >
+                                            {group.items.map(
                                                 (item: {
                                                     id:
                                                         | string
@@ -333,16 +300,39 @@ const matchScore = (score: number | undefined) => {
                                                         {item.name}
                                                     </option>
                                                 )
+                                            )}
+                                        </optgroup>
+                                    ) : (
+                                        group.items.map(
+                                            (item: {
+                                                id:
+                                                    | string
+                                                    | number
+                                                    | string[]
+                                                    | null
+                                                    | undefined;
+                                                name: unknown;
+                                            }) => (
+                                                <option
+                                                    value={item.id}
+                                                    selected={
+                                                        class_code === item.id
+                                                    }
+                                                    data-name={item.name}
+                                                >
+                                                    {item.name}
+                                                </option>
                                             )
                                         )
                                     )
-                                }
-                            </select>
-                        </div>
+                                )
+                            }
+                        </select>
                     </div>
                 </div>
             </div>
-        </details>
+        </div>
+
         <div class="mt-6">
             <button
                 type="submit"
