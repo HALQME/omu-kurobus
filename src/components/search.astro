@@ -2,10 +2,10 @@
 import type { Course, SearchResult } from "@/types/schema";
 import { styles } from "@/styles/style";
 interface Props {
-    target: "search" | "submit";
+    target: "search" | "submit" | "archive";
 }
 const { target } = Astro.props;
-import { AVAILABLE_PAIRS, CLASS_IDs } from "@/utils/const";
+import { PATH_PAIRS, CLASS_IDs } from "@/utils/const";
 import { search } from "@/utils/search";
 export const prerender = false;
 
@@ -45,7 +45,7 @@ if (Astro.request.method === "POST") {
             year = parts[0];
             semester = parts[1];
         } else {
-            const defaultPair = AVAILABLE_PAIRS().find(
+            const defaultPair = (await PATH_PAIRS()).find(
                 (pair: { type: string }) => pair.type == target
             );
             if (defaultPair) {
@@ -143,7 +143,7 @@ const matchScore = (score: number | undefined) => {
                 aria-required="true"
             >
                 {
-                    AVAILABLE_PAIRS().map(
+                    PATH_PAIRS().map(
                         (pair) =>
                             pair.type == target && (
                                 <option
