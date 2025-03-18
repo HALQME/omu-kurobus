@@ -16,8 +16,12 @@ const fuseOptions = {
             weight: 0.75,
         },
         {
-            name: "semester",
-            weight: 0.1,
+            name: "id",
+            weight: 0.5,
+        },
+        {
+            name: "campus",
+            weight: 0.5,
         },
     ],
     threshold: 0.4,
@@ -34,19 +38,30 @@ export async function search(
     courses: Course[]
 ): Promise<SearchResult[]> {
     const fuse = new Fuse(courses, fuseOptions);
+
+    if (!query.campus && !query.course && !query.teacher && !query.class_code) {
+        return [];
+    }
+
     let fuseQuery = {};
 
-    const baseConditions = [
-        {
-            name: query.course ?? "",
-        },
-        {
-            teachers: query.teacher ?? "",
-        },
-    ];
+    let andQuery = [];
+
+    if (query.course) {
+        andQuery.push({ name: "'" + query.course });
+    }
+    if (query.teacher) {
+        andQuery.push({ teachers: "'" + query.teacher });
+    }
+    if (query.class_code) {
+        andQuery.push({ id: "'" + query.class_code });
+    }
+    if (query.campus) {
+        andQuery.push({ campus: "'" + query.campus });
+    }
 
     fuseQuery = {
-        $or: baseConditions,
+        $and: andQuery,
     };
     let results = fuse.search(fuseQuery);
 
@@ -60,9 +75,7 @@ export async function search(
             semester: result.item.semester,
             period: result.item.period,
         }))
-        .filter((result) => result.score !== null)
-        .filter((result) => result.campus.includes(query.campus ?? ""))
-        .filter((result) => result.code.includes(query.class_code ?? ""));
+        .filter((result) => result.score !== null);
 
     return parsedResults;
 }
