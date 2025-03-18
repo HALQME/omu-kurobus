@@ -11,10 +11,12 @@ export const extractTeachers = (teachersString: string): string[] => {
 };
 
 export const parseClassCode = (classCode: string): string => {
-    if (classCode.length <= 3) {
+    if (classCode.length < 3) {
         return classCode.padStart(3, "1");
-    } else if (4 <= classCode.length && classCode.length < 7) {
-        return classCode.substring(4, 6).padStart(3, "1");
+    } else if (classCode.length === 3 || classCode.length === 4) {
+        return classCode;
+    } else if (classCode.length < 7) {
+        return classCode.substring(0, 3);
     } else {
         return classCode.substring(4, 7);
     }
