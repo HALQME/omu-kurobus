@@ -63,7 +63,7 @@ export const AVAILABLE_PAIRS = () => {
                     type: "search",
                     path: {
                         year: (academicYear - 1).toString(),
-                        semester: "1",
+                        semester: "0",
                     },
                 },
             ];
@@ -134,6 +134,66 @@ export const AVAILABLE_PAIRS = () => {
             break;
     }
     return pairs;
+};
+
+export const ARCHIVED_PAIRS = async () => {
+    try {
+        const data_index = await fetch(
+            "https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/index.json"
+        );
+
+        if (!data_index.ok) {
+            console.error("Failed to fetch archive index:", data_index.status);
+            return [];
+        }
+
+        const data = await data_index.json();
+
+        const availablePairs = AVAILABLE_PAIRS();
+        let oldestAvailablePair = availablePairs.reduce((oldest, current) => {
+            const currentYear = parseInt(current.path.year);
+            const oldestYear = parseInt(oldest.path.year);
+
+            if (currentYear < oldestYear) return current;
+            if (currentYear > oldestYear) return oldest;
+
+            // 同じ年なら学期で比較
+            return parseInt(current.path.semester) <
+                parseInt(oldest.path.semester)
+                ? current
+                : oldest;
+        }, availablePairs[0]);
+
+        const oldestYear = parseInt(oldestAvailablePair.path.year);
+        const oldestSemester = parseInt(oldestAvailablePair.path.semester);
+
+        const archivedPairs = [];
+
+        for (const yearData of data) {
+            for (const semester of yearData.semester) {
+                const semesterNum = parseInt(semester);
+
+                if (
+                    yearData.year < oldestYear ||
+                    (yearData.year === oldestYear &&
+                        semesterNum < oldestSemester)
+                ) {
+                    archivedPairs.push({
+                        type: "archive",
+                        path: {
+                            year: yearData.year.toString(),
+                            semester: semester,
+                        },
+                    });
+                }
+            }
+        }
+
+        return archivedPairs;
+    } catch (error) {
+        console.error("Error fetching archived pairs:", error);
+        return [];
+    }
 };
 
 export const CAMPUS_NAME = (campus: string | undefined): string | undefined => {
