@@ -7,23 +7,26 @@ import Search from "@/components/search.astro";
     title="ハム大クロバス"
     description="授業を受講した皆の感想や愚痴が詰まったまとめサイト"
 >
-    <header class="mb-10">
-        <h1
-            class="text-4xl font-bold text-center mb-2 text-purple-700 dark:text-purple-400"
+    <section class="mb-10">
+        <div class="flex items-center justify-center mb-6">
+            <div
+                class="w-16 h-px bg-gradient-to-r from-transparent to-blue-400"
+            >
+            </div>
+            <h2
+                class="px-4 text-2xl font-bold text-gray-800 dark:text-gray-200"
+            >
+                授業を検索
+            </h2>
+            <div
+                class="w-16 h-px bg-gradient-to-l from-transparent to-blue-400"
+            >
+            </div>
+        </div>
+        <div
+            class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700"
         >
-            ハム大クロバス
-        </h1>
-        <p class="text-center text-gray-600 dark:text-gray-400">
-            授業を受講した皆の感想や愚痴が詰まったまとめサイト
-        </p>
-    </header>
-
-    <section class="mb-8 p-6 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md">
-        <h2
-            class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2 border-gray-300 dark:border-gray-700"
-        >
-            検索
-        </h2>
-        <Search target="search" />
+            <Search target="search" />
+        </div>
     </section>
 </Layout>

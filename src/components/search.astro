@@ -1,5 +1,6 @@
 ---
 import type { Course, SearchResult } from "@/types/schema";
+import { styles } from "@/styles/style";
 interface Props {
     target: "search" | "submit";
 }
@@ -122,24 +123,26 @@ if (Astro.request.method === "POST") {
         }
     }
 }
+
+const matchScore = (score: number | undefined) => {
+    return (Math.round((1 - (score ?? 1)) * 10000) / 100).toFixed(2);
+};
 ---
 
 <astro-search-from data-target={target}>
     <form
-        class="bg-white dark:bg-gray-900 rounded-lg p-6 max-w-3xl mx-auto space-y-4 transition-colors"
+        class="max-w-3xl mx-auto space-y-4 transition-all transform"
         method="POST"
         astro-data={target}
+        aria-label="授業検索フォーム"
     >
-        <div class="mb-4">
-            <label
-                for="year_semester"
-                class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
-                >年・学期</label
-            >
+        <div class="mb-3">
+            <label for="year_semester" class={styles.label}>年・学期</label>
             <select
                 id="year_semester"
                 name="year_semester"
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                class={`${styles.input} ${styles.inputFocus}`}
+                aria-required="true"
             >
                 {
                     AVAILABLE_PAIRS().map(
@@ -162,123 +165,156 @@ if (Astro.request.method === "POST") {
                 }
             </select>
         </div>
-        <div class="mb-4 relative">
-            <label
-                for="course"
-                class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
-                >授業名</label
-            >
+        <div class="mb-3 relative">
+            <label for="course" class={styles.label}>授業名</label>
             <input
                 id="course"
                 name="course"
                 type="text"
                 value={course || ""}
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                class={`${styles.input} ${styles.inputFocus}`}
                 autocomplete="off"
                 oninput="handleInput('course', 'course')"
                 onblur="setTimeout(() => clearSuggestions('course'), 200)"
+                aria-describedby="course-suggestions"
+                placeholder="授業名を入力してください"
             />
             <div
                 id="course-suggestions"
-                class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden"
+                class={styles.suggestions}
+                role="listbox"
+                style="display: none;"
             >
             </div>
         </div>
-        <div class="mb-4 relative">
-            <label
-                for="teacher"
-                class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
-                >教員名</label
-            >
+        <div class="mb-3 relative">
+            <label for="teacher" class={styles.label}>教員名</label>
             <input
                 id="teacher"
                 name="teacher"
                 type="text"
                 value={teacher || ""}
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                class={`${styles.input} ${styles.inputFocus}`}
                 autocomplete="off"
                 oninput="handleInput('teacher', 'teacher')"
                 onblur="setTimeout(() => clearSuggestions('teacher'), 200)"
+                aria-describedby="teacher-suggestions"
+                placeholder="教員名を入力してください"
             />
             <div
                 id="teacher-suggestions"
-                class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden"
+                class={styles.suggestions}
+                role="listbox"
+                style="display: none;"
             >
             </div>
         </div>
-        <details class="text-gray-700 dark:text-gray-300">
-            <summary class="font-medium cursor-pointer">絞り込み</summary>
+        <details class={styles.detailsPanel}>
+            <summary class={styles.detailsSummary}>
+                詳細検索オプション
+            </summary>
             <p
-                class="w-full px-4 py-2 mb-2 mt-2 text-gray-900 dark:text-gray-300 bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 font-medium rounded-md shadow-sm"
+                class="text-center mt-2.5 p-1.5 rounded-md bg-cyan-300/20 dark:bg-cyan-700/20 text-gray-600 dark:text-gray-300"
             >
-                より詳しく検索できます。 単体では検索できません！
+                キャンパスや設置部局で絞り込むことができます。これのみでの検索はできません。
             </p>
-            <div class="mb-4 relative">
-                <label
-                    for="campus"
-                    class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
-                    >キャンパス</label
-                >
-                <input
-                    id="campus"
-                    name="campus"
-                    type="text"
-                    value={campus || ""}
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    autocomplete="off"
-                    oninput="handleInput('campus', 'campus')"
-                    onblur="setTimeout(() => clearSuggestions('campus'), 200)"
-                />
-                <div
-                    id="campus-suggestions"
-                    class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden"
-                >
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label
-                    for="class-code"
-                    class="block text-gray-700 dark:text-gray-300 font-medium mb-2"
-                    >設置部局</label
-                >
-                <div class="flex flex-col sm:flex-row gap-2">
-                    <div class="relative flex-1">
-                        <input
-                            type="text"
-                            id="class-code-text"
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white h-10"
-                            placeholder="設置部局のIDを入力"
-                            autocomplete="off"
-                            oninput="handleClassCodeInput(this.value)"
-                            value={class_code?.length === 14
-                                ? class_code.slice(5, 8)
-                                : class_code || ""}
-                            maxlength="4"
-                            data-error-message="3〜4文字のIDのみ許可されています"
-                        />
-                        <div
-                            id="class-code-error"
-                            class="text-red-500 text-sm mt-1 hidden"
-                        >
-                        </div>
+            <div class="pt-3 space-y-4">
+                <div class="relative">
+                    <label for="campus" class={styles.label}>キャンパス</label>
+                    <input
+                        id="campus"
+                        name="campus"
+                        type="text"
+                        value={campus || ""}
+                        class={`${styles.input} ${styles.inputFocus}`}
+                        autocomplete="off"
+                        oninput="handleInput('campus', 'campus')"
+                        onblur="setTimeout(() => clearSuggestions('campus'), 200)"
+                        aria-describedby="campus-suggestions"
+                        placeholder="キャンパス名を入力してください"
+                    />
+                    <div
+                        id="campus-suggestions"
+                        class={styles.suggestions}
+                        role="listbox"
+                        style="display: none;"
+                    >
                     </div>
-                    <div class="sm:w-64 w-full">
-                        <select
-                            id="class-code"
-                            name="class-code"
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white h-10"
-                            onchange="handleClassCodeSelect(this.value)"
-                        >
-                            <option value="">選択してください</option>
-                            {
-                                CLASS_IDs.map((group) =>
-                                    group.group ? (
-                                        <optgroup
-                                            label={group.group}
-                                            class="font-medium"
-                                        >
-                                            {group.items.map(
+                </div>
+
+                <div>
+                    <label for="class-code-text" class={styles.label}
+                        >設置部局</label
+                    >
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <div class="relative flex-1">
+                            <input
+                                type="text"
+                                id="class-code-text"
+                                class={`${styles.input} ${styles.inputFocus}`}
+                                placeholder="部局IDを入力 (3-4文字)"
+                                autocomplete="off"
+                                oninput="handleClassCodeInput(this.value)"
+                                value={class_code?.length === 14
+                                    ? class_code.slice(5, 8)
+                                    : class_code || ""}
+                                maxlength="4"
+                                data-error-message="3〜4文字のIDのみ許可されています"
+                                aria-describedby="class-code-error"
+                            />
+                            <div
+                                id="class-code-error"
+                                class="text-red-500 dark:text-red-400 text-sm mt-1 hidden"
+                                role="alert"
+                            >
+                            </div>
+                        </div>
+                        <div class="sm:w-64 w-full">
+                            <label for="class-code" class="sr-only"
+                                >設置部局の選択</label
+                            >
+                            <select
+                                id="class-code"
+                                name="class-code"
+                                class={`${styles.input} ${styles.inputFocus}`}
+                                onchange="handleClassCodeSelect(this.value)"
+                                aria-label="設置部局の選択"
+                            >
+                                <option value="">選択してください</option>
+                                {
+                                    CLASS_IDs.map((group) =>
+                                        group.group ? (
+                                            <optgroup
+                                                label={group.group}
+                                                class="font-medium"
+                                            >
+                                                {group.items.map(
+                                                    (item: {
+                                                        id:
+                                                            | string
+                                                            | number
+                                                            | string[]
+                                                            | null
+                                                            | undefined;
+                                                        name: unknown;
+                                                    }) => (
+                                                        <option
+                                                            value={item.id}
+                                                            selected={
+                                                                class_code ===
+                                                                item.id
+                                                            }
+                                                            data-name={
+                                                                item.name
+                                                            }
+                                                        >
+                                                            {item.name}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </optgroup>
+                                        ) : (
+                                            group.items.map(
                                                 (item: {
                                                     id:
                                                         | string
@@ -299,34 +335,12 @@ if (Astro.request.method === "POST") {
                                                         {item.name}
                                                     </option>
                                                 )
-                                            )}
-                                        </optgroup>
-                                    ) : (
-                                        group.items.map(
-                                            (item: {
-                                                id:
-                                                    | string
-                                                    | number
-                                                    | string[]
-                                                    | null
-                                                    | undefined;
-                                                name: unknown;
-                                            }) => (
-                                                <option
-                                                    value={item.id}
-                                                    selected={
-                                                        class_code === item.id
-                                                    }
-                                                    data-name={item.name}
-                                                >
-                                                    {item.name}
-                                                </option>
                                             )
                                         )
                                     )
-                                )
-                            }
-                        </select>
+                                }
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -334,36 +348,40 @@ if (Astro.request.method === "POST") {
         <div class="mt-6">
             <button
                 type="submit"
-                class="w-full px-4 py-2 mb-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600"
+                class={styles.button.primary}
+                aria-label="検索を実行"
             >
                 検索
             </button>
             <button
                 type="reset"
-                class="w-full px-4 py-2 bg-gray-600 hover:bg-red-700 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-red-500 dark:hover:bg-red-600"
+                class={styles.button.reset}
+                aria-label="フォームをリセット"
             >
                 リセット
             </button>
         </div>
     </form>
+
     {/* 検索結果表示部分 */}
     {
         Astro.request.method === "POST" && (
-            <div class="mt-8">
+            <div class="mt-6" aria-live="polite">
                 {searchError && (
-                    <div class="p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-lg mb-6">
+                    <div class={styles.errorAlert} role="alert">
                         <p class="font-medium">エラーが発生しました</p>
+                        <p class="mt-1 text-sm">{searchError}</p>
                     </div>
                 )}
                 {!searchError && searchResults.length === 0 && (
-                    <div class="p-4 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-lg">
+                    <div class={`${styles.card.container} p-4`}>
                         <p>
                             検索条件に一致する授業が見つかりませんでした。検索条件を変更してお試しください。
                         </p>
                     </div>
                 )}
                 {searchResults.length > 0 && (
-                    <div>
+                    <div class="animate-fadeIn">
                         {/* 検索結果を一致度で分類 */}
                         {(() => {
                             // 教員名を省略する関数
@@ -387,32 +405,57 @@ if (Astro.request.method === "POST") {
 
                             return (
                                 <>
-                                    <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">
-                                        検索結果: {searchResults.length}件
+                                    <h2 class={styles.sectionHeading}>
+                                        <span class="mr-3">検索結果:</span>
+                                        <span class={styles.badge}>
+                                            {searchResults.length}件
+                                        </span>
                                     </h2>
 
                                     {/* 一致度の高い結果を表示 */}
                                     {highMatchResults.length > 0 && (
-                                        <div class="space-y-4 mb-6">
+                                        <div class="space-y-3 mb-5">
                                             {highMatchResults.map((result) => (
-                                                <span style="display:none">{result.score ?? ""}</span>
-                                                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
+                                                <div
+                                                    class={
+                                                        styles.card.container
+                                                    }
+                                                >
+                                                    <span class="hidden">
+                                                        {matchScore(
+                                                            result.score
+                                                        )}
+                                                        %
+                                                    </span>
                                                     <div class="flex justify-between items-start mb-2">
-                                                        <h3 class="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                                                        <h3
+                                                            class={
+                                                                styles.card
+                                                                    .title
+                                                            }
+                                                        >
                                                             {result.name}
                                                         </h3>
-                                                        <span class="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded">
+                                                        <span class="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
                                                             {result.code ||
                                                                 "コード不明"}
                                                         </span>
                                                     </div>
                                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                                                         <div class="flex">
-                                                            <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                                                            <span
+                                                                class={
+                                                                    styles.card
+                                                                        .label
+                                                                }
+                                                            >
                                                                 教員:
                                                             </span>
                                                             <span
-                                                                class="text-gray-800 dark:text-gray-200 flex-1"
+                                                                class={
+                                                                    styles.card
+                                                                        .value
+                                                                }
                                                                 title={
                                                                     result.teachers ||
                                                                     ""
@@ -424,28 +467,58 @@ if (Astro.request.method === "POST") {
                                                             </span>
                                                         </div>
                                                         <div class="flex">
-                                                            <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                                                            <span
+                                                                class={
+                                                                    styles.card
+                                                                        .label
+                                                                }
+                                                            >
                                                                 キャンパス:
                                                             </span>
-                                                            <span class="text-gray-800 dark:text-gray-200 flex-1">
+                                                            <span
+                                                                class={
+                                                                    styles.card
+                                                                        .value
+                                                                }
+                                                            >
                                                                 {result.campus ||
                                                                     "記載なし"}
                                                             </span>
                                                         </div>
                                                         <div class="flex">
-                                                            <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                                                            <span
+                                                                class={
+                                                                    styles.card
+                                                                        .label
+                                                                }
+                                                            >
                                                                 時限:
                                                             </span>
-                                                            <span class="text-gray-800 dark:text-gray-200 flex-1">
+                                                            <span
+                                                                class={
+                                                                    styles.card
+                                                                        .value
+                                                                }
+                                                            >
                                                                 {result.period ||
                                                                     "記載なし"}
                                                             </span>
                                                         </div>
                                                         <div class="flex">
-                                                            <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                                                            <span
+                                                                class={
+                                                                    styles.card
+                                                                        .label
+                                                                }
+                                                            >
                                                                 年度・学期:
                                                             </span>
-                                                            <span class="text-gray-800 dark:text-gray-200 flex-1">
+                                                            <span
+                                                                class={
+                                                                    styles.card
+                                                                        .value
+                                                                }
+                                                            >
                                                                 {result.semester ||
                                                                     "記載なし"}
                                                             </span>
@@ -459,14 +532,19 @@ if (Astro.request.method === "POST") {
                                     {/* 一致度の低い結果を「もしかして」セクションとして表示 */}
                                     {lowMatchResults.length > 0 && (
                                         <div class="mt-8">
-                                            <h3 class="text-lg font-medium mb-3 text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">
+                                            <h3 class="text-md font-medium mb-3 text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">
                                                 もしかして
                                             </h3>
-                                            <div class="space-y-3">
+                                            <div class="space-y-2">
                                                 {lowMatchResults.map(
                                                     (result) => (
-                                                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 shadow-sm opacity-80 hover:opacity-100 transition-opacity">
-                                                            <span style="display:none">{result.score ?? ""}</span>
+                                                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                                            <span class="hidden">
+                                                                {matchScore(
+                                                                    result.score
+                                                                )}
+                                                                %
+                                                            </span>
                                                             <div class="flex justify-between items-start mb-1">
                                                                 <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">
                                                                     {
@@ -484,7 +562,7 @@ if (Astro.request.method === "POST") {
                                                                         教員:
                                                                     </span>
                                                                     <span
-                                                                        class="text-gray-600 dark:text-gray-300 flex-1"
+                                                                        class="text-gray-600 dark:text-gray-300"
                                                                         title={
                                                                             result.teachers ||
                                                                             ""
@@ -501,7 +579,7 @@ if (Astro.request.method === "POST") {
                                                                     <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
                                                                         キャンパス:
                                                                     </span>
-                                                                    <span class="text-gray-600 dark:text-gray-300 flex-1">
+                                                                    <span class="text-gray-600 dark:text-gray-300">
                                                                         {result.campus ||
                                                                             "記載なし"}
                                                                     </span>
@@ -510,7 +588,7 @@ if (Astro.request.method === "POST") {
                                                                     <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
                                                                         時限:
                                                                     </span>
-                                                                    <span class="text-gray-600 dark:text-gray-300 flex-1">
+                                                                    <span class="text-gray-600 dark:text-gray-300">
                                                                         {result.period ||
                                                                             "記載なし"}
                                                                     </span>
@@ -519,7 +597,7 @@ if (Astro.request.method === "POST") {
                                                                     <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
                                                                         年度・学期:
                                                                     </span>
-                                                                    <span class="text-gray-600 dark:text-gray-300 flex-1">
+                                                                    <span class="text-gray-600 dark:text-gray-300">
                                                                         {result.semester ||
                                                                             "記載なし"}
                                                                     </span>
