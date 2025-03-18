@@ -21,7 +21,7 @@ describe("Class Code Parser", () => {
     });
 
     it("should keep department ID as is if it has 3 or 4 characters", () => {
-        expect(parseClassCode("ABC123")).toBe("123");
+        expect(parseClassCode("ABC123")).toBe("ABC");
         expect(parseClassCode("ABCD123")).toBe("123");
     });
 });
