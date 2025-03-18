@@ -1,13 +1,5 @@
 export const CLASS_IDs = [
     {
-        items: [
-            {
-                id: "",
-                name: "全て",
-            },
-        ],
-    },
-    {
         group: "基幹教育科目",
         items: [
             { id: "1GA", name: "総合教養科目（般教）" },
