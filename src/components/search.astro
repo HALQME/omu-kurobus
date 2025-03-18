@@ -207,9 +207,7 @@ const matchScore = (score: number | undefined) => {
             </div>
         </div>
         <details class={styles.detailsPanel}>
-            <summary class={styles.detailsSummary}>
-                詳細検索オプション
-            </summary>
+            <summary class={styles.detailsSummary}> フィルター </summary>
             <p
                 class="text-center mt-2.5 p-1.5 rounded-md bg-cyan-300/20 dark:bg-cyan-700/20 text-gray-600 dark:text-gray-300"
             >
@@ -392,11 +390,10 @@ const matchScore = (score: number | undefined) => {
 
                             // スコアによって検索結果を分類
                             const highMatchResults = searchResults.filter(
-                                (r) => !r.score || r.score < 0.33
+                                (r) => !r.score || r.score < 0.42
                             );
                             const lowMatchResults = searchResults.filter(
-                                (r) =>
-                                    r.score && r.score >= 0.33 && r.score < 0.65
+                                (r) => r.score && r.score >= 0.42
                             );
 
                             return (

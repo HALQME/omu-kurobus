@@ -1,25 +1,24 @@
 import { describe, expect, it } from "vitest";
 import { getAutocompleteSuggestions } from "@/utils/suggest";
-import { type Course } from "@/types/schema";
-import { generateMockData } from "@/utils/_mock";
+import { type CourseEmbed } from "@/types/schema";
 
-const mockData = generateMockData();
+import mockData from "test/_embed_data.json";
 
 describe("Autocomplete Suggestions: Course", () => {
     it("should return empty array if search text is empty", () => {
-        const courses: Course[] = mockData.data;
+        const courses: CourseEmbed[] = mockData;
         expect(getAutocompleteSuggestions("", courses, "course")).toEqual([]);
     });
 
     it("should return empty array if no match is found", () => {
-        const courses: Course[] = mockData.data;
+        const courses: CourseEmbed[] = mockData;
         expect(getAutocompleteSuggestions("zzz", courses, "course")).toEqual(
             []
         );
     });
 
     it("should return suggestions for course names", () => {
-        const courses: Course[] = mockData.data;
+        const courses: CourseEmbed[] = mockData;
         const suggestions = getAutocompleteSuggestions(
             "情報セキュ",
             courses,
@@ -45,19 +44,19 @@ describe("Autocomplete Suggestions: Course", () => {
 
 describe("Autocomplete Suggestions: Teacher", () => {
     it("should return empty array if search text is empty", () => {
-        const courses: Course[] = mockData.data;
+        const courses: CourseEmbed[] = mockData;
         expect(getAutocompleteSuggestions("", courses, "teacher")).toEqual([]);
     });
 
     it("should return empty array if no match is found", () => {
-        const courses: Course[] = mockData.data;
+        const courses: CourseEmbed[] = mockData;
         expect(getAutocompleteSuggestions("zzz", courses, "teacher")).toEqual(
             []
         );
     });
 
     it("should return suggestions for teacher names", () => {
-        const courses: Course[] = mockData.data;
+        const courses: CourseEmbed[] = mockData;
         const suggestions = getAutocompleteSuggestions(
             "菅野",
             courses,
@@ -79,19 +78,19 @@ describe("Autocomplete Suggestions: Teacher", () => {
 
 describe("Autocomplete Suggestions: Campus", () => {
     it("should return empty array if search text is empty", () => {
-        const courses: Course[] = mockData.data;
+        const courses: CourseEmbed[] = mockData;
         expect(getAutocompleteSuggestions("", courses, "campus")).toEqual([]);
     });
 
     it("should return empty array if no match is found", () => {
-        const courses: Course[] = mockData.data;
+        const courses: CourseEmbed[] = mockData;
         expect(getAutocompleteSuggestions("zzz", courses, "campus")).toEqual(
             []
         );
     });
 
     it("should return suggestions for campus names", () => {
-        const courses: Course[] = mockData.data;
+        const courses: CourseEmbed[] = mockData;
         const suggestions = getAutocompleteSuggestions("中", courses, "campus");
         expect(suggestions.length).toBeGreaterThan(0);
         expect(suggestions).toEqual([
@@ -103,7 +102,7 @@ describe("Autocomplete Suggestions: Campus", () => {
     });
 
     it("should return suggestions for campus names with diacritics", () => {
-        const courses: Course[] = mockData.data;
+        const courses: CourseEmbed[] = mockData;
         const suggestions = getAutocompleteSuggestions(
             "りん",
             courses,
@@ -119,7 +118,7 @@ describe("Autocomplete Suggestions: Campus", () => {
     });
 
     it("should return suggestions for campus names with diacritics", () => {
-        const courses: Course[] = mockData.data;
+        const courses: CourseEmbed[] = mockData;
         const suggestions = getAutocompleteSuggestions(
             "吉田",
             courses,

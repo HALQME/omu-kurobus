@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { Course, SearchQuery } from "@/types/schema";
 import { search } from "@/utils/search";
-import { generateMockData } from "@/utils/_mock";
 
-const mockData = generateMockData();
+import mockData from "test/_row_data.json";
 
 describe("Search Queries", () => {
-    const courses = mockData.data;
+    const courses = mockData as Course[];
     it("normal search", async () => {
         const query: SearchQuery = {
             semester: "1",

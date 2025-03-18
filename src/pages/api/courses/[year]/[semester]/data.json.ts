@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { type Course, type CourseEmbed } from "@/types/schema";
 import { AVAILABLE_PAIRS } from "@/utils/const";
 import fetch from "node-fetch";
-import { generateMockData } from "@/utils/_mock";
+import MockData from "test/_embed_data.json";
 export const prerender = true;
 
 export function getStaticPaths() {
@@ -23,7 +23,7 @@ export const GET: APIRoute = async ({ params }) => {
     if (useMockApi) {
         // モックデータを使用
         console.log(`Using mock data`);
-        data = generateMockData();
+        data = MockData;
     } else {
         data = await fetchData(year!, semester!).then(embeddedData);
     }

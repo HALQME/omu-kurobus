@@ -16,22 +16,17 @@ const fuseOptions = {
             weight: 0.75,
         },
         {
-            name: "id",
-            weight: 0.6,
-        },
-        {
-            name: "campus",
-            weight: 0.6,
-        },
-        {
             name: "semester",
             weight: 0.1,
         },
     ],
-    threshold: 0.3,
+    threshold: 0.4,
     includeScore: true,
     ignoreLocation: true,
+    ignoreFieldNorm: true,
     useExtendedSearch: true,
+    shouldSort: true,
+    findAllMatches: true,
 };
 
 export async function search(
@@ -50,36 +45,9 @@ export async function search(
         },
     ];
 
-    if (query.campus && query.class_code) {
-        fuseQuery = {
-            $and: [
-                {
-                    $or: baseConditions,
-                },
-                {
-                    campus: query.campus,
-                },
-                {
-                    id: query.class_code,
-                },
-            ],
-        };
-    } else if (query.campus) {
-        fuseQuery = {
-            $and: [
-                {
-                    $or: baseConditions,
-                },
-                {
-                    campus: query.campus,
-                },
-            ],
-        };
-    } else {
-        fuseQuery = {
-            $or: baseConditions,
-        };
-    }
+    fuseQuery = {
+        $or: baseConditions,
+    };
     let results = fuse.search(fuseQuery);
 
     const parsedResults = results
@@ -92,10 +60,9 @@ export async function search(
             semester: result.item.semester,
             period: result.item.period,
         }))
-        .filter(
-            (v, i, arr) => arr.findIndex((item) => item.code === v.code) === i
-        )
-        .sort((a, b) => (a.score ?? 0) - (b.score ?? 0));
+        .filter((result) => result.score !== null)
+        .filter((result) => result.campus.includes(query.campus ?? ""))
+        .filter((result) => result.code.includes(query.class_code ?? ""));
 
     return parsedResults;
 }
