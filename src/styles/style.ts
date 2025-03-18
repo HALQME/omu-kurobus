@@ -64,9 +64,7 @@ export const styles = {
     header: {
         container:
             "sticky top-0 z-50 p-5 bg-gradient-to-r from-sky-400/10 to-blue-400/10 dark:from-sky-600/70 dark:to-blue-600/70 text-white shadow-sm backdrop-blur-md border-b border-sky-100 dark:border-sky-900/30",
-        title: "text-3xl font-bold text-center mb-2 text-sky-500 dark:text-sky-300",
-        subtitle:
-            "text-center text-sky-400/90 dark:text-sky-600/80 font-medium",
+        title: "text-3xl font-bold text-center mb-2 text-sky-500 dark:text-sky-200",
     },
 
     // フォームラベル
