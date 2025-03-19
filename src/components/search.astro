@@ -2,7 +2,7 @@
 import type { Course, SearchResult } from "@/types/schema";
 import { styles } from "@/styles/style";
 interface Props {
-    target: "search" | "submit" | "archive";
+    target: "search" | "submit";
 }
 const { target } = Astro.props;
 import { PATH_PAIRS, CLASS_IDs } from "@/utils/const";
@@ -504,6 +504,18 @@ const matchScore = (score: number | undefined) => {
                                                             </span>
                                                         </div>
                                                     </div>
+                                                    <a
+                                                        href={
+                                                            target +
+                                                            "/" +
+                                                            result.code
+                                                        }
+                                                        class="mt-3 block w-full text-center px-4 py-2 outline outline-blue-500 dark:outline-blue-700 rounded hover:bg-blue-600/20 dark:hover:bg-blue-800/20 transition-colors"
+                                                    >
+                                                        {target === "search"
+                                                            ? "詳細を見る"
+                                                            : "投稿する"}
+                                                    </a>
                                                 </div>
                                             ))}
                                         </div>

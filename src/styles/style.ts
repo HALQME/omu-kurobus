@@ -62,9 +62,9 @@ export const styles = {
 
     // ヘッダースタイル
     header: {
-        container:
-            "sticky top-0 z-50 p-5 bg-gradient-to-r from-sky-400/10 to-blue-400/10 dark:from-sky-600/70 dark:to-blue-600/70 text-white shadow-sm backdrop-blur-md border-b border-sky-100 dark:border-sky-900/30",
-        title: "text-3xl font-bold text-center mb-2 text-sky-500 dark:text-sky-200",
+        header: "sticky top-0 z-50 py-0 bg-gradient-to-r from-blue-200 to-purple-100 dark:from-gray-800 dark:to-gray-900 text-white py-4 shadow-lg transition-colors duration-300",
+        container: "flex items-center justify-between h-16 px-4",
+        title: "text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-700 dark:from-gray-100 dark:to-white",
     },
 
     // フォームラベル
@@ -96,4 +96,24 @@ export const styles = {
     // 詳細パネル
     detailsPanel: `${colors.gray.lightest} rounded-lg p-3 mb-2 border border-slate-200/70 dark:border-slate-700/50 hover:border-blue-100/70 dark:hover:border-blue-700/40 ${common.transition} hover:shadow-sm`,
     detailsSummary: `font-medium cursor-pointer text-lg hover:text-blue-500 dark:hover:text-blue-300 ${common.transition} focus:outline-none focus:ring-1 focus:ring-blue-400 rounded-md px-2 flex items-center gap-2 hover:translate-x-0.5`,
+
+    // セクション関連のスタイル
+    section: {
+        container: "mb-10",
+        headingWrapper: "flex items-center justify-center mb-6",
+        headingLine: "w-16 h-px",
+        headingLineLeft: "bg-gradient-to-r from-transparent to-blue-400",
+        headingLineRight: "bg-gradient-to-l from-transparent to-blue-400",
+        title: "px-4 text-2xl font-bold text-gray-800 dark:text-gray-200",
+        content:
+            "bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700",
+    },
+
+    // フォーム要素のスタイル
+    form: {
+        label: "block text-sm font-medium text-gray-700 dark:text-gray-300",
+        input: "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800 dark:text-gray-300",
+        textarea:
+            "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800 dark:text-gray-300",
+    },
 };
