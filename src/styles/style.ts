@@ -64,8 +64,15 @@ export const styles = {
     header: {
         header: "sticky top-0 z-50 py-0 bg-gradient-to-r from-blue-200 to-purple-100 dark:from-gray-800 dark:to-gray-900 text-white py-4 shadow-lg transition-colors duration-300",
         container:
-            "flex items-center justify-between h-16 mb:px-4 max-w-4xl mx-auto",
-        title: "text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-700 dark:from-gray-100 dark:to-white",
+            "flex items-center justify-between h-16 px-4 md:px-6 max-w-4xl mx-auto",
+        title: "text-xl sm:text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-700 dark:from-gray-100 dark:to-white",
+    },
+
+    footer: {
+        container:
+            "bg-gray-100 dark:bg-gray-800 py-3 flex flex-col md:flex-row sticky bottom-0",
+        content:
+            "max-w-4xl mx-auto px-4 py-1 sm:py-6 flex justify-between items-center",
     },
 
     // フォームラベル
@@ -73,7 +80,7 @@ export const styles = {
 
     // 検索結果カード
     card: {
-        container: `${common.card} p-4 ${colors.gray.border} hover:shadow hover:border-blue-100/70 dark:hover:border-blue-700/40 ${common.transition} cursor-pointer hover:translate-y-[-1px]`,
+        container: `${common.card} p-3 sm:p-4 ${colors.gray.border} hover:shadow hover:border-blue-100/70 dark:hover:border-blue-700/40 ${common.transition} cursor-pointer hover:translate-y-[-1px]`,
         title: `text-lg font-semibold ${colors.gray.heading} mb-2 hover:text-blue-500 dark:hover:text-blue-300 transition-colors duration-200`,
         label: "w-24 font-medium text-slate-500 dark:text-slate-400",
         value: "text-slate-800 dark:text-slate-200 flex-1",
@@ -100,21 +107,21 @@ export const styles = {
 
     // セクション関連のスタイル
     section: {
-        container: "mb-10",
+        container: "mb-6 sm:mb-10",
         headingWrapper: "flex items-center justify-center mb-6",
         headingLine: "w-16 h-px",
         headingLineLeft: "bg-gradient-to-r from-transparent to-blue-400",
         headingLineRight: "bg-gradient-to-l from-transparent to-blue-400",
         title: "px-4 text-2xl font-bold text-gray-800 dark:text-gray-200",
         content:
-            "bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700",
+            "bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700",
     },
 
     // フォーム要素のスタイル
     form: {
-        label: "block text-sm font-medium text-gray-700 dark:text-gray-300",
-        input: "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800 dark:text-gray-300",
+        label: "block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-1",
+        input: "mt-1 block w-full px-3 sm:px-4 py-2.5 sm:py-2 text-base sm:text-sm border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-300",
         textarea:
-            "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800 dark:text-gray-300",
+            "mt-1 block w-full px-3 sm:px-4 py-2.5 sm:py-2 text-base sm:text-sm min-h-[100px] border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-300",
     },
 };

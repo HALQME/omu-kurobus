@@ -1,0 +1,22 @@
+---
+import { styles } from "@/styles/style";
+
+export const prerender = true;
+---
+
+<footer>
+    <div class={styles.footer.container}>
+        <div class={styles.footer.content}>
+            <p>ハム大クロバス</p>
+        </div>
+        <div class={styles.footer.content}>
+            <p>
+                &copy; {new Date().getFullYear()} omu-kurobus.vercel.app All rights
+                reserved
+            </p>
+        </div>
+        <div class={styles.footer.content}>
+            <p>Powered by Astro</p>
+        </div>
+    </div>
+</footer>

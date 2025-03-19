@@ -4,6 +4,7 @@ import Head from "@/components/head.astro";
 import { ClientRouter, fade } from "astro:transitions";
 import Header from "@/components/header.astro";
 import { styles } from "@/styles/style";
+import Footer from "@/components/footer.astro";
 
 interface Props {
     title: string;
@@ -20,9 +21,10 @@ const props = Astro.props;
     >
         <div transition:animate={fade({ duration: "0.3s" })}></div>
         <Header />
-        <div class="max-w-4xl mx-auto px-4 py-6">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6 min-h-screen">
             <slot />
         </div>
+        <Footer />
     </body>
 </html>
 
