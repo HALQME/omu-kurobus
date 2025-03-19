@@ -48,7 +48,7 @@ export async function search(
     let andQuery = [];
 
     if (query.course) {
-        andQuery.push({ name: "'" + query.course });
+        andQuery.push({ name: query.course });
     }
     if (query.teacher) {
         andQuery.push({ teachers: "'" + query.teacher });
@@ -75,7 +75,9 @@ export async function search(
             semester: result.item.semester,
             period: result.item.period,
         }))
-        .filter((result) => result.score !== null);
+        .filter((result) => result.score !== null)
+        .filter((result) => result.score! <= 0.85)
+        .sort((a, b) => a.score! - b.score!);
 
     return parsedResults;
 }
