@@ -181,6 +181,7 @@ const matchScore = (score: number | undefined) => {
                 id="course-suggestions"
                 class={`${styles.suggestions} hidden`}
                 role="listbox"
+                aria-hidden="true"
             >
             </div>
         </div>
@@ -202,6 +203,7 @@ const matchScore = (score: number | undefined) => {
                 id="teacher-suggestions"
                 class={`${styles.suggestions} hidden`}
                 role="listbox"
+                aria-hidden="true"
             >
             </div>
         </div>
@@ -224,6 +226,7 @@ const matchScore = (score: number | undefined) => {
                     id="campus-suggestions"
                     class={`${styles.suggestions} hidden`}
                     role="listbox"
+                    aria-hidden="true"
                 >
                 </div>
             </div>
@@ -699,6 +702,7 @@ const matchScore = (score: number | undefined) => {
                 );
 
                 if (suggestions.length > 0) {
+                    suggestionsDiv.setAttribute("aria-hidden", "false");
                     suggestionsDiv.innerHTML = suggestions
                         .map((suggestion) => {
                             const score = suggestion.score || 0;
@@ -733,7 +737,9 @@ const matchScore = (score: number | undefined) => {
                 } else {
                     suggestionsDiv.innerHTML = "";
                     suggestionsDiv.classList.add("hidden");
+                    suggestionsDiv.setAttribute("aria-hidden", "true");
                 }
+                input.focus(); // Move focus back to the input
             }
 
             function selectSuggestion(inputId: string, suggestion: string) {
@@ -756,6 +762,7 @@ const matchScore = (score: number | undefined) => {
                 if (suggestionsDiv) {
                     suggestionsDiv.innerHTML = "";
                     suggestionsDiv.classList.add("hidden");
+                    suggestionsDiv.setAttribute("aria-hidden", "true");
                 }
             }
 

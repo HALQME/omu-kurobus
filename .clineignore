@@ -12,9 +12,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Cline
-/memory-bank/
-
 # environment variables
 .env
 .env.production
