@@ -38,7 +38,7 @@ export const GET: APIRoute = async ({ params }) => {
 
 const fetchData = async (year: string, semester: string) => {
     const res = await fetch(
-        `https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/${year}/${semester}/data.json`
+        `https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/${year}/${semester}/data.json`
     );
     return res.json() as unknown as Course[];
 };
