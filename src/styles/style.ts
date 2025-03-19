@@ -63,7 +63,8 @@ export const styles = {
     // ヘッダースタイル
     header: {
         header: "sticky top-0 z-50 py-0 bg-gradient-to-r from-blue-200 to-purple-100 dark:from-gray-800 dark:to-gray-900 text-white py-4 shadow-lg transition-colors duration-300",
-        container: "flex items-center justify-between h-16 px-4",
+        container:
+            "flex items-center justify-between h-16 mb:px-4 max-w-4xl mx-auto",
         title: "text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-700 dark:from-gray-100 dark:to-white",
     },
 
