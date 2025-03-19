@@ -5,12 +5,17 @@ import { styles } from "@/styles/style";
 const currentPath = Astro.url.pathname;
 ---
 
-<header class={styles.header.header}>
+<header role="banner" class={styles.header.header}>
     <div class={styles.header.container}>
         <div class="md:mb-0">
-            <h1 class={styles.header.title}>ハム大クロバス</h1>
+            <a href="/">
+                <h1 class={styles.header.title}>ハム大クロバス</h1>
+            </a>
         </div>
-        <nav class="flex gap-4 text-gray-600 dark:text-gray-200">
+        <nav
+            role="navigation"
+            class="flex gap-4 text-gray-600 dark:text-gray-200"
+        >
             <a
                 href="/"
                 class="relative group text-sm sm:text-base font-medium py-2 px-1"
