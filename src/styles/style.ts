@@ -124,6 +124,17 @@ export const styles = {
             "bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-xl shadow-lg p-5 sm:p-7 border border-slate-200/70 dark:border-slate-700/50 hover:border-blue-200/50 dark:hover:border-blue-700/30 transition-all duration-300",
     },
 
+    // チェックボックスグループ
+    checkboxGroup: {
+        container: "space-y-2",
+        item: "flex items-center min-h-[2rem] gap-2",
+        input: "w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-400/30 dark:border-gray-600 dark:bg-gray-700 dark:checked:bg-blue-500",
+        label: "text-sm font-medium text-gray-700 dark:text-gray-300",
+        other: "flex flex-wrap sm:flex-nowrap items-center min-h-[2rem] gap-2",
+        otherInput:
+            "w-[calc(100%-2.5rem)] sm:w-auto sm:flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-1 focus:ring-blue-400/30 dark:bg-gray-700 dark:text-gray-300",
+    },
+
     // フォーム要素のスタイル
     form: {
         label: "block text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300 mb-1.5 transition-colors duration-200",

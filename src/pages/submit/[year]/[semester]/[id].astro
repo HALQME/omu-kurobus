@@ -43,186 +43,541 @@ if (!id || !year || !semester) {
                         この情報は送信されません。学部・学科の情報のみ送信されます。
                     </small>
                 </div>
-                <section class="mb-4" aria-labelledby="evaluation-style">
-                    <div class="mb-4">
-                        <section class="mb-4" aria-labelledby="scoring">
-                            <h3
-                                id="scoring"
-                                class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200"
-                            >
-                                スコア評価
-                            </h3>
+                <div class="mb-4">
+                    <section class="mb-4" aria-labelledby="evaluation-style">
+                        <h3
+                            id="evaluation-style"
+                            class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200"
+                        >
+                            評価方法
+                        </h3>
+                        <div
+                            class="space-y-6 bg-white/50 dark:bg-gray-800/50 rounded-lg p-6 shadow-sm"
+                        >
+                            <!-- 講義・実習の実施形態 -->
                             <div
-                                class="space-y-6 bg-white/50 dark:bg-gray-800/50 rounded-lg p-6 shadow-sm"
+                                class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
                             >
-                                <div
-                                    class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
-                                >
-                                    <label class={styles.form.label}>
-                                        授業の難易度<span class="text-red-500"
-                                            >*</span
+                                <label class={styles.form.label}>
+                                    授業形態<span class="text-red-500">*</span>
+                                </label>
+                                <div class={styles.checkboxGroup.container}>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="courseType1"
+                                            name="courseType"
+                                            value="対面または実習"
+                                            class={styles.checkboxGroup.input}
+                                            required
+                                        />
+                                        <label
+                                            for="courseType1"
+                                            class={styles.checkboxGroup.label}
+                                            >対面・実習</label
                                         >
-                                    </label>
-                                    <div class={styles.form.slider.container}>
-                                        <div class={styles.form.slider.wrapper}>
-                                            <input
-                                                type="range"
-                                                name="classDifficulty"
-                                                min="1"
-                                                max="4"
-                                                value="2"
-                                                required
-                                                class={styles.form.slider.input}
-                                            />
-                                        </div>
-                                        <div class={styles.form.slider.labels}>
-                                            <span>難しい</span>
-                                            <span>簡単</span>
-                                        </div>
                                     </div>
-                                </div>
-                                <div
-                                    class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
-                                >
-                                    <label class={styles.form.label}>
-                                        テスト/レポートの難易度<span
-                                            class="text-red-500">*</span
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="courseType2"
+                                            name="courseType"
+                                            value="同期オンライン"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="courseType2"
+                                            class={styles.checkboxGroup.label}
+                                            >同期オンライン</label
                                         >
-                                    </label>
-                                    <div class={styles.form.slider.container}>
-                                        <div class={styles.form.slider.wrapper}>
-                                            <input
-                                                type="range"
-                                                name="testDifficulty"
-                                                min="1"
-                                                max="4"
-                                                value="2"
-                                                required
-                                                class={styles.form.slider.input}
-                                            />
-                                        </div>
-                                        <div class={styles.form.slider.labels}>
-                                            <span>難しい</span>
-                                            <span>簡単</span>
-                                        </div>
                                     </div>
-                                </div>
-                                <div
-                                    class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
-                                >
-                                    <label class={styles.form.label}>
-                                        テスト/レポートの量<span
-                                            class="text-red-500">*</span
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="courseType3"
+                                            name="courseType"
+                                            value="非同期オンライン"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="courseType3"
+                                            class={styles.checkboxGroup.label}
+                                            >非同期オンライン</label
                                         >
-                                    </label>
-                                    <div class={styles.form.slider.container}>
-                                        <div class={styles.form.slider.wrapper}>
-                                            <input
-                                                type="range"
-                                                name="testAmount"
-                                                min="1"
-                                                max="4"
-                                                value="2"
-                                                required
-                                                class={styles.form.slider.input}
-                                            />
-                                        </div>
-                                        <div class={styles.form.slider.labels}>
-                                            <span>多い</span>
-                                            <span>少ない</span>
-                                        </div>
                                     </div>
-                                </div>
-                                <div
-                                    class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
-                                >
-                                    <label class={styles.form.label}>
-                                        成績の評定基準<span class="text-red-500"
-                                            >*</span
+                                    <div class={styles.checkboxGroup.other}>
+                                        <input
+                                            type="checkbox"
+                                            id="courseTypeOther"
+                                            name="courseType"
+                                            value="その他"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="courseTypeOther"
+                                            class={styles.checkboxGroup.label}
+                                            >その他:</label
                                         >
-                                    </label>
-                                    <div class={styles.form.slider.container}>
-                                        <div class={styles.form.slider.wrapper}>
-                                            <input
-                                                type="range"
-                                                name="gradingCriteria"
-                                                min="1"
-                                                max="4"
-                                                value="2"
-                                                required
-                                                class={styles.form.slider.input}
-                                            />
-                                        </div>
-                                        <div class={styles.form.slider.labels}>
-                                            <span>厳しい</span>
-                                            <span>緩い</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div
-                                    class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
-                                >
-                                    <label class={styles.form.label}>
-                                        お勧め度<span class="text-red-500"
-                                            >*</span
-                                        >
-                                    </label>
-                                    <div class={styles.form.slider.container}>
-                                        <div class={styles.form.slider.wrapper}>
-                                            <input
-                                                type="range"
-                                                name="recommendation"
-                                                min="1"
-                                                max="4"
-                                                value="2"
-                                                required
-                                                class={styles.form.slider.input}
-                                            />
-                                        </div>
-                                        <div class={styles.form.slider.labels}>
-                                            <span>お勧めしない</span>
-                                            <span>お勧め</span>
-                                        </div>
+                                        <input
+                                            type="text"
+                                            id="courseTypeOtherText"
+                                            name="courseTypeOtherText"
+                                            class={styles.checkboxGroup
+                                                .otherInput}
+                                            placeholder="具体的に記入"
+                                        />
                                     </div>
                                 </div>
                             </div>
-                        </section>
-                        <section class="mb-4" aria-labelledby="comments">
-                            <div class="mb-4">
-                                <label for="goodPoint" class={styles.form.label}
-                                    >授業の良かったところ</label
-                                >
-                                <textarea
-                                    id="goodPoint"
-                                    name="goodPoint"
-                                    rows="3"
-                                    class={styles.form.textarea}></textarea>
+
+                            <!-- 評価基準 -->
+                            <div
+                                class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
+                            >
+                                <label class={styles.form.label}>
+                                    評価基準<span class="text-red-500">*</span>
+                                </label>
+                                <div class={styles.checkboxGroup.container}>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="evalCriteria1"
+                                            name="evalCriteria"
+                                            value="出席点"
+                                            class={styles.checkboxGroup.input}
+                                            required
+                                        />
+                                        <label
+                                            for="evalCriteria1"
+                                            class={styles.checkboxGroup.label}
+                                            >出席点</label
+                                        >
+                                    </div>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="evalCriteria2"
+                                            name="evalCriteria"
+                                            value="期末テスト"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="evalCriteria2"
+                                            class={styles.checkboxGroup.label}
+                                            >期末テスト</label
+                                        >
+                                    </div>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="evalCriteria3"
+                                            name="evalCriteria"
+                                            value="中間テスト"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="evalCriteria3"
+                                            class={styles.checkboxGroup.label}
+                                            >中間テスト</label
+                                        >
+                                    </div>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="evalCriteria4"
+                                            name="evalCriteria"
+                                            value="期末レポート"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="evalCriteria4"
+                                            class={styles.checkboxGroup.label}
+                                            >期末レポート</label
+                                        >
+                                    </div>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="evalCriteria5"
+                                            name="evalCriteria"
+                                            value="中間レポート"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="evalCriteria5"
+                                            class={styles.checkboxGroup.label}
+                                            >中間レポート</label
+                                        >
+                                    </div>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="evalCriteria6"
+                                            name="evalCriteria"
+                                            value="毎回の課題"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="evalCriteria6"
+                                            class={styles.checkboxGroup.label}
+                                            >毎回の課題</label
+                                        >
+                                    </div>
+                                    <div class={styles.checkboxGroup.other}>
+                                        <input
+                                            type="checkbox"
+                                            id="evalCriteriaOther"
+                                            name="evalCriteria"
+                                            value="その他"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="evalCriteriaOther"
+                                            class={styles.checkboxGroup.label}
+                                            >その他:</label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="evalCriteriaOtherText"
+                                            name="evalCriteriaOtherText"
+                                            class={styles.checkboxGroup
+                                                .otherInput}
+                                            placeholder="具体的に記入"
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mb-4">
-                                <label
-                                    for="notGoodPoint"
-                                    class={styles.form.label}
-                                    >授業の良くなかったところ</label
-                                >
-                                <textarea
-                                    id="notGoodPoint"
-                                    name="notGoodPoint"
-                                    rows="3"
-                                    class={styles.form.textarea}></textarea>
+
+                            <!-- テストの実施形態 -->
+                            <div
+                                class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
+                            >
+                                <label class={styles.form.label}>
+                                    テストの実施形態
+                                </label>
+                                <div class={styles.checkboxGroup.container}>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="radio"
+                                            id="testType1"
+                                            name="testType"
+                                            value="対面"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="testType1"
+                                            class={styles.checkboxGroup.label}
+                                            >対面</label
+                                        >
+                                    </div>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="radio"
+                                            id="testType2"
+                                            name="testType"
+                                            value="遠隔"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="testType2"
+                                            class={styles.checkboxGroup.label}
+                                            >遠隔</label
+                                        >
+                                    </div>
+                                    <div class={styles.checkboxGroup.other}>
+                                        <input
+                                            type="radio"
+                                            id="testTypeOther"
+                                            name="testType"
+                                            value="その他"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="testTypeOther"
+                                            class={styles.checkboxGroup.label}
+                                            >その他:</label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="testTypeOtherText"
+                                            name="testTypeOtherText"
+                                            class={styles.checkboxGroup
+                                                .otherInput}
+                                            placeholder="具体的に記入"
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mb-4">
-                                <label for="comment" class={styles.form.label}
-                                    >その他</label
-                                >
-                                <textarea
-                                    id="comment"
-                                    name="comment"
-                                    rows="3"
-                                    class={styles.form.textarea}></textarea>
+
+                            <!-- テスト持ち込み -->
+                            <div
+                                class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
+                            >
+                                <label class={styles.form.label}>
+                                    テスト持ち込み
+                                </label>
+                                <div class={styles.checkboxGroup.container}>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="testItems1"
+                                            name="testItems"
+                                            value="持ち込み無し"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="testItems1"
+                                            class={styles.checkboxGroup.label}
+                                            >持ち込み無し</label
+                                        >
+                                    </div>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="testItems2"
+                                            name="testItems"
+                                            value="レジュメ"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="testItems2"
+                                            class={styles.checkboxGroup.label}
+                                            >レジュメ</label
+                                        >
+                                    </div>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="testItems3"
+                                            name="testItems"
+                                            value="自筆ノート"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="testItems3"
+                                            class={styles.checkboxGroup.label}
+                                            >自筆ノート</label
+                                        >
+                                    </div>
+                                    <div class={styles.checkboxGroup.item}>
+                                        <input
+                                            type="checkbox"
+                                            id="testItems4"
+                                            name="testItems"
+                                            value="教科書"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="testItems4"
+                                            class={styles.checkboxGroup.label}
+                                            >教科書</label
+                                        >
+                                    </div>
+                                    <div class={styles.checkboxGroup.other}>
+                                        <input
+                                            type="checkbox"
+                                            id="testItemsOther"
+                                            name="testItems"
+                                            value="その他"
+                                            class={styles.checkboxGroup.input}
+                                        />
+                                        <label
+                                            for="testItemsOther"
+                                            class={styles.checkboxGroup.label}
+                                            >その他:</label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="testItemsOtherText"
+                                            name="testItemsOtherText"
+                                            class={styles.checkboxGroup
+                                                .otherInput}
+                                            placeholder="具体的に記入"
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                        </section>
-                    </div>
-                </section>
+                        </div>
+                    </section>
+                    <section class="mb-4" aria-labelledby="scoring">
+                        <h3
+                            id="scoring"
+                            class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200"
+                        >
+                            レビュー
+                        </h3>
+                        <div
+                            class="space-y-6 bg-white/50 dark:bg-gray-800/50 rounded-lg p-6 shadow-sm"
+                        >
+                            <div
+                                class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
+                            >
+                                <label class={styles.form.label}>
+                                    授業の難易度<span class="text-red-500"
+                                        >*</span
+                                    >
+                                </label>
+                                <div class={styles.form.slider.container}>
+                                    <div class={styles.form.slider.wrapper}>
+                                        <input
+                                            type="range"
+                                            name="classDifficulty"
+                                            min="1"
+                                            max="4"
+                                            value="2"
+                                            required
+                                            class={styles.form.slider.input}
+                                        />
+                                    </div>
+                                    <div class={styles.form.slider.labels}>
+                                        <span>難しい</span>
+                                        <span>簡単</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
+                            >
+                                <label class={styles.form.label}>
+                                    テスト/レポートの難易度<span
+                                        class="text-red-500">*</span
+                                    >
+                                </label>
+                                <div class={styles.form.slider.container}>
+                                    <div class={styles.form.slider.wrapper}>
+                                        <input
+                                            type="range"
+                                            name="testDifficulty"
+                                            min="1"
+                                            max="4"
+                                            value="2"
+                                            required
+                                            class={styles.form.slider.input}
+                                        />
+                                    </div>
+                                    <div class={styles.form.slider.labels}>
+                                        <span>難しい</span>
+                                        <span>簡単</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
+                            >
+                                <label class={styles.form.label}>
+                                    テスト/レポートの量<span
+                                        class="text-red-500">*</span
+                                    >
+                                </label>
+                                <div class={styles.form.slider.container}>
+                                    <div class={styles.form.slider.wrapper}>
+                                        <input
+                                            type="range"
+                                            name="testAmount"
+                                            min="1"
+                                            max="4"
+                                            value="2"
+                                            required
+                                            class={styles.form.slider.input}
+                                        />
+                                    </div>
+                                    <div class={styles.form.slider.labels}>
+                                        <span>多い</span>
+                                        <span>少ない</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
+                            >
+                                <label class={styles.form.label}>
+                                    成績の評定基準<span class="text-red-500"
+                                        >*</span
+                                    >
+                                </label>
+                                <div class={styles.form.slider.container}>
+                                    <div class={styles.form.slider.wrapper}>
+                                        <input
+                                            type="range"
+                                            name="gradingCriteria"
+                                            min="1"
+                                            max="4"
+                                            value="2"
+                                            required
+                                            class={styles.form.slider.input}
+                                        />
+                                    </div>
+                                    <div class={styles.form.slider.labels}>
+                                        <span>厳しい</span>
+                                        <span>緩い</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700"
+                            >
+                                <label class={styles.form.label}>
+                                    お勧め度<span class="text-red-500">*</span>
+                                </label>
+                                <div class={styles.form.slider.container}>
+                                    <div class={styles.form.slider.wrapper}>
+                                        <input
+                                            type="range"
+                                            name="recommendation"
+                                            min="1"
+                                            max="4"
+                                            value="2"
+                                            required
+                                            class={styles.form.slider.input}
+                                        />
+                                    </div>
+                                    <div class={styles.form.slider.labels}>
+                                        <span>お勧めしない</span>
+                                        <span>お勧め</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-4" aria-labelledby="comments">
+                        <h3
+                            id="scoring"
+                            class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200"
+                        >
+                            感想
+                        </h3>
+                        <div class="mb-4">
+                            <label for="goodPoint" class={styles.form.label}
+                                >授業の良かったところ</label
+                            >
+                            <textarea
+                                id="goodPoint"
+                                name="goodPoint"
+                                rows="3"
+                                class={styles.form.textarea}></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label for="notGoodPoint" class={styles.form.label}
+                                >授業の良くなかったところ</label
+                            >
+                            <textarea
+                                id="notGoodPoint"
+                                name="notGoodPoint"
+                                rows="3"
+                                class={styles.form.textarea}></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label for="comment" class={styles.form.label}
+                                >その他</label
+                            >
+                            <textarea
+                                id="comment"
+                                name="comment"
+                                rows="3"
+                                class={styles.form.textarea}></textarea>
+                        </div>
+                    </section>
+                </div>
                 <div class="flex justify-center mt-6">
                     <button type="submit" class={styles.button.primary}>
                         投稿する
@@ -249,4 +604,117 @@ if (!id || !year || !semester) {
             valueDisplay.textContent = slider.value;
         });
     });
+
+    // その他オプションの入力フィールド制御
+    const handleOtherOption = (checkboxId: string, inputId: string) => {
+        const checkbox = document.getElementById(
+            checkboxId
+        ) as HTMLInputElement;
+        const input = document.getElementById(inputId) as HTMLInputElement;
+
+        if (!checkbox || !input) return;
+
+        // 初期状態の設定
+        input.disabled = !checkbox.checked;
+        if (!checkbox.checked) {
+            input.value = "";
+        }
+
+        // チェックボックスの状態変更時の処理
+        checkbox.addEventListener("change", () => {
+            input.disabled = !checkbox.checked;
+            if (!checkbox.checked) {
+                input.value = "";
+            }
+        });
+    };
+
+    // フォーム送信時の処理
+    const form = document.querySelector("form");
+    if (form) {
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            // チェックボックスグループの検証
+            const courseType = document.querySelectorAll(
+                'input[name="courseType"]:checked'
+            );
+            const evalCriteria = document.querySelectorAll(
+                'input[name="evalCriteria"]:checked'
+            );
+
+            if (courseType.length === 0) {
+                alert("授業形態を1つ以上選択してください");
+                return;
+            }
+
+            if (evalCriteria.length === 0) {
+                alert("評価基準を1つ以上選択してください");
+                return;
+            }
+
+            // テスト持ち込みの検証
+            const noItems = document.getElementById(
+                "testItems1"
+            ) as HTMLInputElement;
+            const otherItems = document.querySelectorAll(
+                'input[name="testItems"]:not(#testItems1):checked'
+            );
+
+            if (noItems?.checked && otherItems.length > 0) {
+                alert("持ち込み無しと他の持ち込み項目は同時に選択できません");
+                return;
+            }
+
+            // フォーム送信
+            form.submit();
+        });
+    }
+
+    // テスト持ち込み「持ち込み無し」の処理
+    const noItemsCheckbox = document.getElementById(
+        "testItems1"
+    ) as HTMLInputElement;
+    const otherItemsCheckboxes = document.querySelectorAll(
+        'input[name="testItems"]:not(#testItems1)'
+    );
+
+    if (noItemsCheckbox) {
+        noItemsCheckbox.addEventListener("change", () => {
+            otherItemsCheckboxes.forEach((checkbox) => {
+                if (checkbox instanceof HTMLInputElement) {
+                    checkbox.disabled = noItemsCheckbox.checked;
+                    if (noItemsCheckbox.checked) {
+                        checkbox.checked = false;
+                        // その他のテキストフィールドもリセット
+                        if (checkbox.id === "testItemsOther") {
+                            const otherInput =
+                                document.getElementById("testItemsOtherText");
+                            if (otherInput instanceof HTMLInputElement) {
+                                otherInput.value = "";
+                                otherInput.disabled = true;
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // 他のチェックボックスが選択された時の処理
+        otherItemsCheckboxes.forEach((checkbox) => {
+            if (checkbox instanceof HTMLInputElement) {
+                checkbox.addEventListener("change", () => {
+                    if (checkbox.checked) {
+                        noItemsCheckbox.checked = false;
+                    }
+                });
+            }
+        });
+    }
+
+    // その他オプションの初期化
+    handleOtherOption("courseTypeOther", "courseTypeOtherText");
+    handleOtherOption("evalCriteriaOther", "evalCriteriaOtherText");
+    handleOtherOption("testTypeOther", "testTypeOtherText");
+    handleOtherOption("testItemsOther", "testItemsOtherText");
 </script>
