@@ -3,7 +3,6 @@ import { type Course, type CourseEmbed } from "@/types/schema";
 import { PATH_PAIRS } from "@/utils/const";
 import fetch from "node-fetch";
 import MockData from "test/_embed_data.json";
-export const prerender = true;
 
 export function getStaticPaths() {
     const availableYears = PATH_PAIRS();
