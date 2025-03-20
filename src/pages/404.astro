@@ -1,9 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import Layout from "../layouts/layout.astro";
-export const prerender = true;
-const image404 =
-    "https://raw.githubusercontent.com/SAWARATSUKI/KawaiiLogos/refs/heads/main/ResponseCode/404%20NotFound.png";
+import image404 from "@/src/assets/404 NotFound.png";
 ---
 
 <Layout
@@ -15,9 +13,7 @@ const image404 =
         alt="404 Not Found"
         class="w-full select-none"
         loading="eager"
-        sizes="(max-width: 600px) 100vw, 600px"
-        width={600}
-        height={400}
+        widths={[480, 640, 960, 1280, 1920]}
     />
 
     <p class="text-center text-gray-600 dark:text-gray-400 mt-4">

@@ -1,0 +1,77 @@
+---
+import type { SearchResult } from "@/types/schema";
+import { styles } from "@/styles/style";
+interface Props {
+    target: "search" | "submit";
+    year: string;
+    semester: string;
+    result: SearchResult;
+}
+const { target, year, semester, result } = Astro.props;
+
+const matchScore = (score: number | undefined) => {
+    return (Math.round((1 - (score ?? 1)) * 10000) / 100).toFixed(2);
+};
+
+const truncateTeacherName = (name: string, maxLength: number = 15) => {
+    return name && name.length > maxLength
+        ? `${name.substring(0, maxLength)}...`
+        : name;
+};
+---
+
+<div
+    class="mb-2 border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+>
+    <span class="hidden">
+        {matchScore(result.score)}
+        %
+    </span>
+    <div class="flex justify-between items-start mb-1">
+        <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">
+            {result.name}
+        </h4>
+        <span
+            class="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded"
+        >
+            {result.id || "コード不明"}
+        </span>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1 text-sm">
+        <div class="flex">
+            <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                教員:
+            </span>
+            <span
+                class="text-gray-600 dark:text-gray-300"
+                title={result.teachers || ""}
+            >
+                {truncateTeacherName(result.teachers, 12) || "記載なし"}
+            </span>
+        </div>
+        <div class="flex">
+            <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                キャンパス:
+            </span>
+            <span class="text-gray-600 dark:text-gray-300">
+                {result.campus || "記載なし"}
+            </span>
+        </div>
+        <div class="flex">
+            <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                時限:
+            </span>
+            <span class="text-gray-600 dark:text-gray-300">
+                {result.period || "記載なし"}
+            </span>
+        </div>
+        <div class="flex">
+            <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
+                年度・学期:
+            </span>
+            <span class="text-gray-600 dark:text-gray-300">
+                {result.semester || "記載なし"}
+            </span>
+        </div>
+    </div>
+</div>

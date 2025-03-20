@@ -1,4 +1,6 @@
 ---
+import Result from "@/components/result.astro";
+import ResultMaybe from "@/components/result-maybe.astro";
 import type { Course, SearchResult } from "@/types/schema";
 import { styles } from "@/styles/style";
 interface Props {
@@ -121,10 +123,6 @@ if (Astro.request.method === "POST") {
         }
     }
 }
-
-const matchScore = (score: number | undefined) => {
-    return (Math.round((1 - (score ?? 1)) * 10000) / 100).toFixed(2);
-};
 ---
 
 <astro-search-from data-target={target}>
@@ -368,16 +366,6 @@ const matchScore = (score: number | undefined) => {
                     <div class="animate-fadeIn">
                         {/* 検索結果を一致度で分類 */}
                         {(() => {
-                            // 教員名を省略する関数
-                            const truncateTeacherName = (
-                                name: string,
-                                maxLength: number = 15
-                            ) => {
-                                return name && name.length > maxLength
-                                    ? `${name.substring(0, maxLength)}...`
-                                    : name;
-                            };
-
                             // スコアによって検索結果を分類
                             const highMatchResults = searchResults.filter(
                                 (r) => !r.score || r.score < 0.42
@@ -391,7 +379,7 @@ const matchScore = (score: number | undefined) => {
                                     <h2 class={styles.sectionHeading}>
                                         <span class="mr-3">検索結果:</span>
                                         <span class={styles.badge}>
-                                            {searchResults.length}件
+                                            {highMatchResults.length}件
                                         </span>
                                     </h2>
 
@@ -399,131 +387,12 @@ const matchScore = (score: number | undefined) => {
                                     {highMatchResults.length > 0 && (
                                         <div class="space-y-3 mb-5">
                                             {highMatchResults.map((result) => (
-                                                <div
-                                                    class={
-                                                        styles.card.container
-                                                    }
-                                                >
-                                                    <span class="hidden">
-                                                        {matchScore(
-                                                            result.score
-                                                        )}
-                                                        %
-                                                    </span>
-                                                    <div class="flex justify-between items-start mb-2">
-                                                        <h3
-                                                            class={
-                                                                styles.card
-                                                                    .title
-                                                            }
-                                                        >
-                                                            {result.name}
-                                                        </h3>
-                                                        <span class="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
-                                                            {result.id ||
-                                                                "コード不明"}
-                                                        </span>
-                                                    </div>
-                                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                                                        <div class="flex">
-                                                            <span
-                                                                class={
-                                                                    styles.card
-                                                                        .label
-                                                                }
-                                                            >
-                                                                教員:
-                                                            </span>
-                                                            <span
-                                                                class={
-                                                                    styles.card
-                                                                        .value
-                                                                }
-                                                                title={
-                                                                    result.teachers ||
-                                                                    ""
-                                                                }
-                                                            >
-                                                                {truncateTeacherName(
-                                                                    result.teachers
-                                                                ) || "記載なし"}
-                                                            </span>
-                                                        </div>
-                                                        <div class="flex">
-                                                            <span
-                                                                class={
-                                                                    styles.card
-                                                                        .label
-                                                                }
-                                                            >
-                                                                キャンパス:
-                                                            </span>
-                                                            <span
-                                                                class={
-                                                                    styles.card
-                                                                        .value
-                                                                }
-                                                            >
-                                                                {result.campus ||
-                                                                    "記載なし"}
-                                                            </span>
-                                                        </div>
-                                                        <div class="flex">
-                                                            <span
-                                                                class={
-                                                                    styles.card
-                                                                        .label
-                                                                }
-                                                            >
-                                                                時限:
-                                                            </span>
-                                                            <span
-                                                                class={
-                                                                    styles.card
-                                                                        .value
-                                                                }
-                                                            >
-                                                                {result.period ||
-                                                                    "記載なし"}
-                                                            </span>
-                                                        </div>
-                                                        <div class="flex">
-                                                            <span
-                                                                class={
-                                                                    styles.card
-                                                                        .label
-                                                                }
-                                                            >
-                                                                年度・学期:
-                                                            </span>
-                                                            <span
-                                                                class={
-                                                                    styles.card
-                                                                        .value
-                                                                }
-                                                            >
-                                                                {result.semester ||
-                                                                    "記載なし"}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <a
-                                                        href={
-                                                            target +
-                                                            "/" +
-                                                            year +
-                                                            "/" +
-                                                            semester +
-                                                            "/" +
-                                                            result.code
-                                                        }
-                                                        class="mt-3 block w-full text-center px-4 py-2 outline outline-blue-500 dark:outline-blue-700 rounded hover:bg-blue-600/20 dark:hover:bg-blue-800/20 transition-colors"
-                                                    >
-                                                        {target === "search"
-                                                            ? "詳細を見る"
-                                                            : "投稿する"}
-                                                    </a>
-                                                </div>
+                                                <Result
+                                                    target={target}
+                                                    year={year!}
+                                                    semester={semester!}
+                                                    result={result}
+                                                />
                                             ))}
                                         </div>
                                     )}
@@ -537,72 +406,12 @@ const matchScore = (score: number | undefined) => {
                                             <div class="space-y-2">
                                                 {lowMatchResults.map(
                                                     (result) => (
-                                                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-                                                            <span class="hidden">
-                                                                {matchScore(
-                                                                    result.score
-                                                                )}
-                                                                %
-                                                            </span>
-                                                            <div class="flex justify-between items-start mb-1">
-                                                                <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">
-                                                                    {
-                                                                        result.name
-                                                                    }
-                                                                </h4>
-                                                                <span class="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
-                                                                    {result.id ||
-                                                                        "コード不明"}
-                                                                </span>
-                                                            </div>
-                                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1 text-sm">
-                                                                <div class="flex">
-                                                                    <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
-                                                                        教員:
-                                                                    </span>
-                                                                    <span
-                                                                        class="text-gray-600 dark:text-gray-300"
-                                                                        title={
-                                                                            result.teachers ||
-                                                                            ""
-                                                                        }
-                                                                    >
-                                                                        {truncateTeacherName(
-                                                                            result.teachers,
-                                                                            12
-                                                                        ) ||
-                                                                            "記載なし"}
-                                                                    </span>
-                                                                </div>
-                                                                <div class="flex">
-                                                                    <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
-                                                                        キャンパス:
-                                                                    </span>
-                                                                    <span class="text-gray-600 dark:text-gray-300">
-                                                                        {result.campus ||
-                                                                            "記載なし"}
-                                                                    </span>
-                                                                </div>
-                                                                <div class="flex">
-                                                                    <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
-                                                                        時限:
-                                                                    </span>
-                                                                    <span class="text-gray-600 dark:text-gray-300">
-                                                                        {result.period ||
-                                                                            "記載なし"}
-                                                                    </span>
-                                                                </div>
-                                                                <div class="flex">
-                                                                    <span class="w-20 font-medium text-gray-500 dark:text-gray-400">
-                                                                        年度・学期:
-                                                                    </span>
-                                                                    <span class="text-gray-600 dark:text-gray-300">
-                                                                        {result.semester ||
-                                                                            "記載なし"}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        <ResultMaybe
+                                                            target={target}
+                                                            year={year!}
+                                                            semester={semester!}
+                                                            result={result}
+                                                        />
                                                     )
                                                 )}
                                             </div>

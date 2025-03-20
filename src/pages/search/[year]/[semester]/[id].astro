@@ -1,6 +1,7 @@
 ---
 import Layout from "@/src/layouts/layout.astro";
 import { styles } from "@/styles/style";
+export const prerender = false;
 
 const courseId = Astro.params.id;
 if (!courseId) {

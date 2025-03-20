@@ -1,28 +1,12 @@
 ---
+export const prerender = false;
 import Layout from "@/src/layouts/layout.astro";
 import { styles } from "@/styles/style";
-import type { Course } from "@/types/schema";
-import * as store from "@/utils/store";
+import CourseInfo from "@/src/components/course-info.astro";
 
 const { year, semester, id } = Astro.params;
 if (!id || !year || !semester) {
     return Astro.redirect("/404");
-}
-
-let course: Course | null = store.getCourse(id);
-
-if (!course) {
-    const courseUrl = new URL(
-        `https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/${year}/${semester}/data.json`
-    );
-
-    const courseData: Course[] = await fetch(courseUrl).then((res) =>
-        res.json()
-    );
-    course = courseData.find((c: Course) => c.id === id) ?? null;
-    if (!course) {
-        return Astro.redirect("/404");
-    }
 }
 ---
 
@@ -40,13 +24,7 @@ if (!course) {
             </div>
         </div>
         <div class={styles.section.content}>
-            <p class="text-gray-500 dark:text-gray-400 mb-0">
-                {course.campus} - {course.semester} / {course.period}
-            </p>
-            <h3 class="text-lg mb-0.5">{course.name}</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                {course.teachers}
-            </p>
+            <CourseInfo id={id} />
             <form action="/api/submit" method="post">
                 <div class="mb-4">
                     <label for="name" class={styles.form.label}>名前</label>
