@@ -148,5 +148,9 @@ export const styles = {
             value: "absolute -top-7 left-1/2 transform -translate-x-1/2 px-2.5 py-1 bg-blue-500 text-white text-sm rounded-md shadow-md transition-all duration-200",
             labels: "flex justify-between text-sm text-slate-600 dark:text-slate-400 mt-1.5",
         },
+        group: {
+            container:
+                "p-4 bg-white mb-2 sm:mb-4 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700",
+        },
     },
 };
