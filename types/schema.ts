@@ -63,7 +63,7 @@ const sliderSchema = z.number().int().min(1).max(4);
 const otherTextSchema = z.string().max(100).optional();
 
 // 授業形態の選択肢
-const courseTypes = [
+export const courseTypes = [
     "対面または実習",
     "同期オンライン",
     "非同期オンライン",
@@ -71,7 +71,7 @@ const courseTypes = [
 ] as const;
 
 // 評価基準の選択肢
-const evalCriteriaTypes = [
+export const evalCriteriaTypes = [
     "出席点",
     "期末テスト",
     "中間テスト",
@@ -81,8 +81,10 @@ const evalCriteriaTypes = [
     "その他",
 ] as const;
 
+export const testTypes = ["対面", "遠隔", "その他"] as const;
+
 // テスト持ち込みの選択肢
-const testItemTypes = [
+export const testItemTypes = [
     "持ち込み無し",
     "レジュメ",
     "自筆ノート",
@@ -96,15 +98,15 @@ export const ReviewFormSchema = z.object({
     student_department: z.string().regex(/^[A-Z]{3}$/),
 
     // 授業形態（複数選択）
-    courseType: z.array(z.enum(courseTypes)).min(1),
+    courseType: z.array(z.enum(courseTypes).optional()),
     courseTypeOtherText: otherTextSchema,
 
     // 評価基準（複数選択）
-    evalCriteria: z.array(z.enum(evalCriteriaTypes)).min(1),
+    evalCriteria: z.array(z.enum(evalCriteriaTypes).optional()),
     evalCriteriaOtherText: otherTextSchema,
 
     // テストの実施形態
-    testType: z.enum(["対面", "遠隔", "その他"]).optional(),
+    testType: z.enum(testTypes).optional(),
     testTypeOtherText: otherTextSchema,
 
     // テスト持ち込み
@@ -118,7 +120,7 @@ export const ReviewFormSchema = z.object({
     gradingCriteria: sliderSchema,
     recommendation: sliderSchema,
 
-    // コメント
+    // コメント（必須）
     goodPoint: z.string().max(1000).optional(),
     notGoodPoint: z.string().max(1000).optional(),
     comment: z.string().max(1000).optional(),

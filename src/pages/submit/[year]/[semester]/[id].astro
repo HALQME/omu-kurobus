@@ -3,10 +3,76 @@ export const prerender = false;
 import Layout from "@/src/layouts/layout.astro";
 import { styles } from "@/styles/style";
 import CourseInfo from "@/src/components/course-info.astro";
+import {
+    ReviewFormSchema,
+    courseTypes,
+    evalCriteriaTypes,
+    testItemTypes,
+} from "@/types/schema";
+import type { ReviewForm, testTypes } from "@/types/schema";
 
 const { year, semester, id } = Astro.params;
 if (!id || !year || !semester) {
     return Astro.redirect("/404");
+}
+
+// フォーム送信処理
+if (Astro.request.method === "POST") {
+    try {
+        const data = await Astro.request.formData();
+        const formData: ReviewForm = {
+            course_id: id,
+            student_department:
+                data.get("studentNumber")?.toString().substring(0, 3) || "",
+            courseType: data
+                .getAll("courseType")
+                .map((value) => String(value)) as Array<
+                (typeof courseTypes)[number]
+            >,
+            courseTypeOtherText:
+                (data.get("courseTypeOtherText") as string) || undefined,
+            evalCriteria: data
+                .getAll("evalCriteria")
+                .map((value) => String(value)) as Array<
+                (typeof evalCriteriaTypes)[number]
+            >,
+            evalCriteriaOtherText:
+                (data.get("evalCriteriaOtherText") as string) || undefined,
+            testType:
+                (data.get("testType") as (typeof testTypes)[number]) ||
+                undefined,
+            testTypeOtherText:
+                (data.get("testTypeOtherText") as string) || undefined,
+            testItems: data.has("testItems")
+                ? (data
+                      .getAll("testItems")
+                      .map((value) => String(value)) as any as Array<
+                      (typeof testItemTypes)[number]
+                  >)
+                : undefined,
+            testItemsOtherText:
+                (data.get("testItemsOtherText") as string) || undefined,
+            classDifficulty: parseInt(data.get("classDifficulty") as string),
+            testDifficulty: parseInt(data.get("testDifficulty") as string),
+            testAmount: parseInt(data.get("testAmount") as string),
+            gradingCriteria: parseInt(data.get("gradingCriteria") as string),
+            recommendation: parseInt(data.get("recommendation") as string),
+            goodPoint: (data.get("goodPoint") as string) || undefined,
+            notGoodPoint: (data.get("notGoodPoint") as string) || undefined,
+            comment: (data.get("comment") as string) || undefined,
+        };
+
+        // Validate the form data with Zod
+        const result = ReviewFormSchema.safeParse(formData);
+
+        if (result.success) {
+            console.log("Form submitted successfully:", result.data);
+        } else {
+            console.error("Form validation failed:", result.error);
+        }
+    } catch (error) {
+        console.error("Error processing form:", error);
+    }
 }
 ---
 
@@ -40,7 +106,7 @@ if (!id || !year || !semester) {
                         required
                     />
                     <small>
-                        この情報は送信されません。学部・学科の情報のみ送信されます。
+                        この情報はデータベースに登録されません。学部・学科の情報の確認に使用されます。
                     </small>
                 </div>
                 <div class="mb-4">
@@ -65,7 +131,6 @@ if (!id || !year || !semester) {
                                         name="courseType"
                                         value="対面または実習"
                                         class={styles.checkboxGroup.input}
-                                        required
                                     />
                                     <label
                                         for="courseType1"
@@ -129,112 +194,112 @@ if (!id || !year || !semester) {
                             <label class={styles.form.label}>
                                 評価基準<span class="text-red-500">*</span>
                             </label>
-
-                            <div class={styles.checkboxGroup.item}>
-                                <input
-                                    type="checkbox"
-                                    id="evalCriteria1"
-                                    name="evalCriteria"
-                                    value="出席点"
-                                    class={styles.checkboxGroup.input}
-                                    required
-                                />
-                                <label
-                                    for="evalCriteria1"
-                                    class={styles.checkboxGroup.label}
-                                    >出席点</label
-                                >
-                            </div>
-                            <div class={styles.checkboxGroup.item}>
-                                <input
-                                    type="checkbox"
-                                    id="evalCriteria2"
-                                    name="evalCriteria"
-                                    value="期末テスト"
-                                    class={styles.checkboxGroup.input}
-                                />
-                                <label
-                                    for="evalCriteria2"
-                                    class={styles.checkboxGroup.label}
-                                    >期末テスト</label
-                                >
-                            </div>
-                            <div class={styles.checkboxGroup.item}>
-                                <input
-                                    type="checkbox"
-                                    id="evalCriteria3"
-                                    name="evalCriteria"
-                                    value="中間テスト"
-                                    class={styles.checkboxGroup.input}
-                                />
-                                <label
-                                    for="evalCriteria3"
-                                    class={styles.checkboxGroup.label}
-                                    >中間テスト</label
-                                >
-                            </div>
-                            <div class={styles.checkboxGroup.item}>
-                                <input
-                                    type="checkbox"
-                                    id="evalCriteria4"
-                                    name="evalCriteria"
-                                    value="期末レポート"
-                                    class={styles.checkboxGroup.input}
-                                />
-                                <label
-                                    for="evalCriteria4"
-                                    class={styles.checkboxGroup.label}
-                                    >期末レポート</label
-                                >
-                            </div>
-                            <div class={styles.checkboxGroup.item}>
-                                <input
-                                    type="checkbox"
-                                    id="evalCriteria5"
-                                    name="evalCriteria"
-                                    value="中間レポート"
-                                    class={styles.checkboxGroup.input}
-                                />
-                                <label
-                                    for="evalCriteria5"
-                                    class={styles.checkboxGroup.label}
-                                    >中間レポート</label
-                                >
-                            </div>
-                            <div class={styles.checkboxGroup.item}>
-                                <input
-                                    type="checkbox"
-                                    id="evalCriteria6"
-                                    name="evalCriteria"
-                                    value="毎回の課題"
-                                    class={styles.checkboxGroup.input}
-                                />
-                                <label
-                                    for="evalCriteria6"
-                                    class={styles.checkboxGroup.label}
-                                    >毎回の課題</label
-                                >
-                            </div>
-                            <div class={styles.checkboxGroup.other}>
-                                <input
-                                    type="checkbox"
-                                    id="evalCriteriaOther"
-                                    name="evalCriteria"
-                                    value="その他"
-                                    class={styles.checkboxGroup.input}
-                                />
-                                <label
-                                    for="evalCriteriaOther"
-                                    class={styles.checkboxGroup.label}
-                                    >その他:</label
-                                >
-                                <input
-                                    type="text"
-                                    id="evalCriteriaOtherText"
-                                    name="evalCriteriaOtherText"
-                                    class={styles.checkboxGroup.otherInput}
-                                    placeholder="具体的に記入"
-                                />
+                            <div class={styles.checkboxGroup.container}>
+                                <div class={styles.checkboxGroup.item}>
+                                    <input
+                                        type="checkbox"
+                                        id="evalCriteria1"
+                                        name="evalCriteria"
+                                        value="出席点"
+                                        class={styles.checkboxGroup.input}
+                                    />
+                                    <label
+                                        for="evalCriteria1"
+                                        class={styles.checkboxGroup.label}
+                                        >出席点</label
+                                    >
+                                </div>
+                                <div class={styles.checkboxGroup.item}>
+                                    <input
+                                        type="checkbox"
+                                        id="evalCriteria2"
+                                        name="evalCriteria"
+                                        value="期末テスト"
+                                        class={styles.checkboxGroup.input}
+                                    />
+                                    <label
+                                        for="evalCriteria2"
+                                        class={styles.checkboxGroup.label}
+                                        >期末テスト</label
+                                    >
+                                </div>
+                                <div class={styles.checkboxGroup.item}>
+                                    <input
+                                        type="checkbox"
+                                        id="evalCriteria3"
+                                        name="evalCriteria"
+                                        value="中間テスト"
+                                        class={styles.checkboxGroup.input}
+                                    />
+                                    <label
+                                        for="evalCriteria3"
+                                        class={styles.checkboxGroup.label}
+                                        >中間テスト</label
+                                    >
+                                </div>
+                                <div class={styles.checkboxGroup.item}>
+                                    <input
+                                        type="checkbox"
+                                        id="evalCriteria4"
+                                        name="evalCriteria"
+                                        value="期末レポート"
+                                        class={styles.checkboxGroup.input}
+                                    />
+                                    <label
+                                        for="evalCriteria4"
+                                        class={styles.checkboxGroup.label}
+                                        >期末レポート</label
+                                    >
+                                </div>
+                                <div class={styles.checkboxGroup.item}>
+                                    <input
+                                        type="checkbox"
+                                        id="evalCriteria5"
+                                        name="evalCriteria"
+                                        value="中間レポート"
+                                        class={styles.checkboxGroup.input}
+                                    />
+                                    <label
+                                        for="evalCriteria5"
+                                        class={styles.checkboxGroup.label}
+                                        >中間レポート</label
+                                    >
+                                </div>
+                                <div class={styles.checkboxGroup.item}>
+                                    <input
+                                        type="checkbox"
+                                        id="evalCriteria6"
+                                        name="evalCriteria"
+                                        value="毎回の課題"
+                                        class={styles.checkboxGroup.input}
+                                    />
+                                    <label
+                                        for="evalCriteria6"
+                                        class={styles.checkboxGroup.label}
+                                        >毎回の課題</label
+                                    >
+                                </div>
+                                <div class={styles.checkboxGroup.other}>
+                                    <input
+                                        type="checkbox"
+                                        id="evalCriteriaOther"
+                                        name="evalCriteria"
+                                        value="その他"
+                                        class={styles.checkboxGroup.input}
+                                    />
+                                    <label
+                                        for="evalCriteriaOther"
+                                        class={styles.checkboxGroup.label}
+                                        >その他:</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="evalCriteriaOtherText"
+                                        name="evalCriteriaOtherText"
+                                        class={styles.checkboxGroup.otherInput}
+                                        placeholder="具体的に記入"
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -401,7 +466,6 @@ if (!id || !year || !semester) {
                                         name="classDifficulty"
                                         min="1"
                                         max="4"
-                                        value="2"
                                         required
                                         class={styles.form.slider.input}
                                     />
@@ -425,7 +489,6 @@ if (!id || !year || !semester) {
                                         name="testDifficulty"
                                         min="1"
                                         max="4"
-                                        value="2"
                                         required
                                         class={styles.form.slider.input}
                                     />
@@ -449,7 +512,6 @@ if (!id || !year || !semester) {
                                         name="testAmount"
                                         min="1"
                                         max="4"
-                                        value="2"
                                         required
                                         class={styles.form.slider.input}
                                     />
@@ -472,7 +534,6 @@ if (!id || !year || !semester) {
                                         name="gradingCriteria"
                                         min="1"
                                         max="4"
-                                        value="2"
                                         required
                                         class={styles.form.slider.input}
                                     />
@@ -494,7 +555,6 @@ if (!id || !year || !semester) {
                                         name="recommendation"
                                         min="1"
                                         max="4"
-                                        value="2"
                                         required
                                         class={styles.form.slider.input}
                                     />
@@ -556,19 +616,16 @@ if (!id || !year || !semester) {
 </Layout>
 
 <script>
-    // スライダーの値を表示に反映させる
+    // スライダーの値表示の処理は削除（初期値がないため）
     document.querySelectorAll('input[type="range"]').forEach((slider) => {
         if (!(slider instanceof HTMLInputElement)) return;
 
-        const valueDisplay = slider.nextElementSibling;
-        if (!valueDisplay) return;
+        // 初期値を未選択状態にする
+        slider.value = "";
 
-        // 初期値を設定
-        valueDisplay.textContent = slider.value;
-
-        // 値が変更されたときの処理
+        // ユーザーが選択したときの処理
         slider.addEventListener("input", () => {
-            valueDisplay.textContent = slider.value;
+            // レンジが選択されたらそのまま
         });
     });
 
@@ -595,48 +652,6 @@ if (!id || !year || !semester) {
             }
         });
     };
-
-    // フォーム送信時の処理
-    const form = document.querySelector("form");
-    if (form) {
-        form.addEventListener("submit", (e) => {
-            e.preventDefault();
-
-            // チェックボックスグループの検証
-            const courseType = document.querySelectorAll(
-                'input[name="courseType"]:checked'
-            );
-            const evalCriteria = document.querySelectorAll(
-                'input[name="evalCriteria"]:checked'
-            );
-
-            if (courseType.length === 0) {
-                alert("授業形態を1つ以上選択してください");
-                return;
-            }
-
-            if (evalCriteria.length === 0) {
-                alert("評価基準を1つ以上選択してください");
-                return;
-            }
-
-            // テスト持ち込みの検証
-            const noItems = document.getElementById(
-                "testItems1"
-            ) as HTMLInputElement;
-            const otherItems = document.querySelectorAll(
-                'input[name="testItems"]:not(#testItems1):checked'
-            );
-
-            if (noItems?.checked && otherItems.length > 0) {
-                alert("持ち込み無しと他の持ち込み項目は同時に選択できません");
-                return;
-            }
-
-            // フォーム送信
-            form.submit();
-        });
-    }
 
     // テスト持ち込み「持ち込み無し」の処理
     const noItemsCheckbox = document.getElementById(
