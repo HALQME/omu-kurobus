@@ -45,16 +45,9 @@ export const SearchQuerySchema = z.object({
 });
 export type SearchQuery = z.infer<typeof SearchQuerySchema>;
 
-export const SearchResultSchema = z.object({
-    score: z.number().optional(),
-    name: z.string(),
-    code: z.string(),
-    teachers: z.string(),
-    campus: z.string(),
-    semester: z.string(),
-    period: z.string(),
-});
-export type SearchResult = z.infer<typeof SearchResultSchema>;
+export type SearchResult = z.infer<typeof CourseSchema> & {
+    score: number | undefined;
+};
 
 export const SuggestionResultSchema = z.object({
     text: z.string(),

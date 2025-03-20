@@ -66,15 +66,12 @@ export async function search(
     let results = fuse.search(fuseQuery);
 
     const parsedResults = results
-        .map((result) => ({
-            name: result.item.name,
-            code: result.item.id,
-            score: result.score,
-            teachers: result.item.teachers,
-            campus: result.item.campus,
-            semester: result.item.semester,
-            period: result.item.period,
-        }))
+        .map((result) => {
+            return {
+                ...result.item,
+                score: result.score,
+            };
+        })
         .filter((result) => result.score !== null)
         .filter((result) => result.score! <= 0.85)
         .sort((a, b) => a.score! - b.score!);

@@ -420,7 +420,7 @@ const matchScore = (score: number | undefined) => {
                                                             {result.name}
                                                         </h3>
                                                         <span class="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
-                                                            {result.code ||
+                                                            {result.id ||
                                                                 "コード不明"}
                                                         </span>
                                                     </div>
@@ -511,6 +511,10 @@ const matchScore = (score: number | undefined) => {
                                                         href={
                                                             target +
                                                             "/" +
+                                                            year +
+                                                            "/" +
+                                                            semester +
+                                                            "/" +
                                                             result.code
                                                         }
                                                         class="mt-3 block w-full text-center px-4 py-2 outline outline-blue-500 dark:outline-blue-700 rounded hover:bg-blue-600/20 dark:hover:bg-blue-800/20 transition-colors"
@@ -547,7 +551,7 @@ const matchScore = (score: number | undefined) => {
                                                                     }
                                                                 </h4>
                                                                 <span class="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
-                                                                    {result.code ||
+                                                                    {result.id ||
                                                                         "コード不明"}
                                                                 </span>
                                                             </div>
