@@ -54,7 +54,7 @@ export async function search(
         andQuery.push({ teachers: query.teacher });
     }
     if (query.class_code) {
-        andQuery.push({ id: query.class_code });
+        andQuery.push({ id: "^" + query.year + query.class_code });
     }
     if (query.campus) {
         andQuery.push({ campus: query.campus });
