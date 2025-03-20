@@ -36,24 +36,24 @@ const colors = {
 
 // 共通のスタイル
 const common = {
-    focus: "focus:outline-none focus:ring-2 focus:ring-offset-1",
-    transition: "transition-all duration-200",
-    card: "bg-white/90 dark:bg-slate-800/80 border rounded-lg shadow-sm backdrop-blur-sm",
+    focus: "focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-400/70 dark:focus:ring-blue-500/70",
+    transition: "transition-all duration-300 ease-out",
+    card: "bg-white/95 dark:bg-slate-800/90 border rounded-lg shadow-sm backdrop-blur-sm",
     container: "max-w-3xl mx-auto",
 };
 
 export const styles = {
     // 入力フィールド
-    input: `w-full px-4 py-2.5 border ${colors.gray.border} rounded-md ${common.transition} bg-white/95 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 hover:border-blue-300/70 dark:hover:border-blue-500/50 hover:shadow-sm`,
+    input: `w-full px-3.5 sm:px-4 py-2.5 border ${colors.gray.border} rounded-md ${common.transition} bg-white/95 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 hover:border-blue-300/70 dark:hover:border-blue-500/50 hover:shadow-sm ease-in-out`,
 
     // 入力フィールドのフォーカス状態
     inputFocus:
-        "focus:ring-1 focus:ring-blue-300 focus:border-blue-300 focus:shadow-sm transition-shadow duration-200",
+        "focus:ring-2 focus:ring-blue-300/50 dark:focus:ring-blue-500/50 focus:border-blue-400 dark:focus:border-blue-500 focus:shadow-sm transition-all duration-200 ease-in-out",
 
     // ボタンスタイル
     button: {
-        primary: `w-full px-4 py-2 mb-2 ${colors.primary.default} font-medium rounded-md shadow-sm ${common.transition} hover:shadow hover:translate-y-[-1px] active:translate-y-[1px] ${common.focus}`,
-        reset: `w-full px-4 py-2 mb-2 ${colors.gray.light} text-slate-700 dark:text-slate-200 font-medium rounded-md shadow-sm ${common.transition} hover:shadow hover:translate-y-[-1px] active:translate-y-[1px] ${common.focus} focus:ring-slate-400`,
+        primary: `w-full px-4 py-2.5 sm:py-2 mb-2 ${colors.primary.default} font-medium rounded-md shadow-sm ${common.transition} hover:shadow-md hover:translate-y-[-1px] active:translate-y-[1px] ${common.focus} ease-in-out`,
+        reset: `w-full px-4 py-2.5 sm:py-2 mb-2 ${colors.gray.light} text-slate-700 dark:text-slate-100 font-medium rounded-md shadow-sm ${common.transition} hover:shadow-md hover:translate-y-[-1px] active:translate-y-[1px] ${common.focus} focus:ring-slate-400 hover:bg-slate-200/90 dark:hover:bg-slate-600/90 ease-in-out`,
     },
 
     // ページ背景
@@ -62,10 +62,10 @@ export const styles = {
 
     // ヘッダースタイル
     header: {
-        header: "sticky top-0 z-50 bg-gradient-to-r from-blue-200 to-purple-100 dark:from-gray-800 dark:to-gray-900 text-white py-4 shadow-lg transition-colors duration-300",
+        header: "sticky top-0 z-50 bg-gradient-to-br from-blue-100/95 via-blue-50/90 to-purple-50/95 dark:from-slate-900/95 dark:via-slate-800/90 dark:to-slate-900/95 py-4 shadow-md backdrop-blur-sm transition-all duration-300",
         container:
             "flex items-center justify-between h-16 px-4 md:px-6 max-w-4xl mx-auto",
-        title: "text-xl sm:text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-700 dark:from-gray-100 dark:to-white",
+        title: "text-xl sm:text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 hover:scale-[1.02] transition-transform duration-300",
     },
 
     footer: {
@@ -75,17 +75,22 @@ export const styles = {
             "max-w-4xl mx-auto px-4 py-1 sm:py-6 flex justify-between items-center",
     },
 
+    index: {
+        feature: `bg-white/95 dark:bg-slate-800/90 border rounded-lg shadow-sm backdrop-blur-sm p-4 sm:p-6 hover:shadow-md hover:border-blue-600/70 dark:hover:border-blue-200/40 hover:bg-gradient-to-br hover:from-white hover:to-blue-50/30 dark:hover:from-slate-800/95 dark:hover:to-blue-900/20 transition-all duration-300 ease-in-out hover:translate-y-[-2px]`,
+        link: `px-4 py-2 bg-white/95 dark:bg-slate-800/90 border rounded-lg shadow-sm text-center hover:shadow-md hover:border-blue-600/70 dark:hover:border-blue-200/40 hover:bg-gradient-to-br hover:from-white hover:to-blue-50/30 dark:hover:from-slate-800/95 dark:hover:to-blue-900/20 transition-all duration-300 ease-in-out hover:translate-y-[-2px]`,
+    },
+
     // フォームラベル
     label: `block ${colors.gray.label} font-medium mb-1.5 text-base`,
 
     // 検索結果カード
     card: {
-        container: `${common.card} p-3 sm:p-4 ${colors.gray.border} hover:shadow hover:border-blue-100/70 dark:hover:border-blue-700/40 ${common.transition} cursor-pointer hover:translate-y-[-1px]`,
-        title: `text-lg font-semibold ${colors.gray.heading} mb-2 hover:text-blue-500 dark:hover:text-blue-300 transition-colors duration-200`,
-        label: "w-24 font-medium text-slate-500 dark:text-slate-400",
-        value: "text-slate-800 dark:text-slate-200 flex-1",
-        row: "flex items-center mb-1.5 last:mb-0",
-        badge: "px-2 py-0.5 text-xs font-medium bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200/80 dark:hover:bg-slate-600/60 transition-colors duration-200",
+        container: `${common.card} mb-4 p-3 sm:p-4 ${colors.gray.border} hover:shadow-md hover:border-blue-200/70 dark:hover:border-blue-600/40 ${common.transition} cursor-pointer hover:translate-y-[-2px] hover:bg-gradient-to-br hover:from-white hover:to-blue-50/30 dark:hover:from-slate-800/95 dark:hover:to-blue-900/20 ease-in-out`,
+        title: `text-lg font-semibold ${colors.gray.heading} mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300 ease-in-out group-hover:translate-x-0.5`,
+        label: "w-20 sm:w-24 font-medium text-slate-500/90 dark:text-slate-400/90",
+        value: "text-slate-800 dark:text-slate-200 flex-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 ease-in-out pl-2",
+        row: "flex items-start sm:items-center mb-2 last:mb-0 group",
+        badge: "px-2 py-0.5 text-xs font-medium bg-slate-100/90 dark:bg-slate-700/70 text-slate-700 dark:text-slate-300 rounded-md hover:bg-blue-100/80 dark:hover:bg-blue-800/40 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-300 ease-in-out",
     },
 
     // サジェスト候補のドロップダウン
@@ -107,21 +112,30 @@ export const styles = {
 
     // セクション関連のスタイル
     section: {
-        container: "mb-6 sm:mb-10",
-        headingWrapper: "flex items-center justify-center mb-6",
-        headingLine: "w-16 h-px",
-        headingLineLeft: "bg-gradient-to-r from-transparent to-blue-400",
-        headingLineRight: "bg-gradient-to-l from-transparent to-blue-400",
-        title: "px-4 text-2xl font-bold text-gray-800 dark:text-gray-200",
+        container: "mb-8 sm:mb-12",
+        headingWrapper: "flex items-center justify-center mb-8",
+        headingLine: "w-20 h-[2px]",
+        headingLineLeft:
+            "bg-gradient-to-r from-transparent via-blue-300 to-blue-400 dark:via-blue-500 dark:to-blue-400",
+        headingLineRight:
+            "bg-gradient-to-l from-transparent via-blue-300 to-blue-400 dark:via-blue-500 dark:to-blue-400",
+        title: "px-6 text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight",
         content:
-            "bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700",
+            "bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-xl shadow-lg p-5 sm:p-7 border border-slate-200/70 dark:border-slate-700/50 hover:border-blue-200/50 dark:hover:border-blue-700/30 transition-all duration-300",
     },
 
     // フォーム要素のスタイル
     form: {
-        label: "block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-1",
-        input: "mt-1 block w-full px-3 sm:px-4 py-2.5 sm:py-2 text-base sm:text-sm border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-300",
+        label: "block text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300 mb-1.5 transition-colors duration-200",
+        input: "mt-1 block w-full px-3.5 sm:px-4 py-2.5 sm:py-2 text-base sm:text-sm border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 dark:focus:border-blue-500 dark:bg-slate-800/90 dark:text-slate-200 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-500/70",
         textarea:
-            "mt-1 block w-full px-3 sm:px-4 py-2.5 sm:py-2 text-base sm:text-sm min-h-[100px] border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-300",
+            "mt-1 block w-full px-3.5 sm:px-4 py-2.5 sm:py-2 text-base sm:text-sm min-h-[100px] border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 dark:focus:border-blue-500 dark:bg-slate-800/90 dark:text-slate-200 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-500/70",
+        slider: {
+            container: "flex flex-col space-y-2.5",
+            wrapper: "relative flex items-center",
+            input: "w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:transition-transform [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:hover:scale-110 [&::-moz-range-thumb]:transition-transform",
+            value: "absolute -top-7 left-1/2 transform -translate-x-1/2 px-2.5 py-1 bg-blue-500 text-white text-sm rounded-md shadow-md transition-all duration-200",
+            labels: "flex justify-between text-sm text-slate-600 dark:text-slate-400 mt-1.5",
+        },
     },
 };

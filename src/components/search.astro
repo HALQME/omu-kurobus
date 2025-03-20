@@ -5,9 +5,27 @@ import type { Course, SearchResult } from "@/types/schema";
 import { styles } from "@/styles/style";
 interface Props {
     target: "search" | "submit";
+    year?: string;
+    semester?: string;
 }
-const { target } = Astro.props;
-import { PATH_PAIRS, CLASS_IDs } from "@/utils/const";
+const { target, year: yearProp, semester: semesterProp } = Astro.props;
+import { PATH_PAIRS as originalPathPairs, CLASS_IDs } from "@/utils/const";
+
+// yearPropとsemesterPropの両方が定義されている場合、PATH_PAIRSを上書き
+const PATH_PAIRS = () => {
+    if (yearProp !== undefined && semesterProp !== undefined) {
+        return [
+            {
+                type: target,
+                path: {
+                    year: yearProp,
+                    semester: semesterProp,
+                },
+            },
+        ];
+    }
+    return originalPathPairs();
+};
 import { search } from "@/utils/search";
 export const prerender = false;
 
