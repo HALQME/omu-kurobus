@@ -51,13 +51,13 @@ export async function search(
         andQuery.push({ name: query.course });
     }
     if (query.teacher) {
-        andQuery.push({ teachers: "'" + query.teacher });
+        andQuery.push({ teachers: query.teacher });
     }
     if (query.class_code) {
-        andQuery.push({ id: "'" + query.class_code });
+        andQuery.push({ id: query.class_code });
     }
     if (query.campus) {
-        andQuery.push({ campus: "'" + query.campus });
+        andQuery.push({ campus: query.campus });
     }
 
     fuseQuery = {
