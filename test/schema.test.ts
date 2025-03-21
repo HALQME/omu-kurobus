@@ -1,7 +1,11 @@
 import { describe, it, expect } from "vitest";
-import type { FormDB } from "@/types/schema";
+import type { FormDB, ReviewForm } from "@/types/schema";
 import { reviews } from "db/schema";
-import { formToReviewDB, reviewToFormDB } from "@/utils/data-parser";
+import {
+    postToFormDB,
+    formToReviewDB,
+    reviewToFormDB,
+} from "@/utils/data-parser";
 
 // 必要な型定義
 type ReviewDB = typeof reviews.$inferInsert;
@@ -27,13 +31,33 @@ const sampleFormDB: FormDB = {
     goodPoint: "とても分かりやすい授業でした",
     notGoodPoint: undefined,
     comment: undefined,
-    user_id: undefined,
+};
+
+const sampleReviewForm: ReviewForm = {
+    course_id: "20241AAA005001",
+    student_department: "AAA",
+    courseType: ["対面または実習"],
+    courseTypeOtherText: "",
+    evalCriteria: ["期末テスト", "出席点"],
+    evalCriteriaOtherText: "",
+    testType: "対面",
+    testTypeOtherText: "",
+    testItems: ["持ち込み無し"],
+    testItemsOtherText: "",
+    classDifficulty: 1,
+    testDifficulty: 0,
+    testAmount: -1,
+    gradingCriteria: 2,
+    recommendation: 1,
+    goodPoint: "とても分かりやすい授業でした",
+    notGoodPoint: "授業が長すぎる",
+    comment: "授業が長すぎる",
 };
 
 const sampleReviewDB: ReviewDB = {
     id: "test-id",
     course_id: "20241AAA005001",
-    student_department: "AAA12345",
+    student_department: "AAA",
     courseType: JSON.stringify(["対面または実習"]),
     courseTypeOtherText: "",
     evalCriteria: JSON.stringify(["期末テスト", "出席点"]),
@@ -54,6 +78,17 @@ const sampleReviewDB: ReviewDB = {
 };
 
 describe("スキーマ変換テスト", () => {
+    it("FormDB => ReviewForm", () => {
+        const reviewForm = postToFormDB(sampleFormDB);
+        expect(reviewForm).toEqual(sampleReviewForm);
+    });
+
+    it("ReviewForm => FormDB", () => {
+        const formDB = postToFormDB(sampleReviewForm);
+        expect(formDB).toEqual(sampleFormDB);
+    });
+
+    it("ReviewForm => ReviewDB", () => {});
     it("FormDB => ReviewDB", () => {
         const reviewDB = formToReviewDB(sampleFormDB);
 

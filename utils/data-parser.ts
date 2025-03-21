@@ -1,4 +1,4 @@
-import type { FormDB } from "@/types/schema";
+import type { FormDB, ReviewForm } from "@/types/schema";
 import {
     courseTypes,
     evalCriteriaTypes,
@@ -6,9 +6,40 @@ import {
     testTypes,
 } from "@/types/schema";
 import { reviews } from "db/schema";
+import { randomUUID } from "node:crypto";
 
 type ReviewDB = typeof reviews.$inferInsert;
 type TestType = (typeof testTypes)[number];
+
+/**
+ * Converts a ReviewForm object to a FormDB object format suitable for database storage.
+ * @param form - The user-submitted review form containing course evaluation data
+ * @returns A FormDB object ready for database insertion
+ */
+export function postToFormDB(form: ReviewForm): FormDB {
+    return {
+        id: randomUUID(),
+        course_id: form.course_id,
+        student_department: form.student_department,
+        courseType: form.courseType,
+        courseTypeOtherText: form.courseTypeOtherText ?? null,
+        createdAt: new Date(),
+        evalCriteria: form.evalCriteria,
+        evalCriteriaOtherText: form.evalCriteriaOtherText ?? null,
+        testType: form.testType ?? null,
+        testTypeOtherText: form.testTypeOtherText ?? null,
+        testItems: form.testItems ?? null,
+        testItemsOtherText: form.testItemsOtherText ?? null,
+        classDifficulty: form.classDifficulty,
+        testDifficulty: form.testDifficulty,
+        testAmount: form.testAmount,
+        gradingCriteria: form.gradingCriteria,
+        recommendation: form.recommendation,
+        goodPoint: form.goodPoint ?? undefined,
+        notGoodPoint: form.notGoodPoint ?? undefined,
+        comment: form.comment ?? undefined,
+    };
+}
 
 /**
  * FormDBからReviewDBへの変換関数
