@@ -1,0 +1,49 @@
+---
+interface Props {
+    id: string;
+}
+const { id } = Astro.props;
+---
+
+<astro-course-info data-course-id={id}>
+    <p id="infos" class="text-gray-500 dark:text-gray-400 mb-0"></p>
+    <h3 id="title" class="text-lg mb-0.5"></h3>
+    <p id="teachers" class="text-sm text-gray-500 dark:text-gray-400 mb-4"></p>
+</astro-course-info>
+
+<script>
+    import * as store from "@/utils/store";
+    import type { NanoCourse } from "@/types/schema";
+
+    class AstroCourseInfo extends HTMLElement {
+        constructor() {
+            super();
+            const id = this.getAttribute("data-course-id") as string;
+            try {
+                let course: NanoCourse | null = store.getCourse(id);
+                if (!course) {
+                    console.error("[CourseInfo] Course not found:", id);
+                    window.location.href = `/404`;
+                    return;
+                }
+                console.log("[CourseInfo] Rendering course:", course);
+                this.render(course);
+            } catch (e) {
+                console.error("[CourseInfo] Error loading course:", e);
+                window.location.href = `/404`;
+            }
+        }
+
+        render = (course: NanoCourse) => {
+            const title = this.querySelector("#title") as HTMLElement;
+            const teachers = this.querySelector("#teachers") as HTMLElement;
+            const infos = this.querySelector("#infos") as HTMLElement;
+
+            title.textContent = course.name;
+            teachers.textContent = course.teachers;
+            infos.textContent = `${course.campus} | ${course.semester} | ${course.period} `;
+        };
+    }
+
+    customElements.define("astro-course-info", AstroCourseInfo);
+</script>

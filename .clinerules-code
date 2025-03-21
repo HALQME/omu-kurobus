@@ -1,0 +1,37 @@
+# Project Tree
+
+-   public // Static files
+-   src
+    -   components // Components for the website
+        -   footer.astro
+        -   header.astro
+        -   search.astro
+    -   layouts // Layouts for the website
+        -   layout.astro
+    -   pages // Pages for the website
+        -   index.astro
+        -   search.astro
+        -   ...
+    -   styles
+        -   global.css // import tailwindcss
+        -   style.ts // styles for the website
+
+If you find duplicate tailwindcss classes, you have to create a new class in style.ts and import it in the component.
+
+# Requirements
+
+1. The website should have a dark mode feature.
+2. The website should have a smooth scroll feature.
+3. The website should have a Server Islands feature.
+   a. `export const prerender = true;` means the page is prerendered. (SSG)
+   b. `export const prerender = false;` means the page is not prerendered. (SSR)
+   c. in prerendered page, <SomeComponent server:defer /> means the component is defered. (Server Islands Mode)
+
+# Testing
+
+1. Test Directly is existing to test/\*.
+2. When you finish, you need to provide the test code.
+
+# Memory Bank
+
+1. You need to read /memory-bank/ to understand the project.

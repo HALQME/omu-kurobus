@@ -1,0 +1,27 @@
+---
+import { Image } from "astro:assets";
+import Layout from "../layouts/layout.astro";
+import image404 from "@/src/assets/404 NotFound.png";
+---
+
+<Layout
+    title="404 Not Found"
+    description="お探しのページが見つかりませんでした。"
+>
+    <Image
+        src={image404}
+        alt="404 Not Found"
+        class="w-full select-none"
+        loading="eager"
+        widths={[480, 640, 960, 1280, 1920]}
+    />
+
+    <p class="text-center text-gray-600 dark:text-gray-400 mt-4">
+        Logo by
+        <span class="text-blue-600 dark:text-blue-400 underline">
+            <a href="https://github.com/SAWARATSUKI">SAWARATSUKI</a>
+            /
+            <a href="https://github.com/SAWARATSUKI/KawaiiLogos">KawaiiLogos</a>
+        </span>
+    </p>
+</Layout>

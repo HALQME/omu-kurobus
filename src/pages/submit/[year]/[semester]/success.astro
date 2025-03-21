@@ -1,0 +1,60 @@
+---
+import Layout from "@/layouts/layout.astro";
+import Search from "@/components/search.astro";
+import { styles } from "@/styles/style";
+export const prerender = false;
+const year = Astro.params.year;
+const semester = Astro.params.semester;
+const id = new URL(Astro.request.url).searchParams.get("id");
+if (!id) {
+    return Astro.redirect("/failed", 302);
+}
+import { PATH_PAIRS } from "@/utils/const";
+import CourseInfo from "@/src/components/course-info.astro";
+export function getStaticPaths() {
+    const availableYears = PATH_PAIRS().filter((pair) => pair.type == "submit");
+    return availableYears.map(({ type, path }) => ({
+        params: { year: path.year, semester: path.semester, type },
+    }));
+}
+---
+
+<Layout
+    title="ハム大クロバス"
+    description="授業を受講した皆の感想や愚痴が詰まったまとめサイトです。"
+>
+    <section class={styles.section.container}>
+        <div class="text-center py-4">
+            <h2 class="text-3xl font-bold text-emerald-600 mb-3">
+                🎉 投稿が完了しました！ 🎉
+            </h2>
+            <div class="mt-3 inline-block bg-emerald-100 px-4 py-2 rounded-lg">
+                <p class="text-lg text-gray-600">
+                    ご協力ありがとうございます！
+                </p>
+            </div>
+        </div>
+
+        <h3 class="text-xl mb-2">投稿した授業</h3>
+        <CourseInfo id={id} />
+        <p class="text-gray-500 dark:text-gray-400 mt-4">
+            続けて感想を投稿する場合は、以下の検索フォームから授業を検索してください。
+        </p>
+    </section>
+    <section class={styles.section.container}>
+        <div class={styles.section.headingWrapper}>
+            <div
+                class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
+            >
+            </div>
+            <h2 class={styles.section.title}>続けて投稿</h2>
+            <div
+                class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
+            >
+            </div>
+        </div>
+        <div class={styles.section.content}>
+            <Search target="submit" year={year} semester={semester} />
+        </div>
+    </section>
+</Layout>

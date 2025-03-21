@@ -1,0 +1,66 @@
+---
+import Layout from "@/layouts/layout.astro";
+import { Image } from "astro:assets";
+export const prerender = false;
+const year = Astro.params.year;
+const semester = Astro.params.semester;
+const id = new URL(Astro.request.url).searchParams.get("id");
+if (!id) {
+    return Astro.redirect("/failed", 302);
+}
+import { PATH_PAIRS } from "@/utils/const";
+export function getStaticPaths() {
+    const availableYears = PATH_PAIRS().filter((pair) => pair.type == "submit");
+    return availableYears.map(({ type, path }) => ({
+        params: { year: path.year, semester: path.semester, type },
+    }));
+}
+
+import image500 from "@/src/assets/500 InternalServerError.png";
+---
+
+<Layout
+    title="ハム大クロバス"
+    description="授業を受講した皆の感想や愚痴が詰まったまとめサイトです。"
+>
+    <section class="flex flex-col items-center justify-center">
+        <Image
+            src={image500}
+            alt="404 Not Found"
+            class="w-full max-w-lg mx-auto select-none hover:scale-105 transition-transform duration-300"
+            loading="eager"
+            widths={[480, 640, 960, 1280, 1920]}
+        />
+
+        <p class="text-center text-gray-600 dark:text-gray-400 mb-7">
+            Logo by
+            <span class="text-blue-600 dark:text-blue-400 underline">
+                <a href="https://github.com/SAWARATSUKI">SAWARATSUKI</a>
+                /
+                <a href="https://github.com/SAWARATSUKI/KawaiiLogos"
+                    >KawaiiLogos</a
+                >
+            </span>
+        </p>
+        <div
+            class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 max-w-md mx-auto text-center border-2 border-red-300 dark:border-red-600"
+        >
+            <h2
+                class="text-3xl font-bold mb-6 bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent"
+            >
+                投稿に失敗しました
+            </h2>
+
+            <p class="mb-6 text-gray-600 dark:text-gray-300">
+                申し訳ありませんが、投稿処理中にエラーが発生しました。再度お試しください。
+            </p>
+
+            <a
+                href=`/submit/${year}/${semester}/${id}`
+                class="inline-flex items-center px-6 py-3 rounded-full bg-red-500 dark:bg-red-800 text-white font-medium transition-transform hover:scale-105 hover:shadow-lg"
+            >
+                戻る
+            </a>
+        </div>
+    </section>
+</Layout>

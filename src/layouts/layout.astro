@@ -1,0 +1,83 @@
+---
+import "@/styles/global.css";
+import Head from "@/components/head.astro";
+import { ClientRouter, fade } from "astro:transitions";
+import Header from "@/components/header.astro";
+import { styles } from "@/styles/style";
+import Footer from "@/components/footer.astro";
+
+interface Props {
+    title: string;
+    description: string;
+}
+const props = Astro.props;
+---
+
+<html lang="ja" class="scroll-smooth">
+    <Head title={props.title} description={props.description} />
+    <ClientRouter />
+    <body
+        class={`${styles.pageBackground} min-h-screen transition-colors duration-300`}
+    >
+        <div transition:animate={fade({ duration: "0.3s" })}></div>
+        <Header />
+        <main
+            role="main"
+            class="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6 min-h-screen"
+        >
+            <slot />
+        </main>
+        <Footer />
+    </body>
+</html>
+
+<script>
+    // ダークモード検出と適用のロジック
+    const themeKey = "theme-preference";
+
+    // ユーザー設定またはシステム設定からダークモードの状態を取得
+    const getThemePreference = () => {
+        if (
+            typeof localStorage !== "undefined" &&
+            localStorage.getItem(themeKey)
+        ) {
+            return localStorage.getItem(themeKey);
+        }
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+    };
+
+    // ダークモードの適用
+    const setTheme = (theme: string | null) => {
+        const root = document.documentElement;
+        if (theme === "dark") {
+            root.classList.add("dark");
+        } else {
+            root.classList.remove("dark");
+        }
+        localStorage.setItem(themeKey, theme || "light");
+    };
+
+    // 初期設定
+    setTheme(getThemePreference());
+
+    // システムの設定が変更された時のリスナー
+    window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", ({ matches }) => {
+            if (!localStorage.getItem(themeKey)) {
+                // ユーザーが明示的に設定していない場合のみ
+                setTheme(matches ? "dark" : "light");
+            }
+        });
+
+    // カスタムイベントを通じてテーマを切り替える機能を提供
+    document.addEventListener("toggle-theme", () => {
+        const currentTheme = document.documentElement.classList.contains("dark")
+            ? "dark"
+            : "light";
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        setTheme(newTheme);
+    });
+</script>

@@ -1,0 +1,707 @@
+---
+import Result from "@/components/result.astro";
+import ResultMaybe from "@/components/result-maybe.astro";
+import type { Course, SearchResult } from "@/types/schema";
+import { styles } from "@/styles/style";
+interface Props {
+    target: "search" | "submit";
+    year?: string;
+    semester?: string;
+}
+const { target, year: yearProp, semester: semesterProp } = Astro.props;
+import { PATH_PAIRS as originalPathPairs, CLASS_IDs } from "@/utils/const";
+
+// yearPropとsemesterPropの両方が定義されている場合、PATH_PAIRSを上書き
+const PATH_PAIRS = () => {
+    if (yearProp !== undefined && semesterProp !== undefined) {
+        return [
+            {
+                type: target,
+                path: {
+                    year: yearProp,
+                    semester: semesterProp,
+                },
+            },
+        ];
+    }
+    return originalPathPairs();
+};
+import { search } from "@/utils/search";
+export const prerender = false;
+
+declare global {
+    interface Window {
+        handleInput: (
+            inputId: string,
+            field: "course" | "teacher" | "campus"
+        ) => void;
+        clearSuggestions: (inputId: string) => void;
+        selectSuggestion: (inputId: string, suggestion: string) => void;
+        handleClassCodeInput: (value: string) => void;
+        handleClassCodeSelect: (value: string) => void;
+    }
+}
+
+// 入力値を保持するための変数を初期化
+let year: string | undefined;
+let semester: string | undefined;
+let course: string | undefined;
+let teacher: string | undefined;
+let campus: string | undefined;
+let class_code: string | undefined;
+let year_semester_value: string | undefined;
+
+// 検索結果を保存する変数
+let searchResults: SearchResult[] = [];
+let searchError: string | null = null;
+
+if (Astro.request.method === "POST") {
+    try {
+        const data = await Astro.request.formData();
+
+        year_semester_value = data.get("year_semester")?.toString();
+        if (year_semester_value) {
+            const parts = year_semester_value.split("/");
+            year = parts[0];
+            semester = parts[1];
+        } else {
+            const defaultPair = (await PATH_PAIRS()).find(
+                (pair: { type: string }) => pair.type == target
+            );
+            if (defaultPair) {
+                year = defaultPair.path.year;
+                semester = defaultPair.path.semester;
+                year_semester_value = `${year}/${semester}`;
+            }
+        }
+
+        if (data.has("course")) {
+            course = data.get("course")?.toString();
+        }
+        if (data.has("teacher")) {
+            teacher = data.get("teacher")?.toString();
+        }
+        if (data.has("campus")) {
+            campus = data.get("campus")?.toString();
+        }
+        if (data.has("class-code")) {
+            class_code = data.get("class-code")?.toString();
+        }
+
+        // 検索パラメータが揃ったら検索を実行
+        if (year && semester) {
+            try {
+                // 適切なURLを構築
+                const courseUrl = new URL(
+                    `https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/${year}/${semester}/data.json`
+                );
+
+                const response = await fetch(courseUrl);
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to fetch courses: ${response.status}`
+                    );
+                }
+
+                const json = await response.json();
+                const courses = Array.isArray(json)
+                    ? json
+                    : (json.data as Course[]);
+
+                // 検索実行前のパラメータをログ
+                const searchParams = {
+                    year,
+                    semester,
+                    course,
+                    teacher,
+                    campus,
+                    class_code: class_code && class_code,
+                };
+
+                // 検索実行
+                searchResults = await search(
+                    {
+                        ...searchParams,
+                    },
+                    courses
+                );
+            } catch (error) {
+                console.error("Error during search:", error);
+                searchError =
+                    error instanceof Error
+                        ? error.message
+                        : "Unknown error occurred";
+                searchResults = [];
+            }
+        }
+    } catch (error) {
+        if (error instanceof Error) {
+            console.error(error.message);
+            searchError = error.message;
+        }
+    }
+}
+---
+
+<astro-search-from data-target={target}>
+    <form
+        class="max-w-3xl mx-auto space-y-4 transition-all transform"
+        method="POST"
+        astro-data={target}
+        aria-label="授業検索フォーム"
+    >
+        <div class="mb-3">
+            <label for="year_semester" class={styles.label}>年・学期</label>
+            <select
+                id="year_semester"
+                name="year_semester"
+                class={`${styles.input} ${styles.inputFocus}`}
+                aria-required="true"
+            >
+                {
+                    PATH_PAIRS().map(
+                        (pair) =>
+                            pair.type == target && (
+                                <option
+                                    value={`${pair.path.year}/${pair.path.semester}`}
+                                    selected={
+                                        year_semester_value ===
+                                        `${pair.path.year}/${pair.path.semester}`
+                                    }
+                                >
+                                    {pair.path.year}年度
+                                    {pair.path.semester == "0"
+                                        ? "前期"
+                                        : "後期"}
+                                </option>
+                            )
+                    )
+                }
+            </select>
+        </div>
+        <div class="mb-3 relative">
+            <label for="course" class={styles.label}>授業名</label>
+            <input
+                id="course"
+                name="course"
+                type="text"
+                value={course || ""}
+                class={`${styles.input} ${styles.inputFocus}`}
+                autocomplete="off"
+                oninput="handleInput('course', 'course')"
+                onblur="setTimeout(() => clearSuggestions('course'), 200)"
+                aria-describedby="course-suggestions"
+                placeholder="授業名を入力してください"
+            />
+            <div
+                id="course-suggestions"
+                class={`${styles.suggestions} hidden`}
+                role="listbox"
+                aria-hidden="true"
+            >
+            </div>
+        </div>
+        <div class="mb-3 relative">
+            <label for="teacher" class={styles.label}>教員名</label>
+            <input
+                id="teacher"
+                name="teacher"
+                type="text"
+                value={teacher || ""}
+                class={`${styles.input} ${styles.inputFocus}`}
+                autocomplete="off"
+                oninput="handleInput('teacher', 'teacher')"
+                onblur="setTimeout(() => clearSuggestions('teacher'), 200)"
+                aria-describedby="teacher-suggestions"
+                placeholder="教員名を入力してください"
+            />
+            <div
+                id="teacher-suggestions"
+                class={`${styles.suggestions} hidden`}
+                role="listbox"
+                aria-hidden="true"
+            >
+            </div>
+        </div>
+        <div class="pt-3 space-y-4">
+            <div class="relative">
+                <label for="campus" class={styles.label}>キャンパス</label>
+                <input
+                    id="campus"
+                    name="campus"
+                    type="text"
+                    value={campus || ""}
+                    class={`${styles.input} ${styles.inputFocus}`}
+                    autocomplete="off"
+                    oninput="handleInput('campus', 'campus')"
+                    onblur="setTimeout(() => clearSuggestions('campus'), 200)"
+                    aria-describedby="campus-suggestions"
+                    placeholder="キャンパス名を入力してください"
+                />
+                <div
+                    id="campus-suggestions"
+                    class={`${styles.suggestions} hidden`}
+                    role="listbox"
+                    aria-hidden="true"
+                >
+                </div>
+            </div>
+
+            <div>
+                <label for="class-code-text" class={styles.label}
+                    >設置部局</label
+                >
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="relative flex-1">
+                        <input
+                            type="text"
+                            id="class-code-text"
+                            class={`${styles.input} ${styles.inputFocus}`}
+                            placeholder="部局IDを入力 (3-4文字)"
+                            autocomplete="off"
+                            oninput="handleClassCodeInput(this.value)"
+                            value={class_code?.length === 14
+                                ? class_code.slice(5, 8)
+                                : class_code || ""}
+                            maxlength="4"
+                            data-error-message=""
+                            aria-describedby="class-code-error"
+                        />
+                        <input
+                            type="hidden"
+                            id="custom-class-code"
+                            name="class-code"
+                            value={class_code || ""}
+                        />
+                        <div
+                            id="class-code-error"
+                            class="text-yellow-600 dark:text-yellow-300 text-sm mt-1 hidden"
+                            role="alert"
+                        >
+                        </div>
+                    </div>
+                    <div class="sm:w-64 w-full">
+                        <label for="class-code" class="sr-only"
+                            >設置部局の選択</label
+                        >
+                        <select
+                            id="class-code"
+                            class={`${styles.input} ${styles.inputFocus}`}
+                            onchange="handleClassCodeSelect(this.value)"
+                            aria-label="設置部局の選択"
+                        >
+                            <option value="">選択してください</option>
+                            {
+                                CLASS_IDs.map((group) =>
+                                    group.group ? (
+                                        <optgroup
+                                            label={group.group}
+                                            class="font-medium"
+                                        >
+                                            {group.items.map(
+                                                (item: {
+                                                    id:
+                                                        | string
+                                                        | number
+                                                        | string[]
+                                                        | null
+                                                        | undefined;
+                                                    name: unknown;
+                                                }) => (
+                                                    <option
+                                                        value={item.id}
+                                                        selected={
+                                                            class_code ===
+                                                            item.id
+                                                        }
+                                                        data-name={item.name}
+                                                    >
+                                                        {item.name}
+                                                    </option>
+                                                )
+                                            )}
+                                        </optgroup>
+                                    ) : (
+                                        group.items.map(
+                                            (item: {
+                                                id:
+                                                    | string
+                                                    | number
+                                                    | string[]
+                                                    | null
+                                                    | undefined;
+                                                name: unknown;
+                                            }) => (
+                                                <option
+                                                    value={item.id}
+                                                    selected={
+                                                        class_code === item.id
+                                                    }
+                                                    data-name={item.name}
+                                                >
+                                                    {item.name}
+                                                </option>
+                                            )
+                                        )
+                                    )
+                                )
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <button
+                type="submit"
+                class={styles.button.primary}
+                aria-label="検索を実行"
+            >
+                検索
+            </button>
+        </div>
+    </form>
+
+    {/* 検索結果表示部分 */}
+    {
+        Astro.request.method === "POST" && (
+            <div class="mt-6" aria-live="polite">
+                {searchError && (
+                    <div class={styles.errorAlert} role="alert">
+                        <p class="font-medium">エラーが発生しました</p>
+                        <p class="mt-1 text-sm">{searchError}</p>
+                    </div>
+                )}
+                {!searchError && searchResults.length === 0 && (
+                    <div class={`${styles.card.container} p-4`}>
+                        <p>
+                            検索条件に一致する授業が見つかりませんでした。検索条件を変更してお試しください。
+                        </p>
+                    </div>
+                )}
+                {searchResults.length > 0 && (
+                    <div class="animate-fadeIn">
+                        {/* 検索結果を一致度で分類 */}
+                        {(() => {
+                            // スコアによって検索結果を分類
+                            const highMatchResults = searchResults.filter(
+                                (r) => !r.score || r.score < 0.42
+                            );
+                            const lowMatchResults = searchResults.filter(
+                                (r) => r.score && r.score >= 0.42
+                            );
+
+                            return (
+                                <>
+                                    <h2 class={styles.sectionHeading}>
+                                        <span class="mr-3">検索結果:</span>
+                                        <span class={styles.badge}>
+                                            {highMatchResults.length}件
+                                        </span>
+                                    </h2>
+
+                                    {/* 一致度の高い結果を表示 */}
+                                    {highMatchResults.length > 0 && (
+                                        <div class="space-y-3 mb-5">
+                                            {highMatchResults.map((result) => (
+                                                <Result
+                                                    target={target}
+                                                    year={year!}
+                                                    semester={semester!}
+                                                    result={result}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* 一致度の低い結果を「もしかして」セクションとして表示 */}
+                                    {lowMatchResults.length > 0 && (
+                                        <div class="mt-8">
+                                            <h3 class="text-md font-medium mb-3 text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">
+                                                もしかして
+                                            </h3>
+                                            <div class="space-y-2">
+                                                {lowMatchResults.map(
+                                                    (result) => (
+                                                        <ResultMaybe
+                                                            target={target}
+                                                            year={year!}
+                                                            semester={semester!}
+                                                            result={result}
+                                                        />
+                                                    )
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
+                    </div>
+                )}
+            </div>
+        )
+    }
+</astro-search-from>
+
+<script>
+    import { getAutocompleteSuggestions } from "@/utils/suggest";
+    import type { CourseEmbed } from "@/types/schema";
+    import { parseClassCode } from "@/utils/common";
+    class AstroSearchForm extends HTMLElement {
+        constructor() {
+            super();
+            let courseData: CourseEmbed[] = [];
+
+            async function fetchCourseData() {
+                try {
+                    if (courseData.length > 0) return; // 既にデータがある場合は再取得しない
+
+                    const yearSemesterSelect = document.getElementById(
+                        "year_semester"
+                    ) as HTMLSelectElement;
+
+                    if (!yearSemesterSelect) {
+                        console.error("Year/semester select element not found");
+                        return;
+                    }
+
+                    const selectedValue = yearSemesterSelect.value;
+                    if (!selectedValue) {
+                        console.error("Year/semester not selected");
+                        return;
+                    }
+
+                    const [year, semester] = selectedValue.split("/");
+                    if (!year || !semester) {
+                        console.error("Invalid year/semester format");
+                        return;
+                    }
+
+                    const courseUrl = `${window.location.origin}/api/courses/${year}/${semester}/data.json`;
+                    console.log("Fetching courses from:", courseUrl);
+
+                    const response = await fetch(courseUrl);
+                    if (!response.ok) {
+                        throw new Error(
+                            `Failed to fetch course data: ${response.status}`
+                        );
+                    }
+
+                    const json = await response.json();
+                    courseData = Array.isArray(json) ? json : json.data || [];
+                    console.log(`Loaded ${courseData.length} courses`);
+                } catch (error) {
+                    console.error("Failed to fetch course data:", error);
+                }
+            }
+
+            async function handleInput(
+                inputId: string,
+                field: "course" | "teacher" | "campus"
+            ) {
+                const input = document.getElementById(
+                    inputId
+                ) as HTMLInputElement;
+                const suggestionsDiv = document.getElementById(
+                    `${inputId}-suggestions`
+                ) as HTMLDivElement;
+
+                if (!input || !suggestionsDiv) {
+                    console.error(
+                        `Element not found: ${inputId} or ${inputId}-suggestions`
+                    );
+                    return;
+                }
+
+                if (!courseData.length) {
+                    await fetchCourseData();
+                }
+
+                const searchText = input.value.trim();
+                if (!searchText) {
+                    suggestionsDiv.innerHTML = "";
+                    suggestionsDiv.classList.add("hidden");
+                    return;
+                }
+
+                const suggestions = await getAutocompleteSuggestions(
+                    searchText,
+                    courseData,
+                    field
+                );
+
+                if (suggestions.length > 0) {
+                    suggestionsDiv.setAttribute("aria-hidden", "false");
+                    suggestionsDiv.innerHTML = suggestions
+                        .map((suggestion) => {
+                            const score = suggestion.score || 0;
+                            let matchClass = "";
+
+                            if (score < 0.1) {
+                                matchClass = "border-l-4 border-green-500";
+                            } else if (score < 0.4) {
+                                matchClass = "border-l-4 border-sky-500";
+                            } else if (score < 0.6) {
+                                matchClass = "border-l-4 border-yellow-500";
+                            } else if (score < 0.8) {
+                                matchClass = "border-l-4 border-orange-500";
+                            } else {
+                                matchClass =
+                                    "border-l-4 border-gray-300 dark:border-gray-600";
+                            }
+
+                            return `
+                    <div
+                        class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white ${matchClass}"
+                        onclick="window.selectSuggestion('${inputId}', '${suggestion.text.replace(/'/g, "\\'")}')"
+                        role="option"
+                        aria-selected="false"
+                    >
+                        <div class="font-medium">${suggestion.text}</div>
+                    </div>
+                `;
+                        })
+                        .join("");
+                    suggestionsDiv.classList.remove("hidden");
+                } else {
+                    suggestionsDiv.innerHTML = "";
+                    suggestionsDiv.classList.add("hidden");
+                    suggestionsDiv.setAttribute("aria-hidden", "true");
+                }
+                input.focus(); // Move focus back to the input
+            }
+
+            function selectSuggestion(inputId: string, suggestion: string) {
+                const input = document.getElementById(
+                    inputId
+                ) as HTMLInputElement;
+                if (!input) {
+                    console.error(`Input element not found: ${inputId}`);
+                    return;
+                }
+
+                input.value = suggestion;
+                clearSuggestions(inputId);
+            }
+
+            function clearSuggestions(inputId: string) {
+                const suggestionsDiv = document.getElementById(
+                    `${inputId}-suggestions`
+                );
+                if (suggestionsDiv) {
+                    suggestionsDiv.innerHTML = "";
+                    suggestionsDiv.classList.add("hidden");
+                    suggestionsDiv.setAttribute("aria-hidden", "true");
+                }
+            }
+
+            function handleClassCodeInput(value: string) {
+                const select = document.getElementById(
+                    "class-code"
+                ) as HTMLSelectElement;
+                const input = document.getElementById(
+                    "class-code-text"
+                ) as HTMLInputElement;
+                const errorDiv = document.getElementById(
+                    "class-code-error"
+                ) as HTMLDivElement;
+                const hiddenInput = document.getElementById(
+                    "custom-class-code"
+                ) as HTMLInputElement;
+
+                let parsedInput = value.toUpperCase();
+
+                if (
+                    parsedInput.length > 0 &&
+                    parsedInput.length !== 3 &&
+                    parsedInput.length !== 4
+                ) {
+                    errorDiv.textContent =
+                        input.dataset.errorMessage ||
+                        "❌ 3〜4文字のIDのみ許可されています";
+                    errorDiv.classList.remove("hidden");
+                } else {
+                    errorDiv.classList.add("hidden");
+                }
+
+                if (parsedInput !== value) {
+                    input.value = parsedInput;
+                }
+
+                hiddenInput.value = parsedInput;
+
+                if (parsedInput.length === 3 || parsedInput.length === 4) {
+                    const options = Array.from(select.options);
+                    const matchingOption = options.find((option) => {
+                        if (!option.value) return false;
+                        const optionCode = parseClassCode(option.value);
+                        return optionCode === parsedInput;
+                    });
+
+                    // 完全一致するオプションを探す
+                    if (matchingOption) {
+                        select.value = matchingOption.value;
+                        errorDiv.classList.add("hidden");
+                    } else if (parsedInput.length > 0) {
+                        const partialMatchOption = options.find((option) => {
+                            if (!option.value) return false;
+                            const optionCode = option.value;
+
+                            return (
+                                optionCode.startsWith(parsedInput) ||
+                                parsedInput.startsWith(optionCode)
+                            );
+                        });
+
+                        // エラーメッセージを設定して表示
+                        errorDiv.textContent = partialMatchOption
+                            ? "⚠️ 部分一致する既定の部局があります。"
+                            : "❗ 一致する既定の部局がありません。";
+                        errorDiv.classList.remove("hidden");
+
+                        // 一致するものがない場合、セレクトをクリア
+                        if (!partialMatchOption) {
+                            select.value = "";
+                        }
+                    }
+                } else {
+                    select.value = "";
+                    hiddenInput.value =
+                        parsedInput.length === 0 ? "" : parsedInput;
+                }
+            }
+
+            function handleClassCodeSelect(value: string) {
+                const input = document.getElementById(
+                    "class-code-text"
+                ) as HTMLInputElement;
+                const hiddenInput = document.getElementById(
+                    "custom-class-code"
+                ) as HTMLInputElement;
+
+                input.value = value;
+                hiddenInput.value = value;
+                document
+                    .getElementById("class-code-error")
+                    ?.classList.add("hidden");
+            }
+
+            window.handleInput = handleInput;
+            window.clearSuggestions = clearSuggestions;
+            window.selectSuggestion = selectSuggestion;
+            window.handleClassCodeInput = handleClassCodeInput;
+            window.handleClassCodeSelect = handleClassCodeSelect;
+
+            // ページ読み込み後にすぐにデータを取得
+            fetchCourseData();
+
+            window.addEventListener("astro:page-swap", async () => {
+                courseData = [];
+                await fetchCourseData();
+            });
+        }
+    }
+    customElements.define("astro-search-from", AstroSearchForm);
+</script>

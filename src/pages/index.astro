@@ -1,25 +1,171 @@
 ---
-import '../styles/global.css';
-// Component Imports
-import Button from '../components/Button.astro';
-
-// Full Astro Component Syntax:
-// https://docs.astro.build/basics/astro-components/
+import Layout from "@/layouts/layout.astro";
+import { PATH_PAIRS } from "@/utils/const";
+import { styles } from "@/styles/style";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro + TailwindCSS</title>
-	</head>
+<Layout title="ハム大クロバス" description="ハム大のクロバスです。">
+    <div class="py-12">
+        <div class="max-w-3xl mx-auto px-4">
+            <h1
+                class="text-4xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 mb-4"
+            >
+                ハム大クロバス
+            </h1>
+            <p
+                class="text-center text-slate-600 dark:text-slate-300 text-lg mb-8"
+            >
+                授業を受講した皆の感想や愚痴が詰まったまとめサイトです。
+            </p>
 
-	<body>
-		<div class="grid place-items-center h-screen content-center">
-			<Button>Tailwind Button in Astro!</Button>
-			<a href="/markdown-page" class="p-4 underline">Markdown is also supported...</a>
-		</div>
-	</body>
-</html>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+                <a href="/search" class="group">
+                    <div class={styles.index.feature}>
+                        <h3
+                            class="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-300"
+                        >
+                            授業感想一覧
+                        </h3>
+                        <p class="text-slate-600 dark:text-slate-400">
+                            過去の授業の感想を検索・閲覧できます
+                        </p>
+                    </div>
+                </a>
+                <a href="/submit/" class="group">
+                    <div class={styles.index.feature}>
+                        <h3
+                            class="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-300"
+                        >
+                            感想を投稿する
+                        </h3>
+                        <p class="text-slate-600 dark:text-slate-400">
+                            受講した授業の感想を共有しましょう
+                        </p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-3xl mx-auto px-4 py-8">
+        <div class="mb-12">
+            <div class={styles.section.headingWrapper}>
+                <div
+                    class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
+                >
+                </div>
+                <h2 class={styles.section.title}>入力可能</h2>
+                <div
+                    class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
+                >
+                </div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {
+                    PATH_PAIRS()
+                        .filter((pair) => pair.type == "submit")
+                        .map((pair) => (
+                            <a
+                                href={`${pair.type}/${pair.path.year}/${pair.path.semester}`}
+                                class={styles.index.link}
+                            >
+                                <div class="text-slate-800 dark:text-slate-200">
+                                    {pair.path.year}年度
+                                </div>
+                                <div class="text-sm text-slate-600 dark:text-slate-400">
+                                    {pair.path.semester == "0"
+                                        ? "前期"
+                                        : "後期"}
+                                </div>
+                            </a>
+                        ))
+                }
+            </div>
+        </div>
+
+        <div class="mb-12">
+            <div class={styles.section.headingWrapper}>
+                <div
+                    class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
+                >
+                </div>
+                <h2 class={styles.section.title}>閲覧可能</h2>
+                <div
+                    class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
+                >
+                </div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {
+                    PATH_PAIRS()
+                        .filter((pair) => pair.type == "search")
+                        .map((pair) => (
+                            <a
+                                href={`${pair.type}/${pair.path.year}/${pair.path.semester}`}
+                                class={styles.index.link}
+                            >
+                                <div class="text-slate-800 dark:text-slate-200">
+                                    {pair.path.year}年度
+                                </div>
+                                <div class="text-sm text-slate-600 dark:text-slate-400">
+                                    {pair.path.semester == "0"
+                                        ? "前期"
+                                        : "後期"}
+                                </div>
+                            </a>
+                        ))
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-3xl mx-auto px-4 pb-12">
+        <div class="mb-8">
+            <div class={styles.section.headingWrapper}>
+                <div
+                    class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
+                >
+                </div>
+                <h2 class={styles.section.title}>使い方</h2>
+                <div
+                    class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
+                >
+                </div>
+            </div>
+            <div
+                class="bg-white/95 dark:bg-slate-800/90 border rounded-lg shadow-sm backdrop-blur-sm p-6"
+            >
+                <div class="grid gap-6 sm:grid-cols-2">
+                    <div>
+                        <h3
+                            class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3"
+                        >
+                            授業感想の閲覧
+                        </h3>
+                        <p class="text-slate-600 dark:text-slate-400 mb-4">
+                            <a
+                                href="/search"
+                                class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                                >授業感想一覧</a
+                            >から、過去の授業の感想を検索・閲覧できます。様々な授業の評価や感想を参考にしましょう。
+                        </p>
+                    </div>
+                    <div>
+                        <h3
+                            class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3"
+                        >
+                            感想の投稿
+                        </h3>
+                        <p class="text-slate-600 dark:text-slate-400 mb-4">
+                            <a
+                                href="/submit/"
+                                class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                                >授業感想を投稿する</a
+                            >から、あなたが受講した授業の感想を共有できます。他の学生の参考になる情報を提供しましょう。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>

@@ -1,0 +1,37 @@
+---
+import Layout from "@/layouts/layout.astro";
+import Search from "@/components/search.astro";
+import { styles } from "@/styles/style";
+export const prerender = false;
+const year = Astro.params.year;
+const semester = Astro.params.semester;
+import { PATH_PAIRS } from "@/utils/const";
+export function getStaticPaths() {
+    const availableYears = PATH_PAIRS().filter((pair) => pair.type == "submit");
+    return availableYears.map(({ type, path }) => ({
+        params: { year: path.year, semester: path.semester, type },
+    }));
+}
+---
+
+<Layout
+    title="ハム大クロバス"
+    description="授業を受講した皆の感想や愚痴が詰まったまとめサイトです。"
+>
+    <section class={styles.section.container}>
+        <div class={styles.section.headingWrapper}>
+            <div
+                class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
+            >
+            </div>
+            <h2 class={styles.section.title}>感想を投稿</h2>
+            <div
+                class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
+            >
+            </div>
+        </div>
+        <div class={styles.section.content}>
+            <Search target="submit" year={year} semester={semester} />
+        </div>
+    </section>
+</Layout>

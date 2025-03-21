@@ -1,0 +1,47 @@
+---
+import Layout from "@/src/layouts/layout.astro";
+import { styles } from "@/styles/style";
+export const prerender = false;
+
+const courseId = Astro.params.id;
+if (!courseId) {
+    return Astro.response(404, "Not Found");
+}
+---
+
+<Layout title="感想投稿" description="授業の感想を共有しよう">
+    <section class={styles.section.container}>
+        <div class={styles.section.headingWrapper}>
+            <div
+                class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
+            >
+            </div>
+            <h2 class={styles.section.title}>感想を投稿</h2>
+            <div
+                class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
+            >
+            </div>
+        </div>
+        <div class={styles.section.content}>
+            <form action="/api/submit" method="post">
+                <div class="mb-4">
+                    <label for="name" class={styles.form.label}>名前</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        class={styles.form.input}
+                    />
+                </div>
+                <div class="mb-4">
+                    <label for="content" class={styles.form.label}>感想</label>
+                    <textarea
+                        id="content"
+                        name="content"
+                        rows="3"
+                        class={styles.form.textarea}></textarea>
+                </div>
+            </form>
+        </div>
+    </section>
+</Layout>

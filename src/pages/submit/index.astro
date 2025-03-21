@@ -1,0 +1,28 @@
+---
+import Layout from "@/layouts/layout.astro";
+import Search from "@/components/search.astro";
+import { styles } from "@/styles/style";
+export const prerender = false;
+---
+
+<Layout
+    title="ハム大クロバス"
+    description="授業を受講した皆の感想や愚痴が詰まったまとめサイトです。"
+>
+    <section class={styles.section.container}>
+        <div class={styles.section.headingWrapper}>
+            <div
+                class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
+            >
+            </div>
+            <h2 class={styles.section.title}>感想を投稿</h2>
+            <div
+                class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
+            >
+            </div>
+        </div>
+        <div class={styles.section.content}>
+            <Search target="submit" />
+        </div>
+    </section>
+</Layout>
