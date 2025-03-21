@@ -50,7 +50,7 @@ describe("Search Queries", () => {
             semester: "1",
         };
         const searchResults = await search(query, courses);
-        const codes = searchResults.map((result) => result.code);
+        const codes = searchResults.map((result) => result.id);
         const uniqueCodes = [...new Set(codes)];
         expect(codes.length).toEqual(uniqueCodes.length);
     });
