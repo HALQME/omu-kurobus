@@ -13,13 +13,23 @@ export const CourseSchema = z.object({
 });
 export type Course = z.infer<typeof CourseSchema>;
 
-export const CourseEmbedSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    teachers: z.string(),
-    campus: z.string(),
+export const CourseEmbedSchema = CourseSchema.pick({
+    id: true,
+    name: true,
+    teachers: true,
+    campus: true,
 });
 export type CourseEmbed = z.infer<typeof CourseEmbedSchema>;
+
+export const NanoCourseSchema = CourseSchema.pick({
+    id: true,
+    name: true,
+    teachers: true,
+    semester: true,
+    period: true,
+    campus: true,
+});
+export type NanoCourse = z.infer<typeof NanoCourseSchema>;
 
 export const ResponseSchema = z.object({
     code: z.number(),
