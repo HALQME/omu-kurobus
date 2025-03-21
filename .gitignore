@@ -27,4 +27,4 @@ pnpm-debug.log*
 .vercel
 
 # local database
-utils/local.db
+local.db
