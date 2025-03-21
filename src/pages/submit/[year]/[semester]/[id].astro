@@ -16,59 +16,106 @@ if (!id || !year || !semester) {
     return Astro.redirect("/404");
 }
 
-// フォーム送信処理
+let errors = {
+    courseTypes: "",
+    evalCriteria: "",
+    classDifficulty: "",
+    testDifficulty: "",
+    testAmount: "",
+    gradingCriteria: "",
+    recommendation: "",
+};
+
+let formData: ReviewForm | null = null;
+
 if (Astro.request.method === "POST") {
     try {
         const data = await Astro.request.formData();
-        const formData: ReviewForm = {
-            course_id: id,
-            student_department:
-                data.get("studentNumber")?.toString().substring(0, 3) || "",
-            courseType: data
-                .getAll("courseType")
-                .map((value) => String(value)) as Array<
-                (typeof courseTypes)[number]
-            >,
-            courseTypeOtherText:
-                (data.get("courseTypeOtherText") as string) || undefined,
-            evalCriteria: data
-                .getAll("evalCriteria")
-                .map((value) => String(value)) as Array<
-                (typeof evalCriteriaTypes)[number]
-            >,
-            evalCriteriaOtherText:
-                (data.get("evalCriteriaOtherText") as string) || undefined,
-            testType:
-                (data.get("testType") as (typeof testTypes)[number]) ||
-                undefined,
-            testTypeOtherText:
-                (data.get("testTypeOtherText") as string) || undefined,
-            testItems: data.has("testItems")
-                ? (data
-                      .getAll("testItems")
-                      .map((value) => String(value)) as any as Array<
-                      (typeof testItemTypes)[number]
-                  >)
-                : undefined,
-            testItemsOtherText:
-                (data.get("testItemsOtherText") as string) || undefined,
-            classDifficulty: parseInt(data.get("classDifficulty") as string),
-            testDifficulty: parseInt(data.get("testDifficulty") as string),
-            testAmount: parseInt(data.get("testAmount") as string),
-            gradingCriteria: parseInt(data.get("gradingCriteria") as string),
-            recommendation: parseInt(data.get("recommendation") as string),
-            goodPoint: (data.get("goodPoint") as string) || undefined,
-            notGoodPoint: (data.get("notGoodPoint") as string) || undefined,
-            comment: (data.get("comment") as string) || undefined,
+
+        const student_department = data.get("studentNumber");
+        const courseType = data.getAll("courseType");
+        const courseTypeOtherText = data.get("courseTypeOtherText");
+        const evalCriteria = data.getAll("evalCriteria");
+        const evalCriteriaOtherText = data.get("evalCriteriaOtherText");
+        const testType = data.get("testType");
+        const testTypeOtherText = data.get("testTypeOtherText");
+        const testItems = data.getAll("testItems");
+        const testItemsOtherText = data.get("testItemsOtherText");
+        const classDifficulty = data.get("classDifficulty")
+            ? Number(data.get("classDifficulty"))
+            : undefined;
+        const testDifficulty = data.get("testDifficulty")
+            ? Number(data.get("testDifficulty"))
+            : undefined;
+        const testAmount = data.get("testAmount")
+            ? Number(data.get("testAmount"))
+            : undefined;
+        const gradingCriteria = data.get("gradingCriteria")
+            ? Number(data.get("gradingCriteria"))
+            : undefined;
+        const recommendation = data.get("recommendation")
+            ? Number(data.get("recommendation"))
+            : undefined;
+        const goodPoint = data.get("goodPoint");
+        const notGoodPoint = data.get("notGoodPoint");
+        const comment = data.get("comment");
+
+        if (courseType.length === 0) {
+            errors.courseTypes = "この項目は必須です。";
+        }
+        if (evalCriteria.length === 0) {
+            errors.evalCriteria = "この項目は必須です。";
+        }
+        if (!classDifficulty) {
+            errors.classDifficulty = "この項目は必須です。";
+        } else if (classDifficulty == 0) {
+            errors.classDifficulty = "初期値は許可されていません。";
+        }
+        if (!testDifficulty) {
+            errors.testDifficulty = "この項目は必須です";
+        }
+        if (!testAmount && testAmount === 0) {
+            errors.testAmount = "この項目は必須です";
+        }
+        if (!gradingCriteria && gradingCriteria === 0) {
+            errors.gradingCriteria = "この項目は必須です";
+        }
+        if (!recommendation && recommendation === 0) {
+            errors.recommendation = "この項目は必須です";
+        }
+        const hasErrors = Object.values(errors).some((error) => error !== "");
+        formData = {
+            course_id: id as string,
+            student_department: student_department as string,
+            courseType: courseType as (typeof courseTypes)[number][],
+            courseTypeOtherText: courseTypeOtherText as string,
+            evalCriteria: evalCriteria as (typeof evalCriteriaTypes)[number][],
+            evalCriteriaOtherText: evalCriteriaOtherText as string,
+            testType: testType as (typeof testTypes)[number],
+            testTypeOtherText: testTypeOtherText as string,
+            testItems: testItems as (typeof testItemTypes)[number][],
+            testItemsOtherText: testItemsOtherText as string,
+            classDifficulty: classDifficulty!,
+            testDifficulty: testDifficulty!,
+            testAmount: testAmount!,
+            gradingCriteria: gradingCriteria!,
+            recommendation: recommendation!,
+            goodPoint: goodPoint as string,
+            notGoodPoint: notGoodPoint as string,
+            comment: comment as string,
         };
+        if (!hasErrors) {
+            const result = ReviewFormSchema.safeParse(formData);
+            if (result.success) {
+                console.log("Form validation passed:", result.data);
+                // データベースに保存する処理を追加
 
-        // Validate the form data with Zod
-        const result = ReviewFormSchema.safeParse(formData);
-
-        if (result.success) {
-            console.log("Form submitted successfully:", result.data);
-        } else {
-            console.error("Form validation failed:", result.error);
+                return Astro.redirect(
+                    `/submit/${year}/${semester}/success?id=${id}`
+                );
+            } else {
+                console.error("Form validation failed:", result.error);
+            }
         }
     } catch (error) {
         console.error("Error processing form:", error);
@@ -101,9 +148,10 @@ if (Astro.request.method === "POST") {
                         type="text"
                         id="studentNumber"
                         name="studentNumber"
-                        class={styles.form.input}
+                        class={`${styles.form.input}`}
                         pattern="[A-Z]{3}[0-9]{5}"
                         required
+                        value={""}
                     />
                     <small>
                         この情報はデータベースに登録されません。学部・学科の情報の確認に使用されます。
@@ -188,6 +236,13 @@ if (Astro.request.method === "POST") {
                                     />
                                 </div>
                             </div>
+                            {
+                                errors.courseTypes && (
+                                    <p class="text-red-500 text-sm">
+                                        {errors.courseTypes}
+                                    </p>
+                                )
+                            }
                         </div>
                         <!-- 評価基準 -->
                         <div class={styles.form.group.container}>
@@ -301,9 +356,16 @@ if (Astro.request.method === "POST") {
                                     />
                                 </div>
                             </div>
+                            {
+                                errors.evalCriteria && (
+                                    <p class="text-red-500 text-sm">
+                                        {errors.evalCriteria}
+                                    </p>
+                                )
+                            }
                         </div>
 
-                        <!-- テストの実施形態 -->
+                        {/* テストの実施形態 */}
                         <div class={styles.form.group.container}>
                             <label class={styles.form.label}>
                                 テストの実施形態
@@ -464,10 +526,11 @@ if (Astro.request.method === "POST") {
                                     <input
                                         type="range"
                                         name="classDifficulty"
-                                        min="1"
-                                        max="4"
+                                        min="-2"
+                                        max="2"
                                         required
-                                        class={styles.form.slider.input}
+                                        value={formData?.classDifficulty ?? "0"}
+                                        class={`${styles.form.slider.input}`}
                                     />
                                 </div>
                                 <div class={styles.form.slider.labels}>
@@ -475,6 +538,13 @@ if (Astro.request.method === "POST") {
                                     <span>簡単</span>
                                 </div>
                             </div>
+                            {
+                                errors.classDifficulty && (
+                                    <p class="text-red-500 text-sm">
+                                        {errors.classDifficulty}
+                                    </p>
+                                )
+                            }
                         </div>
                         <div class={styles.form.group.container}>
                             <label class={styles.form.label}>
@@ -487,10 +557,11 @@ if (Astro.request.method === "POST") {
                                     <input
                                         type="range"
                                         name="testDifficulty"
-                                        min="1"
-                                        max="4"
+                                        min="-2"
+                                        max="2"
                                         required
-                                        class={styles.form.slider.input}
+                                        value={formData?.testDifficulty ?? "0"}
+                                        class={`${styles.form.slider.input} `}
                                     />
                                 </div>
                                 <div class={styles.form.slider.labels}>
@@ -498,6 +569,13 @@ if (Astro.request.method === "POST") {
                                     <span>簡単</span>
                                 </div>
                             </div>
+                            {
+                                errors.testDifficulty && (
+                                    <p class="text-red-500 text-sm">
+                                        {errors.testDifficulty}
+                                    </p>
+                                )
+                            }
                         </div>
                         <div class={styles.form.group.container}>
                             <label class={styles.form.label}>
@@ -510,10 +588,11 @@ if (Astro.request.method === "POST") {
                                     <input
                                         type="range"
                                         name="testAmount"
-                                        min="1"
-                                        max="4"
+                                        min="-2"
+                                        max="2"
                                         required
-                                        class={styles.form.slider.input}
+                                        value={formData?.testAmount ?? "0"}
+                                        class={`${styles.form.slider.input} `}
                                     />
                                 </div>
                                 <div class={styles.form.slider.labels}>
@@ -521,6 +600,13 @@ if (Astro.request.method === "POST") {
                                     <span>少ない</span>
                                 </div>
                             </div>
+                            {
+                                errors.testAmount && (
+                                    <p class="text-red-500 text-sm">
+                                        {errors.testAmount}
+                                    </p>
+                                )
+                            }
                         </div>
                         <div class={styles.form.group.container}>
                             <label class={styles.form.label}>
@@ -532,9 +618,10 @@ if (Astro.request.method === "POST") {
                                     <input
                                         type="range"
                                         name="gradingCriteria"
-                                        min="1"
-                                        max="4"
+                                        min="-2"
+                                        max="2"
                                         required
+                                        value={formData?.gradingCriteria ?? "0"}
                                         class={styles.form.slider.input}
                                     />
                                 </div>
@@ -543,6 +630,13 @@ if (Astro.request.method === "POST") {
                                     <span>緩い</span>
                                 </div>
                             </div>
+                            {
+                                errors.gradingCriteria && (
+                                    <p class="text-red-500 text-sm">
+                                        {errors.gradingCriteria}
+                                    </p>
+                                )
+                            }
                         </div>
                         <div class={styles.form.group.container}>
                             <label class={styles.form.label}>
@@ -553,9 +647,10 @@ if (Astro.request.method === "POST") {
                                     <input
                                         type="range"
                                         name="recommendation"
-                                        min="1"
-                                        max="4"
+                                        min="-2"
+                                        max="2"
                                         required
+                                        value={formData?.recommendation ?? "0"}
                                         class={styles.form.slider.input}
                                     />
                                 </div>
@@ -564,6 +659,13 @@ if (Astro.request.method === "POST") {
                                     <span>お勧め</span>
                                 </div>
                             </div>
+                            {
+                                errors.recommendation && (
+                                    <p class="text-red-500 text-sm">
+                                        {errors.recommendation}
+                                    </p>
+                                )
+                            }
                         </div>
                     </section>
                     <section class="mb-4" aria-labelledby="comments">

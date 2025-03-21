@@ -57,10 +57,10 @@ export const SuggestionResultSchema = z.object({
 export type SuggestionResult = z.infer<typeof SuggestionResultSchema>;
 
 // スライダー値のスキーマ（初期値なしで必須）
-const sliderSchema = z.number().int().min(1).max(4);
+const sliderSchema = z.number().int().min(-2).max(2);
 
 // その他テキスト入力のスキーマ
-const otherTextSchema = z.string().max(100).optional();
+const otherTextSchema = z.string().max(100).nullable();
 
 // 授業形態の選択肢
 export const courseTypes = [
@@ -95,22 +95,22 @@ export const testItemTypes = [
 export const ReviewFormSchema = z.object({
     // 基本情報
     course_id: z.string(),
-    student_department: z.string().regex(/^[A-Z]{3}$/),
+    student_department: z.string().regex(/^[A-Z]{3}[0-9]{5}$/),
 
     // 授業形態（複数選択）
-    courseType: z.array(z.enum(courseTypes).optional()),
+    courseType: z.array(z.enum(courseTypes)),
     courseTypeOtherText: otherTextSchema,
 
     // 評価基準（複数選択）
-    evalCriteria: z.array(z.enum(evalCriteriaTypes).optional()),
+    evalCriteria: z.array(z.enum(evalCriteriaTypes)),
     evalCriteriaOtherText: otherTextSchema,
 
     // テストの実施形態
-    testType: z.enum(testTypes).optional(),
+    testType: z.enum(testTypes).nullable(),
     testTypeOtherText: otherTextSchema,
 
     // テスト持ち込み
-    testItems: z.array(z.enum(testItemTypes)).optional(),
+    testItems: z.array(z.enum(testItemTypes)).nullable(),
     testItemsOtherText: otherTextSchema,
 
     // 評価（すべて必須）
@@ -120,7 +120,7 @@ export const ReviewFormSchema = z.object({
     gradingCriteria: sliderSchema,
     recommendation: sliderSchema,
 
-    // コメント（必須）
+    // コメント
     goodPoint: z.string().max(1000).optional(),
     notGoodPoint: z.string().max(1000).optional(),
     comment: z.string().max(1000).optional(),
