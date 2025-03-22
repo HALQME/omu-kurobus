@@ -24,7 +24,9 @@ export const GET: APIRoute = async ({ params }) => {
         console.log(`Using mock data`);
         data = MockData;
     } else {
-        data = await fetchData(year!, semester!).then(embeddedData);
+        data = await fetchData(year!, semester!).then((data) =>
+            embeddedData(data, year!, semester!)
+        );
     }
 
     return new Response(JSON.stringify(data, null, 2), {
@@ -42,13 +44,23 @@ const fetchData = async (year: string, semester: string) => {
     return res.json() as unknown as Course[];
 };
 
-const embeddedData = (data: Course[]): CourseEmbed[] => {
-    return data.map((course) => {
-        return {
+const embeddedData = (
+    data: Course[],
+    year: string,
+    semester: string
+): CourseEmbed[] => {
+    const semesterValue = year + "年度" + (semester === "1" ? "前期" : "後期");
+    const courseEmbeds: CourseEmbed[] = data.map((course) => {
+        const courseEmbed: CourseEmbed = {
             id: course.id,
             name: course.name,
             teachers: course.teachers,
             campus: course.campus,
+            semester:
+                course.semester === semesterValue ? semesterValue : undefined,
+            period: course.period,
         };
+        return courseEmbed;
     });
+    return courseEmbeds;
 };
