@@ -28,7 +28,6 @@ declare global {
         aria-label="授業クイック検索フォーム"
     >
         <div class="mb-3 relative">
-            <label for="quick" class={styles.label}>授業名</label>
             <input
                 id="quick"
                 name="quick"
@@ -38,7 +37,7 @@ declare global {
                 oninput="handleInput('quick', 'quick')"
                 onblur="setTimeout(() => clearSuggestions('quick'), 200)"
                 aria-describedby="quick-results"
-                placeholder="授業名を入力してください"
+                placeholder="検索"
             />
             <div
                 id="quick-results"
@@ -135,10 +134,10 @@ declare global {
                             }
 
                             return `
-                            <a 
+                            <a
                                 id=${result.id}
                                 href="/${target}/${year}/${semester}/${result.id}"
-                                onclick=""
+                                onclick="setNanoCourse(${JSON.stringify(result).replace(/"/g, "&quot;")}); return true;"
                             >
                                 <div class="p-2 ${matchClass}">
                                 <div class="text-xs text-gray-500 dark:text-gray-300">
@@ -189,7 +188,17 @@ declare global {
             }
 
             function setNanoCourse(course: CourseEmbed) {
-                setCourse(course);
+                let courseData: CourseEmbed = {
+                    id: course.id,
+                    name: course.name,
+                    teachers: course.teachers,
+                    campus: course.campus,
+                    period: course.period,
+                    semester:
+                        course.semester ??
+                        year + "年度" + (semester === "0" ? "前期" : "後期"),
+                };
+                setCourse(courseData);
             }
 
             window.handleInput = handleInput;
