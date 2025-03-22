@@ -119,14 +119,16 @@ const SEARCH_PAIRS = () => {
         }
     }
 
-    return archivedPairs.filter(
-        (pair) =>
-            !availablePairs.some(
-                (availablePair) =>
-                    availablePair.path.year === pair.path.year &&
-                    availablePair.path.semester === pair.path.semester
-            )
-    );
+    return archivedPairs
+        .filter(
+            (pair) =>
+                !availablePairs.some(
+                    (availablePair) =>
+                        availablePair.path.year === pair.path.year &&
+                        availablePair.path.semester === pair.path.semester
+                )
+        )
+        .slice(0, 6);
 };
 
 const NEGATIVE_PAIRS = () => {

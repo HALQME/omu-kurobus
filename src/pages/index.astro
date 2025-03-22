@@ -2,6 +2,7 @@
 import Layout from "@/layouts/layout.astro";
 import { PATH_PAIRS } from "@/utils/const";
 import { styles } from "@/styles/style";
+import QuickSearch from "../components/quick-search.astro";
 ---
 
 <Layout title="ハム大クロバス" description="ハム大のクロバスです。">
@@ -47,122 +48,124 @@ import { styles } from "@/styles/style";
         </div>
     </div>
 
-    <div class="max-w-3xl mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto px-4">
         <div class="mb-12">
             <div class={styles.section.headingWrapper}>
                 <div
                     class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
                 >
                 </div>
-                <h2 class={styles.section.title}>入力可能</h2>
+                <h2 class={styles.section.title}>感想募集中</h2>
                 <div
                     class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
                 >
                 </div>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div class="mb-8">
                 {
-                    PATH_PAIRS()
-                        .filter((pair) => pair.type == "submit")
-                        .map((pair) => (
-                            <a
-                                href={`${pair.type}/${pair.path.year}/${pair.path.semester}`}
-                                class={styles.index.link}
-                            >
-                                <div class="text-slate-800 dark:text-slate-200">
+                        PATH_PAIRS()
+                            .filter((pair) => pair.type == "submit")
+                            .slice(0, 1)
+                            .map((pair) => (
+                                
+                                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">
                                     {pair.path.year}年度
-                                </div>
-                                <div class="text-sm text-slate-600 dark:text-slate-400">
                                     {pair.path.semester == "0"
                                         ? "前期"
                                         : "後期"}
-                                </div>
-                            </a>
-                        ))
-                }
+                                </h3>
+                                <QuickSearch
+                                    target="submit"
+                                    year={pair.path.year}
+                                    semester={pair.path.semester}
+                                />
+                            ))
+                    }
             </div>
-        </div>
 
-        <div class="mb-12">
-            <div class={styles.section.headingWrapper}>
-                <div
-                    class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
-                >
-                </div>
-                <h2 class={styles.section.title}>閲覧可能</h2>
-                <div
-                    class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
-                >
-                </div>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {
-                    PATH_PAIRS()
-                        .filter((pair) => pair.type == "search")
-                        .map((pair) => (
-                            <a
-                                href={`${pair.type}/${pair.path.year}/${pair.path.semester}`}
-                                class={styles.index.link}
-                            >
-                                <div class="text-slate-800 dark:text-slate-200">
-                                    {pair.path.year}年度
-                                </div>
-                                <div class="text-sm text-slate-600 dark:text-slate-400">
-                                    {pair.path.semester == "0"
-                                        ? "前期"
-                                        : "後期"}
-                                </div>
-                            </a>
-                        ))
-                }
-            </div>
-        </div>
-    </div>
-
-    <div class="max-w-3xl mx-auto px-4 pb-12">
-        <div class="mb-8">
-            <div class={styles.section.headingWrapper}>
-                <div
-                    class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
-                >
-                </div>
-                <h2 class={styles.section.title}>使い方</h2>
-                <div
-                    class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
-                >
-                </div>
-            </div>
-            <div
-                class="bg-white/95 dark:bg-slate-800/90 border rounded-lg shadow-sm backdrop-blur-sm p-6"
-            >
-                <div class="grid gap-6 sm:grid-cols-2">
-                    <div>
-                        <h3
-                            class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3"
-                        >
-                            授業感想の閲覧
-                        </h3>
-                        <p class="text-slate-600 dark:text-slate-400 mb-4">
-                            <a
-                                href="/search"
-                                class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
-                                >授業感想一覧</a
-                            >から、過去の授業の感想を検索・閲覧できます。様々な授業の評価や感想を参考にしましょう。
-                        </p>
+            <div class="mb-12">
+                <div class={styles.section.headingWrapper}>
+                    <div
+                        class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
+                    >
                     </div>
-                    <div>
-                        <h3
-                            class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3"
-                        >
-                            感想の投稿
-                        </h3>
-                        <p class="text-slate-600 dark:text-slate-400 mb-4">
-                            <a
-                                href="/submit/"
-                                class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
-                                >授業感想を投稿する</a
-                            >から、あなたが受講した授業の感想を共有できます。他の学生の参考になる情報を提供しましょう。
-                        </p>
+                    <h2 class={styles.section.title}>閲覧可能</h2>
+                    <div
+                        class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
+                    >
+                    </div>
+                </div>
+                <div
+                    class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
+                >
+                    {
+                        PATH_PAIRS()
+                            .filter((pair) => pair.type == "search")
+                            .map((pair) => (
+                                <a
+                                    href={`${pair.type}/${pair.path.year}/${pair.path.semester}`}
+                                    class={styles.index.link}
+                                >
+                                    <div class="text-slate-800 dark:text-slate-200">
+                                        {pair.path.year}年度
+                                    </div>
+                                    <div class="text-sm text-slate-600 dark:text-slate-400">
+                                        {pair.path.semester == "0"
+                                            ? "前期"
+                                            : "後期"}
+                                    </div>
+                                </a>
+                            ))
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-3xl mx-auto px-4 pb-12">
+            <div class="mb-8">
+                <div class={styles.section.headingWrapper}>
+                    <div
+                        class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
+                    >
+                    </div>
+                    <h2 class={styles.section.title}>使い方</h2>
+                    <div
+                        class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
+                    >
+                    </div>
+                </div>
+                <div
+                    class="bg-white/95 dark:bg-slate-800/90 border rounded-lg shadow-sm backdrop-blur-sm p-6"
+                >
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <div>
+                            <h3
+                                class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3"
+                            >
+                                授業感想の閲覧
+                            </h3>
+                            <p class="text-slate-600 dark:text-slate-400 mb-4">
+                                <a
+                                    href="/search"
+                                    class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                                    >授業感想一覧</a
+                                >から、過去の授業の感想を検索・閲覧できます。様々な授業の評価や感想を参考にしましょう。
+                            </p>
+                        </div>
+                        <div>
+                            <h3
+                                class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3"
+                            >
+                                感想の投稿
+                            </h3>
+                            <p class="text-slate-600 dark:text-slate-400 mb-4">
+                                <a
+                                    href="/submit/"
+                                    class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                                    >授業感想を投稿する</a
+                                >から、あなたが受講した授業の感想を共有できます。他の学生の参考になる情報を提供しましょう。
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

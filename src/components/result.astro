@@ -31,8 +31,7 @@ const truncateTeacherName = (name: string, maxLength: number = 15) => {
     data-year={year}
     data-semester={semester}
     data-target={target}
->
-    <div class={styles.card.container}>
+    ><div class={styles.card.container}>
         <span class="hidden">
             {matchScore(result.score)}
             %
@@ -96,7 +95,6 @@ const truncateTeacherName = (name: string, maxLength: number = 15) => {
                 campus: this.getAttribute("data-result-campus") as string,
                 period: this.getAttribute("data-result-period") as string,
                 semester: this.getAttribute("data-result-semester") as string,
-                grade: this.getAttribute("data-result-grade") as string,
             };
 
             const year = this.getAttribute("data-year") as string;
