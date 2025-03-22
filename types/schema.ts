@@ -17,18 +17,19 @@ export const CourseEmbedSchema = CourseSchema.pick({
     id: true,
     name: true,
     teachers: true,
+    period: true,
     campus: true,
+}).extend({
+    semester: z.string().optional(),
 });
 export type CourseEmbed = z.infer<typeof CourseEmbedSchema>;
 
-export const NanoCourseSchema = CourseSchema.pick({
-    id: true,
-    name: true,
-    teachers: true,
-    semester: true,
-    period: true,
-    campus: true,
+export const QuickSearchResult = CourseEmbedSchema.extend({
+    score: z.number().optional(),
 });
+export type QuickSearchResult = z.infer<typeof QuickSearchResult>;
+
+export const NanoCourseSchema = CourseEmbedSchema;
 export type NanoCourse = z.infer<typeof NanoCourseSchema>;
 
 export const ResponseSchema = z.object({
