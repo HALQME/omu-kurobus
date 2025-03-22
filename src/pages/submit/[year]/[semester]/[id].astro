@@ -11,6 +11,8 @@ import {
 } from "@/types/schema";
 import type { ReviewForm, testTypes } from "@/types/schema";
 
+import { post } from "@/utils/post";
+
 const { year, semester, id } = Astro.params;
 if (!id || !year || !semester) {
     return Astro.redirect("/404");
@@ -107,18 +109,29 @@ if (Astro.request.method === "POST") {
         if (!hasErrors) {
             const result = ReviewFormSchema.safeParse(formData);
             if (result.success) {
-                console.log("Form validation passed:", result.data);
-                // データベースに保存する処理を追加
-
-                return Astro.redirect(
-                    `/submit/${year}/${semester}/success?id=${id}`
-                );
+                const response = await post(result.data);
+                if (response.rowsAffected === 1) {
+                    console.log(
+                        "Sucsess to write Data",
+                        response.lastInsertRowid
+                    );
+                    return Astro.redirect(
+                        `/submit/${year}/${semester}/success?id=${id}`
+                    );
+                } else {
+                    console.error(
+                        "Failed to post data: miss match rowsAffected"
+                    );
+                    return Astro.redirect(`/failed/?id=${id}`);
+                }
             } else {
-                console.error("Form validation failed:", result.error);
+                console.error("Failed to post data: invalid data");
+                return Astro.redirect(`failed/?id=${id}`);
             }
         }
     } catch (error) {
-        console.error("Error processing form:", error);
+        console.error("Failed to post data: ", error);
+        return Astro.redirect(`failed/?id=${id}`);
     }
 }
 ---
