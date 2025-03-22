@@ -1,0 +1,209 @@
+---
+import { styles } from "@/styles/style";
+import type { CourseEmbed } from "@/types/schema";
+interface Props {
+    target: "search" | "submit";
+    year: string;
+    semester: string;
+}
+const { target, year: yearProp, semester: semesterProp } = Astro.props;
+
+export const prerender = false;
+declare global {
+    interface Window {
+        setNanoCourse: (course: CourseEmbed) => void;
+    }
+}
+---
+
+<astro-quick-search
+    data-target={target}
+    data-year={yearProp}
+    data-semester={semesterProp}
+>
+    <form
+        class="max-w-3xl mx-auto space-y-4 transition-all transform"
+        method="POST"
+        astro-data={target}
+        aria-label="授業クイック検索フォーム"
+    >
+        <div class="mb-3 relative">
+            <label for="quick" class={styles.label}>授業名</label>
+            <input
+                id="quick"
+                name="quick"
+                type="text"
+                class={`${styles.input} ${styles.inputFocus}`}
+                autocomplete="off"
+                oninput="handleInput('quick', 'quick')"
+                onblur="setTimeout(() => clearSuggestions('quick'), 200)"
+                aria-describedby="quick-results"
+                placeholder="授業名を入力してください"
+            />
+            <div
+                id="quick-results"
+                class={`${styles.suggestions} hidden`}
+                role="listbox"
+                aria-hidden="true"
+            >
+            </div>
+        </div>
+    </form>
+</astro-quick-search>
+
+<script>
+    import type { CourseEmbed } from "@/types/schema";
+    import { quickSearch } from "@/utils/quicksearch";
+    import { setCourse } from "@/utils/store";
+    class AstroQuickSearch extends HTMLElement {
+        constructor() {
+            super();
+            let courseData: CourseEmbed[] = [];
+
+            const target = this.getAttribute("data-target") || "search";
+            const year = this.getAttribute("data-year") || "";
+            const semester = this.getAttribute("data-semester") || "";
+
+            async function fetchCourseData() {
+                try {
+                    if (courseData.length > 0) return; // 既にデータがある場合は再取得しない
+
+                    const courseUrl = `${window.location.origin}/api/courses/${year}/${semester}/data.json`;
+                    console.log("Fetching courses from:", courseUrl);
+
+                    const response = await fetch(courseUrl);
+                    if (!response.ok) {
+                        throw new Error(
+                            `Failed to fetch course data: ${response.status}`
+                        );
+                    }
+
+                    const json = await response.json();
+                    courseData = Array.isArray(json) ? json : json.data || [];
+                    console.log(`Loaded ${courseData.length} courses`);
+                } catch (error) {
+                    console.error("Failed to fetch course data:", error);
+                }
+            }
+
+            async function handleInput(inputId: string) {
+                const input = document.getElementById(
+                    inputId
+                ) as HTMLInputElement;
+                const resultsDiv = document.getElementById(
+                    `${inputId}-results`
+                ) as HTMLDivElement;
+
+                if (!input || !resultsDiv) {
+                    console.error(
+                        `Element not found: ${inputId} or ${inputId}-results`
+                    );
+                    return;
+                }
+
+                if (!courseData.length) {
+                    await fetchCourseData();
+                }
+
+                const searchText = input.value.trim();
+                if (!searchText) {
+                    resultsDiv.innerHTML = "";
+                    resultsDiv.classList.add("hidden");
+                    return;
+                }
+
+                const results = await quickSearch(searchText, courseData);
+
+                if (results.length > 0) {
+                    resultsDiv.setAttribute("aria-hidden", "false");
+                    resultsDiv.innerHTML = results
+                        .map((result) => {
+                            const score = result.score || 0;
+                            let matchClass = "";
+
+                            if (score < 0.1) {
+                                matchClass = "border-l-4 border-green-500";
+                            } else if (score < 0.4) {
+                                matchClass = "border-l-4 border-sky-500";
+                            } else if (score < 0.6) {
+                                matchClass = "border-l-4 border-yellow-500";
+                            } else if (score < 0.8) {
+                                matchClass = "border-l-4 border-orange-500";
+                            } else {
+                                matchClass =
+                                    "border-l-4 border-gray-300 dark:border-gray-600";
+                            }
+
+                            return `
+                            <a 
+                                id=${result.id}
+                                href="/${target}/${year}/${semester}/${result.id}"
+                                onclick=""
+                            >
+                                <div class="p-2 ${matchClass}">
+                                <div class="text-xs text-gray-500 dark:text-gray-300">
+                                        ${result.id}
+                                    </div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                                        ${result.name} - ${result.teachers}
+                                    </div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-300">
+                                        ${result.campus} | ${result.period}
+                                    </div>
+                                </div>
+                            </a>
+                `;
+                        })
+                        .join("");
+                    resultsDiv.classList.remove("hidden");
+                } else {
+                    resultsDiv.innerHTML = "";
+                    resultsDiv.classList.add("hidden");
+                    resultsDiv.setAttribute("aria-hidden", "true");
+                }
+                input.focus();
+            }
+
+            function selectSuggestion(inputId: string, result: string) {
+                const input = document.getElementById(
+                    inputId
+                ) as HTMLInputElement;
+                if (!input) {
+                    console.error(`Input element not found: ${inputId}`);
+                    return;
+                }
+
+                input.value = result;
+                clearSuggestions(inputId);
+            }
+
+            function clearSuggestions(inputId: string) {
+                const resultsDiv = document.getElementById(
+                    `${inputId}-results`
+                );
+                if (resultsDiv) {
+                    resultsDiv.innerHTML = "";
+                    resultsDiv.classList.add("hidden");
+                    resultsDiv.setAttribute("aria-hidden", "true");
+                }
+            }
+
+            function setNanoCourse(course: CourseEmbed) {
+                setCourse(course);
+            }
+
+            window.handleInput = handleInput;
+            window.clearSuggestions = clearSuggestions;
+            window.selectSuggestion = selectSuggestion;
+            window.setNanoCourse = setNanoCourse;
+
+            fetchCourseData();
+
+            window.addEventListener("astro:page-swap", async () => {
+                courseData = [];
+                await fetchCourseData();
+            });
+        }
+    }
+    customElements.define("astro-quick-search", AstroQuickSearch);
+</script>
