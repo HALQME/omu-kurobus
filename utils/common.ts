@@ -1,24 +1,16 @@
 import { nanoid } from "nanoid";
 
-export function parseClassCode(code: string): string {
-    // 数字+アルファベット+数字のパターンを抽出
-    const match = code.match(/(\d*)([A-Za-z]+)(\d*)/);
-    if (!match) return code;
-
-    const [, prefix, department, suffix] = match;
-
-    // 学部コードを3文字に正規化
-    let normalizedDepartment = department;
-    if (department.length > 4) {
-        normalizedDepartment = department.slice(-3);
+export const parseClassCode = (classCode: string): string => {
+    if (classCode.length < 3) {
+        return classCode.padStart(3, "1");
+    } else if (classCode.length === 3 || classCode.length === 4) {
+        return classCode;
+    } else if (classCode.length < 7) {
+        return classCode.substring(0, 3);
+    } else {
+        return classCode.substring(4, 7);
     }
-
-    // プレフィックスがない場合は1を追加
-    const normalizedPrefix = prefix || "1";
-
-    // サフィックスは使用しない
-    return `${normalizedPrefix}${normalizedDepartment}`;
-}
+};
 
 export function extractTeachers(teachers: string): string[] {
     if (!teachers) return [];
