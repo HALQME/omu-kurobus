@@ -28,3 +28,5 @@ pnpm-debug.log*
 
 # local database
 local.db
+local.db-shm
+local.db-wal
