@@ -87,7 +87,12 @@ export const evalCriteriaTypes = [
     "その他",
 ] as const;
 
-export const testTypes = ["対面", "遠隔", "その他"] as const;
+export const testTypes = [
+    "対面・筆記",
+    "対面・ウェブ",
+    "遠隔",
+    "その他",
+] as const;
 
 // テスト持ち込みの選択肢
 export const testItemTypes = [
@@ -101,7 +106,7 @@ export const testItemTypes = [
 export const CourseReviewSubmissionSchema = z.object({
     // 基本情報
     course_id: z.string(),
-    student_department: z.string().regex(/^[A-Z]{3}[0-9]{5}$/),
+    student_department: z.string().regex(/^[A-Z]{3}$/),
 
     // 授業形態（複数選択）
     courseType: z.array(z.enum(courseTypes)),

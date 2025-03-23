@@ -29,7 +29,7 @@ export const reviews = sqliteTable("reviews", {
     testDifficulty: integer("test_difficulty").notNull(),
     testAmount: integer("test_amount").notNull(),
     gradingCriteria: integer("grading_criteria").notNull(),
-    recommendation: integer("recommendation").notNull(),
+    totalscore: integer("totalscore").notNull(),
 
     // コメント
     goodPoint: text("good_point"),
