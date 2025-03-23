@@ -65,7 +65,7 @@ const sampleReviewDB: ReviewDB = {
     courseTypeOtherText: null,
     evalCriteria: JSON.stringify(["期末テスト", "出席点"]),
     evalCriteriaOtherText: null,
-    testType: "対面",
+    testType: "対面・筆記",
     testTypeOtherText: null,
     testItems: JSON.stringify(["持ち込み無し"]),
     testItemsOtherText: null,
