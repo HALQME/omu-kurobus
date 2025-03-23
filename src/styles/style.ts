@@ -95,7 +95,7 @@ export const styles = {
 
     // サジェスト候補のドロップダウン
     suggestions:
-        "absolute z-10 w-full mt-1 bg-white/95 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700/60 rounded-md max-h-60 overflow-y-auto backdrop-blur-sm transition-all duration-200",
+        "absolute w-full mt-1 bg-white/95 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700/60 rounded-md max-h-60 overflow-y-auto backdrop-blur-sm transition-all duration-200 z-40",
 
     // バッジとタグ
     badge: `${colors.primary.light} px-2.5 py-1 text-sm rounded-md transition-all duration-200`,
