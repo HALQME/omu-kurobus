@@ -1,9 +1,9 @@
 import { describe, test, expect, vi, beforeEach, it } from "vitest";
 import { quickSearch } from "@/utils/quicksearch";
-import type { CourseEmbed, QuickSearchResult } from "@/types/schema";
+import type { CourseSummary, CourseSearchResult } from "@/types/schema";
 
 import mockData from "test/_embed_data.json";
-const courses: CourseEmbed[] = mockData;
+const courses: CourseSummary[] = mockData;
 
 describe("quickSearch", () => {
     it("normal search", async () => {

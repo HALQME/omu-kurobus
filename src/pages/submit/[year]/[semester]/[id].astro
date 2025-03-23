@@ -4,12 +4,12 @@ import Layout from "@/src/layouts/layout.astro";
 import { styles } from "@/styles/style";
 import CourseInfo from "@/src/components/course-info.astro";
 import {
-    ReviewFormSchema,
+    CourseReviewSubmissionSchema,
     courseTypes,
     evalCriteriaTypes,
     testItemTypes,
 } from "@/types/schema";
-import type { ReviewForm, testTypes } from "@/types/schema";
+import type { CourseReviewSubmission, testTypes } from "@/types/schema";
 
 import { post } from "@/utils/post";
 
@@ -25,10 +25,10 @@ let errors = {
     testDifficulty: "",
     testAmount: "",
     gradingCriteria: "",
-    recommendation: "",
+    totalscore: "",
 };
 
-let formData: ReviewForm | null = null;
+let formData: CourseReviewSubmission | null = null;
 
 if (Astro.request.method === "POST") {
     try {
@@ -55,8 +55,8 @@ if (Astro.request.method === "POST") {
         const gradingCriteria = data.get("gradingCriteria")
             ? Number(data.get("gradingCriteria"))
             : undefined;
-        const recommendation = data.get("recommendation")
-            ? Number(data.get("recommendation"))
+        const totalscore = data.get("totalscore")
+            ? Number(data.get("totalscore"))
             : undefined;
         const goodPoint = data.get("goodPoint");
         const notGoodPoint = data.get("notGoodPoint");
@@ -82,13 +82,13 @@ if (Astro.request.method === "POST") {
         if (!gradingCriteria && gradingCriteria === 0) {
             errors.gradingCriteria = "この項目は必須です";
         }
-        if (!recommendation && recommendation === 0) {
-            errors.recommendation = "この項目は必須です";
+        if (!totalscore && totalscore === 0) {
+            errors.totalscore = "この項目は必須です";
         }
         const hasErrors = Object.values(errors).some((error) => error !== "");
         formData = {
             course_id: id as string,
-            student_department: student_department as string,
+            student_department: (student_department as string).slice(0, 3),
             courseType: courseType as (typeof courseTypes)[number][],
             courseTypeOtherText: courseTypeOtherText as string,
             evalCriteria: evalCriteria as (typeof evalCriteriaTypes)[number][],
@@ -101,13 +101,13 @@ if (Astro.request.method === "POST") {
             testDifficulty: testDifficulty!,
             testAmount: testAmount!,
             gradingCriteria: gradingCriteria!,
-            recommendation: recommendation!,
+            totalScore: totalscore!,
             goodPoint: goodPoint as string,
             notGoodPoint: notGoodPoint as string,
             comment: comment as string,
         };
         if (!hasErrors) {
-            const result = ReviewFormSchema.safeParse(formData);
+            const result = CourseReviewSubmissionSchema.safeParse(formData);
             if (result.success) {
                 const response = await post(result.data);
                 if (response.rowsAffected === 1) {
@@ -245,6 +245,7 @@ if (Astro.request.method === "POST") {
                                         id="courseTypeOtherText"
                                         name="courseTypeOtherText"
                                         class={styles.checkboxGroup.otherInput}
+                                        autocapitalize="off"
                                         placeholder="具体的に記入"
                                     />
                                 </div>
@@ -365,6 +366,7 @@ if (Astro.request.method === "POST") {
                                         id="evalCriteriaOtherText"
                                         name="evalCriteriaOtherText"
                                         class={styles.checkboxGroup.otherInput}
+                                        autocapitalize="off"
                                         placeholder="具体的に記入"
                                     />
                                 </div>
@@ -389,19 +391,33 @@ if (Astro.request.method === "POST") {
                                         type="radio"
                                         id="testType1"
                                         name="testType"
-                                        value="対面"
+                                        value="対面・筆記"
                                         class={styles.checkboxGroup.input}
                                     />
                                     <label
                                         for="testType1"
                                         class={styles.checkboxGroup.label}
-                                        >対面</label
+                                        >対面・筆記</label
                                     >
                                 </div>
                                 <div class={styles.checkboxGroup.item}>
                                     <input
                                         type="radio"
                                         id="testType2"
+                                        name="testType"
+                                        value="対面・ウェブ"
+                                        class={styles.checkboxGroup.input}
+                                    />
+                                    <label
+                                        for="testType2"
+                                        class={styles.checkboxGroup.label}
+                                        >対面・ウェブ</label
+                                    >
+                                </div>
+                                <div class={styles.checkboxGroup.item}>
+                                    <input
+                                        type="radio"
+                                        id="testType3"
                                         name="testType"
                                         value="遠隔"
                                         class={styles.checkboxGroup.input}
@@ -430,6 +446,7 @@ if (Astro.request.method === "POST") {
                                         id="testTypeOtherText"
                                         name="testTypeOtherText"
                                         class={styles.checkboxGroup.otherInput}
+                                        autocapitalize="off"
                                         placeholder="具体的に記入"
                                     />
                                 </div>
@@ -509,7 +526,7 @@ if (Astro.request.method === "POST") {
                                     <label
                                         for="testItemsOther"
                                         class={styles.checkboxGroup.label}
-                                        >その他:</label
+                                        autocapitalize="off">その他:</label
                                     >
                                     <input
                                         type="text"
@@ -548,7 +565,8 @@ if (Astro.request.method === "POST") {
                                 </div>
                                 <div class={styles.form.slider.labels}>
                                     <span>難しい</span>
-                                    <span>簡単</span>
+                                    <span>&cross;</span>
+                                    <span>&emsp;簡単</span>
                                 </div>
                             </div>
                             {
@@ -579,7 +597,8 @@ if (Astro.request.method === "POST") {
                                 </div>
                                 <div class={styles.form.slider.labels}>
                                     <span>難しい</span>
-                                    <span>簡単</span>
+                                    <span>&cross;</span>
+                                    <span>&emsp;簡単</span>
                                 </div>
                             </div>
                             {
@@ -609,7 +628,8 @@ if (Astro.request.method === "POST") {
                                     />
                                 </div>
                                 <div class={styles.form.slider.labels}>
-                                    <span>多い</span>
+                                    <span>多い&emsp;</span>
+                                    <span>&cross;</span>
                                     <span>少ない</span>
                                 </div>
                             </div>
@@ -640,7 +660,8 @@ if (Astro.request.method === "POST") {
                                 </div>
                                 <div class={styles.form.slider.labels}>
                                     <span>厳しい</span>
-                                    <span>緩い</span>
+                                    <span>&cross;</span>
+                                    <span>&emsp;緩い</span>
                                 </div>
                             </div>
                             {
@@ -653,29 +674,32 @@ if (Astro.request.method === "POST") {
                         </div>
                         <div class={styles.form.group.container}>
                             <label class={styles.form.label}>
-                                お勧め度<span class="text-red-500">*</span>
+                                総合評価<span class="text-red-500">*</span>
                             </label>
                             <div class={styles.form.slider.container}>
                                 <div class={styles.form.slider.wrapper}>
                                     <input
                                         type="range"
-                                        name="recommendation"
+                                        name="totalscore"
                                         min="-2"
                                         max="2"
                                         required
-                                        value={formData?.recommendation ?? "0"}
+                                        value={formData?.totalScore ?? "0"}
                                         class={styles.form.slider.input}
                                     />
                                 </div>
                                 <div class={styles.form.slider.labels}>
-                                    <span>お勧めしない</span>
-                                    <span>お勧め</span>
+                                    <span>C</span>
+                                    <span>B</span>
+                                    <span>&emsp;</span>
+                                    <span>A</span>
+                                    <span>S</span>
                                 </div>
                             </div>
                             {
-                                errors.recommendation && (
+                                errors.totalscore && (
                                     <p class="text-red-500 text-sm">
-                                        {errors.recommendation}
+                                        {errors.totalscore}
                                     </p>
                                 )
                             }

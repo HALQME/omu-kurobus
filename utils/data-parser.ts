@@ -1,4 +1,7 @@
-import type { FormDB, ReviewForm } from "@/types/schema";
+import type {
+    CourseReviewRecord,
+    CourseReviewSubmission,
+} from "@/types/schema";
 import {
     courseTypes,
     evalCriteriaTypes,
@@ -12,63 +15,65 @@ type ReviewDB = typeof reviews.$inferInsert;
 type TestType = (typeof testTypes)[number];
 
 /**
- * Converts a ReviewForm object to a FormDB object format suitable for database storage.
- * @param form - The user-submitted review form containing course evaluation data
- * @returns A FormDB object ready for database insertion
+ * Converts a CourseReviewSubmission to a CourseReviewRecord format suitable for database storage.
+ * @param submission - The user-submitted review form containing course evaluation data
+ * @returns A CourseReviewRecord object ready for database insertion
  */
-export function postToFormDB(form: ReviewForm): FormDB {
+export function submitCourseReview(
+    submission: CourseReviewSubmission
+): CourseReviewRecord {
     return {
         id: randomUUID(),
-        course_id: form.course_id,
-        student_department: form.student_department,
-        courseType: form.courseType,
-        courseTypeOtherText: form.courseTypeOtherText ?? null,
+        course_id: submission.course_id,
+        student_department: submission.student_department,
+        courseType: submission.courseType,
+        courseTypeOtherText: submission.courseTypeOtherText ?? null,
         createdAt: new Date(),
-        evalCriteria: form.evalCriteria,
-        evalCriteriaOtherText: form.evalCriteriaOtherText ?? null,
-        testType: form.testType ?? null,
-        testTypeOtherText: form.testTypeOtherText ?? null,
-        testItems: form.testItems ?? null,
-        testItemsOtherText: form.testItemsOtherText ?? null,
-        classDifficulty: form.classDifficulty,
-        testDifficulty: form.testDifficulty,
-        testAmount: form.testAmount,
-        gradingCriteria: form.gradingCriteria,
-        recommendation: form.recommendation,
-        goodPoint: form.goodPoint ?? undefined,
-        notGoodPoint: form.notGoodPoint ?? undefined,
-        comment: form.comment ?? undefined,
+        evalCriteria: submission.evalCriteria,
+        evalCriteriaOtherText: submission.evalCriteriaOtherText ?? null,
+        testType: submission.testType ?? null,
+        testTypeOtherText: submission.testTypeOtherText ?? null,
+        testItems: submission.testItems ?? null,
+        testItemsOtherText: submission.testItemsOtherText ?? null,
+        classDifficulty: submission.classDifficulty,
+        testDifficulty: submission.testDifficulty,
+        testAmount: submission.testAmount,
+        gradingCriteria: submission.gradingCriteria,
+        totalScore: submission.totalScore,
+        goodPoint: submission.goodPoint ?? undefined,
+        notGoodPoint: submission.notGoodPoint ?? undefined,
+        comment: submission.comment ?? undefined,
     };
 }
 
 /**
- * FormDBからReviewDBへの変換関数
+ * CourseReviewRecordからReviewDBへの変換関数
  * - 配列をJSON文字列に変換
  * - Date型をISO文字列に変換
  * - undefined値をnullに変換
  */
-export function formToReviewDB(form: FormDB): ReviewDB {
+export function convertToReviewRecord(record: CourseReviewRecord): ReviewDB {
     return {
-        id: form.id,
-        course_id: form.course_id,
-        student_department: form.student_department,
-        courseType: JSON.stringify(form.courseType),
-        courseTypeOtherText: form.courseTypeOtherText ?? null,
-        evalCriteria: JSON.stringify(form.evalCriteria),
-        evalCriteriaOtherText: form.evalCriteriaOtherText ?? null,
-        testType: form.testType ?? null,
-        testTypeOtherText: form.testTypeOtherText ?? null,
-        testItems: form.testItems ? JSON.stringify(form.testItems) : null,
-        testItemsOtherText: form.testItemsOtherText ?? null,
-        classDifficulty: form.classDifficulty,
-        testDifficulty: form.testDifficulty,
-        testAmount: form.testAmount,
-        gradingCriteria: form.gradingCriteria,
-        recommendation: form.recommendation,
-        createdAt: form.createdAt.toISOString(),
-        goodPoint: form.goodPoint ?? undefined,
-        notGoodPoint: form.notGoodPoint ?? undefined,
-        comment: form.comment ?? undefined,
+        id: record.id,
+        course_id: record.course_id,
+        student_department: record.student_department,
+        courseType: JSON.stringify(record.courseType),
+        courseTypeOtherText: record.courseTypeOtherText ?? null,
+        evalCriteria: JSON.stringify(record.evalCriteria),
+        evalCriteriaOtherText: record.evalCriteriaOtherText ?? null,
+        testType: record.testType ?? null,
+        testTypeOtherText: record.testTypeOtherText ?? null,
+        testItems: record.testItems ? JSON.stringify(record.testItems) : null,
+        testItemsOtherText: record.testItemsOtherText ?? null,
+        classDifficulty: record.classDifficulty,
+        testDifficulty: record.testDifficulty,
+        testAmount: record.testAmount,
+        gradingCriteria: record.gradingCriteria,
+        totalscore: record.totalScore,
+        createdAt: record.createdAt.toISOString(),
+        goodPoint: record.goodPoint ?? undefined,
+        notGoodPoint: record.notGoodPoint ?? undefined,
+        comment: record.comment ?? undefined,
     };
 }
 
@@ -89,9 +94,9 @@ function parseStringArray<T extends string>(
 }
 
 /**
- * ReviewDBからFormDBへの変換関数
+ * ReviewDBからCourseReviewRecordへの変換関数
  */
-export function reviewToFormDB(review: ReviewDB): FormDB {
+export function hydrateReviewRecord(review: ReviewDB): CourseReviewRecord {
     // testTypeの型安全な変換
     const testType = review.testType as TestType | null;
     if (testType !== null && !testTypes.includes(testType)) {
@@ -116,7 +121,7 @@ export function reviewToFormDB(review: ReviewDB): FormDB {
         testDifficulty: review.testDifficulty,
         testAmount: review.testAmount,
         gradingCriteria: review.gradingCriteria,
-        recommendation: review.recommendation,
+        totalScore: review.totalscore,
         createdAt: new Date(review.createdAt),
         goodPoint: review.goodPoint || undefined,
         notGoodPoint: review.notGoodPoint || undefined,

@@ -1,7 +1,7 @@
 ---
 import Result from "@/components/result.astro";
 import ResultMaybe from "@/components/result-maybe.astro";
-import type { Course, SearchResult } from "@/types/schema";
+import type { Course, DetailedSearchResult } from "@/types/schema";
 import { styles } from "@/styles/style";
 interface Props {
     target: "search" | "submit";
@@ -52,7 +52,7 @@ let class_code: string | undefined;
 let year_semester_value: string | undefined;
 
 // 検索結果を保存する変数
-let searchResults: SearchResult[] = [];
+let searchResults: DetailedSearchResult[] = [];
 let searchError: string | null = null;
 
 if (Astro.request.method === "POST") {
@@ -447,12 +447,12 @@ if (Astro.request.method === "POST") {
 
 <script>
     import { getAutocompleteSuggestions } from "@/utils/suggest";
-    import type { CourseEmbed } from "@/types/schema";
+    import type { CourseSummary } from "@/types/schema";
     import { parseClassCode } from "@/utils/common";
     class AstroSearchForm extends HTMLElement {
         constructor() {
             super();
-            let courseData: CourseEmbed[] = [];
+            let courseData: CourseSummary[] = [];
 
             async function fetchCourseData() {
                 try {

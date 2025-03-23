@@ -5,13 +5,6 @@ import { styles } from "@/styles/style";
 export const prerender = false;
 const year = Astro.params.year;
 const semester = Astro.params.semester;
-import { PATH_PAIRS } from "@/utils/const";
-export function getStaticPaths() {
-    const availableYears = PATH_PAIRS().filter((pair) => pair.type == "search");
-    return availableYears.map(({ type, path }) => ({
-        params: { year: path.year, semester: path.semester, type },
-    }));
-}
 ---
 
 <Layout

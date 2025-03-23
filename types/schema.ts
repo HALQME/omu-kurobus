@@ -13,7 +13,7 @@ export const CourseSchema = z.object({
 });
 export type Course = z.infer<typeof CourseSchema>;
 
-export const CourseEmbedSchema = CourseSchema.pick({
+export const CourseSummarySchema = CourseSchema.pick({
     id: true,
     name: true,
     teachers: true,
@@ -22,22 +22,22 @@ export const CourseEmbedSchema = CourseSchema.pick({
 }).extend({
     semester: z.string().optional(),
 });
-export type CourseEmbed = z.infer<typeof CourseEmbedSchema>;
+export type CourseSummary = z.infer<typeof CourseSummarySchema>;
 
-export const QuickSearchResult = CourseEmbedSchema.extend({
+export const CourseSearchResultSchema = CourseSummarySchema.extend({
     score: z.number().optional(),
 });
-export type QuickSearchResult = z.infer<typeof QuickSearchResult>;
+export type CourseSearchResult = z.infer<typeof CourseSearchResultSchema>;
 
-export const NanoCourseSchema = CourseEmbedSchema;
-export type NanoCourse = z.infer<typeof NanoCourseSchema>;
+export type DetailedSearchResult = z.infer<typeof CourseSchema> & {
+    score: number | undefined;
+};
 
 export const ResponseSchema = z.object({
     code: z.number(),
     msg: z.string(),
     data: z.array(CourseSchema),
 });
-
 export type ResponseData = z.infer<typeof ResponseSchema>;
 
 export const StorageHistorySchema = z.object({
@@ -56,15 +56,10 @@ export const SearchQuerySchema = z.object({
 });
 export type SearchQuery = z.infer<typeof SearchQuerySchema>;
 
-export type SearchResult = z.infer<typeof CourseSchema> & {
-    score: number | undefined;
-};
-
 export const SuggestionResultSchema = z.object({
     text: z.string(),
     score: z.number().optional(),
 });
-
 export type SuggestionResult = z.infer<typeof SuggestionResultSchema>;
 
 // スライダー値のスキーマ（初期値なしで必須）
@@ -103,7 +98,7 @@ export const testItemTypes = [
     "その他",
 ] as const;
 
-export const ReviewFormSchema = z.object({
+export const CourseReviewSubmissionSchema = z.object({
     // 基本情報
     course_id: z.string(),
     student_department: z.string().regex(/^[A-Z]{3}[0-9]{5}$/),
@@ -129,18 +124,20 @@ export const ReviewFormSchema = z.object({
     testDifficulty: sliderSchema,
     testAmount: sliderSchema,
     gradingCriteria: sliderSchema,
-    recommendation: sliderSchema,
+    totalScore: sliderSchema,
 
     // コメント
     goodPoint: z.string().max(1000).optional(),
     notGoodPoint: z.string().max(1000).optional(),
     comment: z.string().max(1000).optional(),
 });
-export type ReviewForm = z.infer<typeof ReviewFormSchema>;
+export type CourseReviewSubmission = z.infer<
+    typeof CourseReviewSubmissionSchema
+>;
 
-export const FormDBSchema = ReviewFormSchema.extend({
+export const CourseReviewRecordSchema = CourseReviewSubmissionSchema.extend({
     id: z.string(),
     createdAt: z.date(),
     user_id: z.string().optional(),
 });
-export type FormDB = z.infer<typeof FormDBSchema>;
+export type CourseReviewRecord = z.infer<typeof CourseReviewRecordSchema>;

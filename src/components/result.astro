@@ -1,11 +1,11 @@
 ---
-import type { SearchResult } from "@/types/schema";
+import type { DetailedSearchResult } from "@/types/schema";
 import { styles } from "@/styles/style";
 interface Props {
     target: "search" | "submit";
     year: string;
     semester: string;
-    result: SearchResult;
+    result: DetailedSearchResult;
 }
 const { target, year, semester, result } = Astro.props;
 
@@ -82,13 +82,13 @@ const truncateTeacherName = (name: string, maxLength: number = 15) => {
 </astro-result-content>
 
 <script>
-    import type { NanoCourse } from "@/types/schema";
+    import type { CourseSummary } from "@/types/schema";
     import * as nano from "@/utils/store";
     class AstroResultItem extends HTMLElement {
         constructor() {
             super();
 
-            const result: NanoCourse = {
+            const result: CourseSummary = {
                 id: this.getAttribute("data-result-id") as string,
                 name: this.getAttribute("data-result-name") as string,
                 teachers: this.getAttribute("data-result-teachers") as string,

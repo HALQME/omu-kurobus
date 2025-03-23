@@ -1,6 +1,6 @@
 ---
 import { styles } from "@/styles/style";
-import type { CourseEmbed } from "@/types/schema";
+import type { CourseSummary } from "@/types/schema";
 interface Props {
     target: "search" | "submit";
     year: string;
@@ -11,7 +11,7 @@ const { target, year: yearProp, semester: semesterProp } = Astro.props;
 export const prerender = false;
 declare global {
     interface Window {
-        setNanoCourse: (course: CourseEmbed) => void;
+        setNanoCourse: (course: CourseSummary) => void;
     }
 }
 ---
@@ -51,13 +51,13 @@ declare global {
 </astro-quick-search>
 
 <script>
-    import type { CourseEmbed } from "@/types/schema";
+    import type { CourseSummary } from "@/types/schema";
     import { quickSearch } from "@/utils/quicksearch";
     import { setCourse } from "@/utils/store";
     class AstroQuickSearch extends HTMLElement {
         constructor() {
             super();
-            let courseData: CourseEmbed[] = [];
+            let courseData: CourseSummary[] = [];
 
             const target = this.getAttribute("data-target") || "search";
             const year = this.getAttribute("data-year") || "";
@@ -187,8 +187,8 @@ declare global {
                 }
             }
 
-            function setNanoCourse(course: CourseEmbed) {
-                let courseData: CourseEmbed = {
+            function setNanoCourse(course: CourseSummary) {
+                let courseData: CourseSummary = {
                     id: course.id,
                     name: course.name,
                     teachers: course.teachers,

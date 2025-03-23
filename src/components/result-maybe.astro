@@ -1,11 +1,11 @@
 ---
-import type { SearchResult } from "@/types/schema";
+import type { DetailedSearchResult } from "@/types/schema";
 import { styles } from "@/styles/style";
 interface Props {
     target: "search" | "submit";
     year: string;
     semester: string;
-    result: SearchResult;
+    result: DetailedSearchResult;
 }
 const { target, year, semester, result } = Astro.props;
 

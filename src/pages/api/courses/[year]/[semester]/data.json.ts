@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { type Course, type CourseEmbed } from "@/types/schema";
+import { type Course, type CourseSummary } from "@/types/schema";
 import { PATH_PAIRS } from "@/utils/const";
 import fetch from "node-fetch";
 import MockData from "test/_embed_data.json";
@@ -48,16 +48,16 @@ const embeddedData = (
     data: Course[],
     year: string,
     semester: string
-): CourseEmbed[] => {
-    const semesterValue = year + "年度" + (semester === "1" ? "前期" : "後期");
-    const courseEmbeds: CourseEmbed[] = data.map((course) => {
-        const courseEmbed: CourseEmbed = {
+): CourseSummary[] => {
+    const semesterValue = year + "年度" + (semester === "0" ? "前期" : "後期");
+    const courseEmbeds: CourseSummary[] = data.map((course) => {
+        const courseEmbed: CourseSummary = {
             id: course.id,
             name: course.name,
             teachers: course.teachers,
             campus: course.campus,
             semester:
-                course.semester === semesterValue ? semesterValue : undefined,
+                course.semester === semesterValue ? undefined : semesterValue,
             period: course.period,
         };
         return courseEmbed;

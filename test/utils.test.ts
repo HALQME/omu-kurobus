@@ -1,7 +1,7 @@
-// _row_data.jsonからCourseEmbed型の配列を作成する
+// _row_data.jsonからCourseSummary型の配列を作成する
 
-import { CourseEmbedSchema } from "@/types/schema";
-import type { CourseEmbed, Course } from "@/types/schema";
+import { CourseSummarySchema } from "@/types/schema";
+import type { CourseSummary, Course } from "@/types/schema";
 
 const courses = require("./_row_data.json") as Course[];
 
@@ -10,8 +10,8 @@ const semester = "1";
 
 const semesterValue = year + "年度" + (semester === "1" ? "前期" : "後期");
 
-const courseEmbeds: CourseEmbed[] = courses.map((course) => {
-    const courseEmbed: CourseEmbed = {
+const courseEmbeds: CourseSummary[] = courses.map((course) => {
+    const courseEmbed: CourseSummary = {
         id: course.id,
         name: course.name,
         teachers: course.teachers,

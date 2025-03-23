@@ -1,37 +1,37 @@
 import Fuse from "fuse.js";
-import type { CourseEmbed, QuickSearchResult } from "@/types/schema";
+import type { CourseSummary, CourseSearchResult } from "@/types/schema";
 import { encode } from "./search-engine";
 
 export const quickSearch = (
     query: string,
-    courses: CourseEmbed[]
-): QuickSearchResult[] => {
+    courses: CourseSummary[]
+): CourseSearchResult[] => {
     const fuse = new Fuse(courses, {
         keys: [
             {
                 name: "name",
                 weight: 0.75,
-                getFn: (obj: CourseEmbed) => encode(obj.name),
+                getFn: (obj: CourseSummary) => encode(obj.name),
             },
             {
                 name: "teachers",
                 weight: 0.6,
-                getFn: (obj: CourseEmbed) => encode(obj.teachers),
+                getFn: (obj: CourseSummary) => encode(obj.teachers),
             },
             {
                 name: "id",
                 weight: 0.3,
-                getFn: (obj: CourseEmbed) => encode(obj.id),
+                getFn: (obj: CourseSummary) => encode(obj.id),
             },
             {
                 name: "campus",
                 weight: 0.2,
-                getFn: (obj: CourseEmbed) => encode(obj.campus),
+                getFn: (obj: CourseSummary) => encode(obj.campus),
             },
             {
                 name: "semester",
                 weight: 0.1,
-                getFn: (obj: CourseEmbed) => encode(obj.semester ?? ""),
+                getFn: (obj: CourseSummary) => encode(obj.semester ?? ""),
             },
         ],
         threshold: 0.3,
@@ -48,7 +48,7 @@ export const quickSearch = (
         return [];
     }
 
-    const results: QuickSearchResult[] = searchResults.map((result) => ({
+    const results: CourseSearchResult[] = searchResults.map((result) => ({
         id: result.item.id,
         name: result.item.name,
         teachers: result.item.teachers,

@@ -8,13 +8,6 @@ const id = new URL(Astro.request.url).searchParams.get("id");
 if (!id) {
     return Astro.redirect("/failed", 302);
 }
-import { PATH_PAIRS } from "@/utils/const";
-export function getStaticPaths() {
-    const availableYears = PATH_PAIRS().filter((pair) => pair.type == "submit");
-    return availableYears.map(({ type, path }) => ({
-        params: { year: path.year, semester: path.semester, type },
-    }));
-}
 
 import image500 from "@/src/assets/500 InternalServerError.png";
 ---
