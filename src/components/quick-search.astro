@@ -1,12 +1,31 @@
 ---
 import { styles } from "@/styles/style";
 import type { CourseSummary } from "@/types/schema";
+import { year } from "drizzle-orm/mysql-core";
 interface Props {
     target: "search" | "submit";
-    year: string;
-    semester: string;
+    year?: string;
+    semester?: string;
 }
 const { target, year: yearProp, semester: semesterProp } = Astro.props;
+
+import { PATH_PAIRS as originalPathPairs } from "@/utils/const";
+
+// yearPropとsemesterPropの両方が定義されている場合、PATH_PAIRSを上書き
+const PATH_PAIRS = () => {
+    if (yearProp !== undefined && semesterProp !== undefined) {
+        return [
+            {
+                type: target,
+                path: {
+                    year: yearProp,
+                    semester: semesterProp,
+                },
+            },
+        ];
+    }
+    return originalPathPairs();
+};
 
 export const prerender = false;
 declare global {
@@ -22,29 +41,55 @@ declare global {
     data-semester={semesterProp}
 >
     <form
-        class="max-w-3xl mx-auto space-y-4 transition-all transform"
+        class="max-w-3xl mx-auto space-y-4 mb-5 transition-all transform"
         method="POST"
         astro-data={target}
         aria-label="授業クイック検索フォーム"
     >
-        <div class="mb-3 relative">
-            <input
-                id="quick"
-                name="quick"
-                type="text"
-                class={`${styles.input} ${styles.inputFocus}`}
-                autocomplete="off"
-                oninput="handleInput('quick', 'quick')"
-                onblur="setTimeout(() => clearSuggestions('quick'), 200)"
-                aria-describedby="quick-results"
-                placeholder="検索"
-            />
-            <div
-                id="quick-results"
-                class={`${styles.suggestions} hidden`}
-                role="listbox"
-                aria-hidden="true"
-            >
+        <div class="flex flex-col sm:flex-row gap-2">
+            {
+                !yearProp && !semesterProp && (
+                    <div class="sm:w-64 w-full">
+                        <select
+                            id="year_semester"
+                            name="year_semester"
+                            class={`${styles.input} ${styles.inputFocus}`}
+                            aria-required="true"
+                        >
+                            {PATH_PAIRS().map(
+                                (pair) =>
+                                    pair.type == target && (
+                                        <option>
+                                            {pair.path.year}年度
+                                            {pair.path.semester == "0"
+                                                ? "前期"
+                                                : "後期"}
+                                        </option>
+                                    )
+                            )}
+                        </select>
+                    </div>
+                )
+            }
+            <div class="relative flex-1">
+                <input
+                    id="quick"
+                    name="quick"
+                    type="text"
+                    class={`${styles.input} ${styles.inputFocus}`}
+                    autocomplete="off"
+                    oninput="handleInput('quick', 'quick')"
+                    onblur="setTimeout(() => clearSuggestions('quick'), 200)"
+                    aria-describedby="quick-results"
+                    placeholder="検索"
+                />
+                <div
+                    id="quick-results"
+                    class={`${styles.suggestions} hidden`}
+                    role="listbox"
+                    aria-hidden="true"
+                >
+                </div>
             </div>
         </div>
     </form>
@@ -137,7 +182,7 @@ declare global {
                             <a
                                 id=${result.id}
                                 href="/${target}/${year}/${semester}/${result.id}"
-                                onclick="setNanoCourse(${JSON.stringify(result).replace(/"/g, "&quot;")}); return true;"
+                                onclick="setNanoCourse(${JSON.stringify(result).replace(/"/g, "&quot;")}); return true;""
                             >
                                 <div class="p-2 ${matchClass}">
                                 <div class="text-xs text-gray-500 dark:text-gray-300">

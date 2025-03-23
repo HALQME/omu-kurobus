@@ -44,7 +44,7 @@ const common = {
 
 export const styles = {
     // 入力フィールド
-    input: `w-full px-3.5 sm:px-4 py-2.5 border ${colors.gray.border} rounded-md ${common.transition} bg-white/95 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 hover:border-blue-300/70 dark:hover:border-blue-500/50 hover:shadow-sm ease-in-out`,
+    input: `w-full px-3 sm:px-4 py-2 h-10 border ${colors.gray.border} rounded-md ${common.transition} bg-white/95 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 hover:border-blue-300/70 dark:hover:border-blue-500/50 hover:shadow-sm ease-in-out`,
 
     // 入力フィールドのフォーカス状態
     inputFocus:
