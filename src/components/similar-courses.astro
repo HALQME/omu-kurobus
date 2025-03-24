@@ -1,0 +1,52 @@
+---
+interface Props {
+    year: string;
+    courseId: string;
+    name: string;
+    teachers: string;
+    campus: string;
+    period: string;
+    semester?: string;
+}
+const { year, semester, courseId, name, teachers, campus, period } =
+    Astro.props;
+
+import Result from "@/components/result.astro";
+
+import { type CourseSummary } from "@/types/schema";
+import { similars } from "@/utils/similar-courses";
+
+const courseInfo: CourseSummary = {
+    id: year + courseId,
+    name: name,
+    teachers: teachers,
+    campus: campus,
+    period: period,
+    semester: semester,
+};
+
+const similarCoursesByYear = await similars(courseInfo);
+---
+
+<div class="container mx-auto py-4">
+    <h2>類似コース</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {
+            similarCoursesByYear.map((yearCourses) => (
+                <div id={`${yearCourses.year}-${yearCourses.semester}`}>
+                    <h3>
+                        {yearCourses.year}年度 {yearCourses.semester}
+                    </h3>
+                    {yearCourses.courses.map((course) => (
+                        <Result
+                            target="search"
+                            year={yearCourses.year}
+                            semester={yearCourses.semester}
+                            result={course}
+                        />
+                    ))}
+                </div>
+            ))
+        }
+    </div>
+</div>

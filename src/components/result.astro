@@ -1,11 +1,11 @@
 ---
-import type { DetailedSearchResult } from "@/types/schema";
+import type { CourseSearchResult } from "@/types/schema";
 import { styles } from "@/styles/style";
 interface Props {
     target: "search" | "submit";
     year: string;
     semester: string;
-    result: DetailedSearchResult;
+    result: CourseSearchResult;
 }
 const { target, year, semester, result } = Astro.props;
 
@@ -27,7 +27,6 @@ const truncateTeacherName = (name: string, maxLength: number = 15) => {
     data-result-campus={result.campus}
     data-result-period={result.period}
     data-result-semester={result.semester}
-    data-result-grade={result.grade}
     data-year={year}
     data-semester={semester}
     data-target={target}

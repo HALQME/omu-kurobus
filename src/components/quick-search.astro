@@ -273,13 +273,13 @@ declare global {
                         >
                             <div class="p-2 ${matchClass}">
                                 <div class="text-xs t-gray-500 dark:text-gray-300">
-                                    ${this.year}${result.id}
+                                    ${this.year}${result.id} | ${result.campus} | ${result.period}
                                 </div>
-                                <div class="text-m text-gray-600 dark:text-gray-400">
-                                    ${result.name} - ${result.teachers}
+                                <div class="text-m text-gray-600 dark:text-gray-200">
+                                    ${result.name}
                                 </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-300">
-                                    ${result.campus} | ${result.period}
+                                <div class="text-sm text-gray-500 dark:text-gray-300">
+                                    ${result.teachers}
                                 </div>
                             </div>
                         </a>`;
