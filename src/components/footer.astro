@@ -2,6 +2,8 @@
 import { styles } from "@/styles/style";
 
 export const prerender = true;
+
+const site = Astro.url.hostname;
 ---
 
 <footer role="contentinfo">
@@ -11,8 +13,8 @@ export const prerender = true;
         </div>
         <div class={styles.footer.content}>
             <p class="text-center">
-                &copy; {new Date().getFullYear()} omu-kurobus.vercel.app All rights
-                reserved
+                &copy; {new Date().getFullYear()}
+                {site} All rights reserved
             </p>
         </div>
         <div class={styles.footer.content}>

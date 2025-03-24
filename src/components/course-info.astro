@@ -13,14 +13,14 @@ const { id } = Astro.props;
 
 <script>
     import * as store from "@/utils/store";
-    import type { NanoCourse } from "@/types/schema";
+    import type { CourseSummary } from "@/types/schema";
 
     class AstroCourseInfo extends HTMLElement {
         constructor() {
             super();
             const id = this.getAttribute("data-course-id") as string;
             try {
-                let course: NanoCourse | null = store.getCourse(id);
+                let course: CourseSummary | null = store.getCourse(id);
                 if (!course) {
                     console.error("[CourseInfo] Course not found:", id);
                     window.location.href = `/404`;
@@ -34,7 +34,7 @@ const { id } = Astro.props;
             }
         }
 
-        render = (course: NanoCourse) => {
+        render = (course: CourseSummary) => {
             const title = this.querySelector("#title") as HTMLElement;
             const teachers = this.querySelector("#teachers") as HTMLElement;
             const infos = this.querySelector("#infos") as HTMLElement;

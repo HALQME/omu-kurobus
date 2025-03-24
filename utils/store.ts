@@ -1,9 +1,9 @@
 import { map } from "nanostores";
-import type { NanoCourse } from "@/types/schema";
+import type { CourseSummary } from "@/types/schema";
 
 const STORAGE_KEY = "nano-courses";
 
-const getInitialState = (): Record<string, NanoCourse> => {
+const getInitialState = (): Record<string, CourseSummary> => {
     if (typeof window === "undefined") return {};
 
     try {
@@ -15,7 +15,7 @@ const getInitialState = (): Record<string, NanoCourse> => {
     }
 };
 
-export const coursesMap = map<Record<string, NanoCourse>>(getInitialState());
+export const coursesMap = map<Record<string, CourseSummary>>(getInitialState());
 
 if (typeof window !== "undefined") {
     coursesMap.subscribe((state) => {
@@ -28,23 +28,21 @@ if (typeof window !== "undefined") {
 }
 
 /**
- * Stores a course in the courses map using its ID as the key.
- *
- * @param course - The course object to be stored
- * @returns The ID of the stored course
+ * コース情報を追加する
+ * @param course
+ * @returns course.id
  */
-const setCourse = (course: NanoCourse): string => {
+const setCourse = (course: CourseSummary): string => {
     coursesMap.setKey(course.id, course);
     return course.id;
 };
 
 /**
- * Retrieves a course by its ID from the courses store.
- *
- * @param id - The unique identifier of the course to retrieve
- * @returns The course object matching the provided ID
+ * コース情報を取得する
+ * @param id - コースID
+ * @returns コース情報
  */
-const getCourse = (id: string): NanoCourse => {
+const getCourse = (id: string): CourseSummary => {
     const currentState = coursesMap.get();
     return currentState[id];
 };

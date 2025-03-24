@@ -1,14 +1,4 @@
-// Common normalization functions
-export const normalizeText = (text: string): string => {
-    return text.replace(/[\s　]+/g, " ").trim();
-};
-
-export const extractTeachers = (teachersString: string): string[] => {
-    return teachersString
-        .split("、")
-        .map((t) => t.trim())
-        .filter(Boolean);
-};
+import { nanoid } from "nanoid";
 
 export const parseClassCode = (classCode: string): string => {
     if (classCode.length < 3) {
@@ -21,3 +11,23 @@ export const parseClassCode = (classCode: string): string => {
         return classCode.substring(4, 7);
     }
 };
+
+export function extractTeachers(teachers: string): string[] {
+    if (!teachers) return [];
+    return teachers
+        .split(/[,、]/)
+        .map((t) => t.trim())
+        .filter(Boolean);
+}
+
+export function normalizeText(text: string): string {
+    return (
+        text
+            // 全角スペースを半角に変換
+            .replace(/　/g, " ")
+            // 連続するスペースを1つに
+            .replace(/\s+/g, " ")
+            // 前後のスペースを削除
+            .trim()
+    );
+}

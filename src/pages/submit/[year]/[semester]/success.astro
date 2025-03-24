@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/layout.astro";
-import Search from "@/components/search.astro";
+import Search from "@/components/quick-search.astro";
 import { styles } from "@/styles/style";
 export const prerender = false;
 const year = Astro.params.year;
@@ -9,14 +9,7 @@ const id = new URL(Astro.request.url).searchParams.get("id");
 if (!id) {
     return Astro.redirect("/failed", 302);
 }
-import { PATH_PAIRS } from "@/utils/const";
 import CourseInfo from "@/src/components/course-info.astro";
-export function getStaticPaths() {
-    const availableYears = PATH_PAIRS().filter((pair) => pair.type == "submit");
-    return availableYears.map(({ type, path }) => ({
-        params: { year: path.year, semester: path.semester, type },
-    }));
-}
 ---
 
 <Layout

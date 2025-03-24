@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { type Course, type CourseEmbed } from "@/types/schema";
+import { type Course, type CourseSummary } from "@/types/schema";
 import { PATH_PAIRS } from "@/utils/const";
 import fetch from "node-fetch";
 import MockData from "test/_embed_data.json";
@@ -24,7 +24,9 @@ export const GET: APIRoute = async ({ params }) => {
         console.log(`Using mock data`);
         data = MockData;
     } else {
-        data = await fetchData(year!, semester!).then(embeddedData);
+        data = await fetchData(year!, semester!).then((data) =>
+            summaryData(data, year!, semester!)
+        );
     }
 
     return new Response(JSON.stringify(data, null, 2), {
@@ -42,13 +44,34 @@ const fetchData = async (year: string, semester: string) => {
     return res.json() as unknown as Course[];
 };
 
-const embeddedData = (data: Course[]): CourseEmbed[] => {
-    return data.map((course) => {
-        return {
-            id: course.id,
-            name: course.name,
-            teachers: course.teachers,
-            campus: course.campus,
-        };
+const summaryData = (
+    data: Course[],
+    year: string,
+    semester: string
+): CourseSummary[] => {
+    const semesterValue = year + "年度" + (semester == "0" ? "前期" : "後期");
+    const courseEmbeds: CourseSummary[] = data.map((course) => {
+        let courseEmbed: CourseSummary;
+        if (course.semester.trim() == semesterValue.trim()) {
+            courseEmbed = {
+                id: course.id.slice(4),
+                name: course.name,
+                teachers: course.teachers,
+                campus: course.campus,
+                period: course.period,
+            };
+        } else {
+            courseEmbed = {
+                id: course.id.slice(4),
+                name: course.name,
+                teachers: course.teachers,
+                campus: course.campus,
+                semester: course.semester,
+                period: course.period,
+            };
+        }
+
+        return courseEmbed;
     });
+    return courseEmbeds;
 };

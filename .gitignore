@@ -25,3 +25,8 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 .vercel
+
+# local database
+local.db
+local.db-shm
+local.db-wal

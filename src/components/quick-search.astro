@@ -1,0 +1,341 @@
+---
+import { styles } from "@/styles/style";
+import type { CourseSummary } from "@/types/schema";
+interface Props {
+    target: "search" | "submit";
+    year?: string;
+    semester?: string;
+}
+const { target, year: yearProp, semester: semesterProp } = Astro.props;
+
+import { PATH_PAIRS as originalPathPairs } from "@/utils/const";
+
+const PATH_PAIRS = () => {
+    if (yearProp !== undefined && semesterProp !== undefined) {
+        return [
+            {
+                type: target,
+                path: {
+                    year: yearProp,
+                    semester: semesterProp,
+                },
+            },
+        ];
+    }
+    return originalPathPairs();
+};
+
+const submitDefault =
+    PATH_PAIRS().find((pair) => pair.type == "submit")?.path.year +
+    "/" +
+    PATH_PAIRS().find((pair) => pair.type == "submit")?.path.semester;
+const searchDefault =
+    PATH_PAIRS().find((pair) => pair.type == "search")?.path.year +
+    "/" +
+    PATH_PAIRS().find((pair) => pair.type == "search")?.path.semester;
+
+export const prerender = false;
+declare global {
+    interface Window {
+        setNanoCourse: (course: CourseSummary) => void;
+    }
+}
+---
+
+<astro-quick-search
+    data-target={target}
+    data-year={yearProp}
+    data-semester={semesterProp}
+    data-search-default={searchDefault}
+    data-submit-default={submitDefault}
+    data-instance-id={Math.random().toString(36).substring(2, 9)}
+    class="flex flex-col sm:flex-row gap-2 relative mb-5"
+>
+    {
+        !yearProp && !semesterProp && (
+            <div class="w-full sm:w-[12rem]">
+                <select
+                    class={`year_semester ${styles.input} ${styles.inputFocus} w-full`}
+                    aria-required="true"
+                >
+                    {PATH_PAIRS().map(
+                        (pair) =>
+                            pair.type == target && (
+                                <option>
+                                    {pair.path.year}年度
+                                    {pair.path.semester == "0"
+                                        ? "前期"
+                                        : "後期"}
+                                </option>
+                            )
+                    )}
+                </select>
+            </div>
+        )
+    }
+    <div class="w-full">
+        <input
+            type="text"
+            class={`quick-search-input ${styles.input} ${styles.inputFocus}`}
+            autocomplete="off"
+            aria-describedby="search-results"
+            placeholder="検索"
+        />
+    </div>
+    <div
+        class="quick-search-results absolute top-[calc(100%)] left-0 right-0 w-full z-50 bg-white/95 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700/60 rounded-md max-h-60 h-auto overflow-y-auto backdrop-blur-sm transition-all duration-200 hidden"
+        role="listbox"
+        aria-hidden="true"
+    >
+    </div>
+</astro-quick-search>
+
+<script>
+    import type { CourseSummary } from "@/types/schema";
+    import { quickSearch } from "@/utils/quicksearch";
+    import { setCourse } from "@/utils/store";
+
+    class AstroQuickSearch extends HTMLElement {
+        private courseData: CourseSummary[] = [];
+        private year: string | null;
+        private semester: string | null;
+        private target: string;
+        private instanceId: string;
+        private input: HTMLInputElement | null = null;
+        private resultsDiv: HTMLDivElement | null = null;
+
+        constructor() {
+            super();
+            this.target = this.getAttribute("data-target") || "search";
+            this.instanceId =
+                this.getAttribute("data-instance-id") || "default";
+            this.year = this.getAttribute("data-year");
+            this.semester = this.getAttribute("data-semester");
+
+            this.initializeElements();
+            this.setupEventListeners();
+            this.fetchCourseData();
+        }
+
+        private initializeElements(): void {
+            this.input = this.querySelector(".quick-search-input");
+            this.resultsDiv = this.querySelector(".quick-search-results");
+
+            if (this.input) {
+                this.input.setAttribute(
+                    "id",
+                    `quick-search-${this.instanceId}`
+                );
+                this.input.setAttribute(
+                    "name",
+                    `quick-search-${this.instanceId}`
+                );
+            }
+
+            if (this.resultsDiv) {
+                this.resultsDiv.setAttribute(
+                    "id",
+                    `results-${this.instanceId}`
+                );
+            }
+        }
+
+        private setupEventListeners(): void {
+            if (this.input) {
+                this.input.addEventListener("input", () => this.handleInput());
+                this.input.addEventListener("blur", (e) => {
+                    const relatedTarget = e.relatedTarget as HTMLElement;
+                    if (relatedTarget?.closest(".quick-search-results")) {
+                        return;
+                    }
+                    this.clearSuggestions();
+                });
+            }
+
+            const yearSemesterSelect = this.querySelector(".year_semester");
+            if (yearSemesterSelect) {
+                yearSemesterSelect.addEventListener("change", () => {
+                    const result = this.detectYearSemester();
+                    if (result) {
+                        this.year = result.year;
+                        this.semester = result.semester;
+                        this.courseData = []; // リセット
+                        this.fetchCourseData();
+                    }
+                });
+            }
+        }
+
+        private detectYearSemester() {
+            const attrYear = this.getAttribute("data-year");
+            const attrSemester = this.getAttribute("data-semester");
+
+            if (attrYear && attrSemester) {
+                return { year: attrYear, semester: attrSemester };
+            }
+
+            const selector = this.querySelector(
+                ".year_semester"
+            ) as HTMLSelectElement;
+            if (selector?.value) {
+                const match = selector.value.match(/(\d+)年度 (前期|後期)/);
+                if (match) {
+                    return {
+                        year: match[1],
+                        semester: match[2] === "前期" ? "0" : "1",
+                    };
+                }
+            }
+
+            const defaultPath = this.getAttribute(
+                `data-${this.target}-default`
+            );
+            if (defaultPath) {
+                const [year, semester] = defaultPath.split("/");
+                return { year, semester };
+            }
+
+            return null;
+        }
+
+        private async fetchCourseData(): Promise<void> {
+            try {
+                if (this.courseData.length > 0) return;
+
+                const result = this.detectYearSemester();
+                if (!result) {
+                    console.error("Failed to detect year and semester");
+                    return;
+                }
+
+                this.year = result.year;
+                this.semester = result.semester;
+
+                const courseUrl = `${window.location.origin}/api/courses/${this.year}/${this.semester}/data.json`;
+                const response = await fetch(courseUrl);
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to fetch course data: ${response.status}`
+                    );
+                }
+
+                const json = await response.json();
+                this.courseData = Array.isArray(json) ? json : json.data || [];
+            } catch (error) {
+                console.error("Failed to fetch course data:", error);
+            }
+        }
+
+        private async handleInput(): Promise<void> {
+            if (!this.input || !this.resultsDiv) return;
+
+            if (!this.courseData.length) {
+                await this.fetchCourseData();
+            }
+
+            const searchText = this.input.value;
+            if (!searchText) {
+                this.clearSuggestions();
+                return;
+            }
+
+            const resultsDiv = this.resultsDiv;
+            if (resultsDiv) {
+                resultsDiv.innerHTML = "";
+                resultsDiv.classList.add("hidden");
+                resultsDiv.setAttribute("aria-hidden", "true");
+            }
+
+            const searchResults = await quickSearch(
+                searchText,
+                this.courseData
+            ); // 変数名をsearchResultsに変更
+
+            if (searchResults.length > 0 && this.resultsDiv) {
+                this.resultsDiv.setAttribute("aria-hidden", "false");
+                // 内容を設定
+                this.resultsDiv.innerHTML = searchResults
+                    .map((result) => {
+                        const score = result.score || 0;
+                        let matchClass = this.getMatchClass(score);
+
+                        return `
+                        <a
+                            data-id="${result.id}"
+                            href="/${this.target}/${this.year}/${this.semester}/${this.year}${result.id}"
+                            class="suggestion-item"
+                        >
+                            <div class="p-2 ${matchClass}">
+                                <div class="text-x t-gray-500 dark:text-gray-300">
+                                    ${this.year}${result.id}
+                                </div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">
+                                    ${result.name} - ${result.teachers}
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-300">
+                                    ${result.campus} | ${result.period}
+                                </div>
+                            </div>
+                        </a>`;
+                    })
+                    .join("");
+
+                this.resultsDiv.classList.remove("hidden");
+
+                // 候補クリックイベントの設定
+                this.resultsDiv
+                    .querySelectorAll(".suggestion-item")
+                    .forEach((item) => {
+                        item.addEventListener("click", (e) => {
+                            e.preventDefault();
+                            const course = this.courseData.find(
+                                (c) => c.id === (item as HTMLElement).dataset.id
+                            );
+                            if (course) {
+                                this.setNanoCourse(course);
+                                window.location.href =
+                                    (item as HTMLElement).getAttribute(
+                                        "href"
+                                    ) || "";
+                            }
+                        });
+                    });
+            } else {
+                this.clearSuggestions();
+            }
+        }
+
+        private getMatchClass(score: number): string {
+            if (score < 0.1) return "border-l-4 border-green-500";
+            if (score < 0.4) return "border-l-4 border-sky-500";
+            if (score < 0.6) return "border-l-4 border-yellow-500";
+            if (score < 0.8) return "border-l-4 border-orange-500";
+            return "border-l-4 border-gray-300 dark:border-gray-600";
+        }
+
+        private clearSuggestions(): void {
+            if (this.resultsDiv) {
+                this.resultsDiv.innerHTML = "";
+                this.resultsDiv.classList.add("hidden");
+                this.resultsDiv.setAttribute("aria-hidden", "true");
+            }
+        }
+
+        private setNanoCourse(course: CourseSummary): void {
+            const courseData: CourseSummary = {
+                id: course.id,
+                name: course.name,
+                teachers: course.teachers,
+                campus: course.campus,
+                period: course.period,
+                semester:
+                    course.semester ??
+                    `${this.year}年度${this.semester === "0" ? "前期" : "後期"}`,
+            };
+            setCourse(courseData);
+        }
+    }
+
+    customElements.define("astro-quick-search", AstroQuickSearch);
+</script>

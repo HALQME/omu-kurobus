@@ -1,0 +1,22 @@
+CREATE TABLE `reviews` (
+	`id` text PRIMARY KEY NOT NULL,
+	`created_at` text NOT NULL,
+	`course_id` text NOT NULL,
+	`student_department` text NOT NULL,
+	`course_type` text NOT NULL,
+	`course_type_other_text` text,
+	`eval_criteria` text NOT NULL,
+	`eval_criteria_other_text` text,
+	`test_type` text,
+	`test_type_other_text` text,
+	`test_items` text,
+	`test_items_other_text` text,
+	`class_difficulty` integer NOT NULL,
+	`test_difficulty` integer NOT NULL,
+	`test_amount` integer NOT NULL,
+	`grading_criteria` integer NOT NULL,
+	`recommendation` integer NOT NULL,
+	`good_point` text,
+	`not_good_point` text,
+	`comment` text
+);

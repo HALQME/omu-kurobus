@@ -1,10 +1,10 @@
 import Fuse from "fuse.js";
 import { normalizeText, extractTeachers, parseClassCode } from "@/utils/common";
-import type { CourseEmbed, SuggestionResult } from "@/types/schema";
+import type { CourseSummary, SuggestionResult } from "@/types/schema";
 
 const getTeacherSuggestions = (
     normalizedSearchText: string,
-    courses: CourseEmbed[],
+    courses: CourseSummary[],
     limit: number
 ): SuggestionResult[] => {
     const teacherMap = new Map<
@@ -49,7 +49,7 @@ const getTeacherSuggestions = (
 
 const getCampusSuggestions = (
     normalizedSearchText: string,
-    courses: CourseEmbed[],
+    courses: CourseSummary[],
     limit: number
 ): SuggestionResult[] => {
     // キャンパスコードの一覧を取得（重複排除）
@@ -70,12 +70,12 @@ const getCampusSuggestions = (
 
 const getCourseSuggestions = (
     normalizedSearchText: string,
-    courses: CourseEmbed[],
+    courses: CourseSummary[],
     limit: number
 ): SuggestionResult[] => {
     const courseNameMap = new Map<
         string,
-        { course: CourseEmbed; score: number | undefined }
+        { course: CourseSummary; score: number | undefined }
     >();
 
     const fuse = new Fuse(courses, {
@@ -104,7 +104,7 @@ const getCourseSuggestions = (
 
 export const getAutocompleteSuggestions = (
     searchText: string,
-    courses: CourseEmbed[],
+    courses: CourseSummary[],
     field: "course" | "teacher" | "campus",
     limit = 5
 ): SuggestionResult[] => {

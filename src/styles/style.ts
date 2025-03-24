@@ -44,7 +44,7 @@ const common = {
 
 export const styles = {
     // 入力フィールド
-    input: `w-full px-3.5 sm:px-4 py-2.5 border ${colors.gray.border} rounded-md ${common.transition} bg-white/95 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 hover:border-blue-300/70 dark:hover:border-blue-500/50 hover:shadow-sm ease-in-out`,
+    input: `w-full px-3 sm:px-4 py-2 h-10 border ${colors.gray.border} rounded-md ${common.transition} bg-white/95 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 hover:border-blue-300/70 dark:hover:border-blue-500/50 hover:shadow-sm ease-in-out`,
 
     // 入力フィールドのフォーカス状態
     inputFocus:
@@ -95,7 +95,7 @@ export const styles = {
 
     // サジェスト候補のドロップダウン
     suggestions:
-        "absolute z-10 w-full mt-1 bg-white/95 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700/60 rounded-md max-h-60 overflow-y-auto backdrop-blur-sm transition-all duration-200",
+        "absolute w-full mt-1 bg-white/95 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700/60 rounded-md max-h-60 overflow-y-auto backdrop-blur-sm transition-all duration-200 z-40",
 
     // バッジとタグ
     badge: `${colors.primary.light} px-2.5 py-1 text-sm rounded-md transition-all duration-200`,

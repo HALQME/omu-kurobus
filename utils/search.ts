@@ -4,16 +4,19 @@ import {
     type Course,
     type SearchResult,
 } from "@/types/schema";
+import { encode } from "./search-engine";
 
 const fuseOptions = {
     keys: [
         {
             name: "name",
             weight: 0.75,
+            getFn: (obj: Course) => encode(obj.name),
         },
         {
             name: "teachers",
             weight: 0.75,
+            getFn: (obj: Course) => encode(obj.teachers),
         },
         {
             name: "id",
@@ -22,15 +25,18 @@ const fuseOptions = {
         {
             name: "campus",
             weight: 0.5,
+            getFn: (obj: Course) => encode(obj.campus),
         },
     ],
-    threshold: 0.4,
+    threshold: 0.3, // より厳密なマッチング
     includeScore: true,
     ignoreLocation: true,
     ignoreFieldNorm: true,
     useExtendedSearch: true,
     shouldSort: true,
     findAllMatches: true,
+    minMatchCharLength: 2, // 最小マッチ文字数
+    distance: 100, // より柔軟な文字距離
 };
 
 export async function search(
@@ -48,16 +54,16 @@ export async function search(
     let andQuery = [];
 
     if (query.course) {
-        andQuery.push({ name: query.course });
+        andQuery.push({ name: encode(query.course) });
     }
     if (query.teacher) {
-        andQuery.push({ teachers: query.teacher });
+        andQuery.push({ teachers: encode(query.teacher) });
     }
     if (query.class_code) {
         andQuery.push({ id: "^" + query.year + query.class_code });
     }
     if (query.campus) {
-        andQuery.push({ campus: query.campus });
+        andQuery.push({ campus: encode(query.campus) });
     }
 
     fuseQuery = {
