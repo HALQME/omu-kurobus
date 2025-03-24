@@ -329,7 +329,7 @@ declare global {
 
         private setNanoCourse(course: CourseSummary): void {
             const courseData: CourseSummary = {
-                id: course.id,
+                id: this.year + course.id,
                 name: course.name,
                 teachers: course.teachers,
                 campus: course.campus,
