@@ -39,20 +39,36 @@ export const CLASS_IDs = [
     },
 ];
 
+export const CURRENT_PAIR = () => {
+    const year = new Date().getFullYear();
+    const month = new Date().getMonth();
+    const academicYear = month <= 2 ? year - 1 : year;
+    const semester = month <= 2 ? "1" : month <= 8 ? "0" : "1";
+    return { year: academicYear.toString(), semester };
+};
+
+export const NEXT_PAIR = () => {
+    const now = CURRENT_PAIR();
+    const year =
+        now.semester === "1" ? now.year : (Number(now.year) + 1).toString();
+    const semester = now.semester === "1" ? "0" : "1";
+    return { year, semester };
+};
+
 export const PATH_PAIRS = () => {
     const submits = SUBMIT_PAIRS();
     const searches = SEARCH_PAIRS();
-    const negatives = NEGATIVE_PAIRS();
 
     const paris = [...submits, ...searches];
-    return paris.filter(
-        (pair) =>
-            negatives.some(
-                (negative) =>
-                    negative.year === pair.path.year &&
-                    negative.semester === pair.path.semester
-            ) === false
-    );
+    return paris
+        .sort((a, b) => Number(b.path.semester) - Number(a.path.semester))
+        .slice(0, 6)
+        .sort((a, b) => Number(a.path.semester) - Number(b.path.semester))
+        .sort((a, b) => Number(b.path.year) - Number(a.path.year));
+};
+
+export const hasSubmitPair = () => {
+    return PATH_PAIRS().some((pair) => pair.type === "submit");
 };
 
 const SUBMIT_PAIRS = () => {
@@ -131,41 +147,6 @@ const SEARCH_PAIRS = () => {
         .slice(0, 6);
 };
 
-const NEGATIVE_PAIRS = () => {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const month = now.getMonth();
-
-    const academicYear = month <= 2 ? currentYear - 1 : currentYear;
-
-    let pairs: {
-        year: string;
-        semester: string;
-    }[] = [];
-
-    if (month <= 2) {
-        pairs = [
-            {
-                year: (academicYear + 1).toString(),
-                semester: "1",
-            },
-            {
-                year: (academicYear + 1).toString(),
-                semester: "0",
-            },
-        ];
-    } else if (month <= 6) {
-        pairs = [
-            {
-                year: academicYear.toString(),
-                semester: "1",
-            },
-        ];
-    }
-
-    return pairs;
-};
-
 export const CAMPUS_NAME = (campus: string | undefined): string | undefined => {
     const campusMap: { [key: string]: string } = {
         "0": "中百舌鳥",
@@ -176,4 +157,3 @@ export const CAMPUS_NAME = (campus: string | undefined): string | undefined => {
     if (campus === undefined) return undefined;
     return campusMap[campus] || campus;
 };
-

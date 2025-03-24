@@ -8,9 +8,20 @@ interface Props {
 }
 const { target, year: yearProp, semester: semesterProp } = Astro.props;
 
-import { PATH_PAIRS as originalPathPairs } from "@/utils/const";
+import { PATH_PAIRS as originalPathPairs, CURRENT_PAIR } from "@/utils/const";
 
 const PATH_PAIRS = () => {
+    if (target == "submit") {
+        return [
+            {
+                type: "submit",
+                path: {
+                    year: CURRENT_PAIR().year,
+                    semester: CURRENT_PAIR().semester,
+                },
+            },
+        ];
+    }
     if (yearProp !== undefined && semesterProp !== undefined) {
         return [
             {
@@ -29,10 +40,9 @@ const submitDefault =
     PATH_PAIRS().find((pair) => pair.type == "submit")?.path.year +
     "/" +
     PATH_PAIRS().find((pair) => pair.type == "submit")?.path.semester;
-const searchDefault =
-    PATH_PAIRS().find((pair) => pair.type == "search")?.path.year +
-    "/" +
-    PATH_PAIRS().find((pair) => pair.type == "search")?.path.semester;
+
+import { NEXT_PAIR } from "@/utils/const";
+const searchDefault = NEXT_PAIR().year + "/" + NEXT_PAIR().semester;
 
 export const prerender = false;
 declare global {
@@ -58,17 +68,12 @@ declare global {
                     class={`year_semester ${styles.input} ${styles.inputFocus} w-full`}
                     aria-required="true"
                 >
-                    {PATH_PAIRS().map(
-                        (pair) =>
-                            pair.type == target && (
-                                <option>
-                                    {pair.path.year}年度
-                                    {pair.path.semester == "0"
-                                        ? "前期"
-                                        : "後期"}
-                                </option>
-                            )
-                    )}
+                    {PATH_PAIRS().map((pair) => (
+                        <option>
+                            {pair.path.year}年度
+                            {pair.path.semester == "0" ? "前期" : "後期"}
+                        </option>
+                    ))}
                 </select>
             </div>
         )

@@ -9,10 +9,25 @@ interface Props {
     semester?: string;
 }
 const { target, year: yearProp, semester: semesterProp } = Astro.props;
-import { PATH_PAIRS as originalPathPairs, CLASS_IDs } from "@/utils/const";
+import {
+    PATH_PAIRS as originalPathPairs,
+    CLASS_IDs,
+    CURRENT_PAIR,
+} from "@/utils/const";
 
 // yearPropとsemesterPropの両方が定義されている場合、PATH_PAIRSを上書き
 const PATH_PAIRS = () => {
+    if (target == "submit") {
+        return [
+            {
+                type: "submit",
+                path: {
+                    year: CURRENT_PAIR().year,
+                    semester: CURRENT_PAIR().semester,
+                },
+            },
+        ];
+    }
     if (yearProp !== undefined && semesterProp !== undefined) {
         return [
             {
@@ -159,23 +174,18 @@ if (Astro.request.method === "POST") {
                 aria-required="true"
             >
                 {
-                    PATH_PAIRS().map(
-                        (pair) =>
-                            pair.type == target && (
-                                <option
-                                    value={`${pair.path.year}/${pair.path.semester}`}
-                                    selected={
-                                        year_semester_value ===
-                                        `${pair.path.year}/${pair.path.semester}`
-                                    }
-                                >
-                                    {pair.path.year}年度
-                                    {pair.path.semester == "0"
-                                        ? "前期"
-                                        : "後期"}
-                                </option>
-                            )
-                    )
+                    PATH_PAIRS().map((pair) => (
+                        <option
+                            value={`${pair.path.year}/${pair.path.semester}`}
+                            selected={
+                                year_semester_value ===
+                                `${pair.path.year}/${pair.path.semester}`
+                            }
+                        >
+                            {pair.path.year}年度
+                            {pair.path.semester == "0" ? "前期" : "後期"}
+                        </option>
+                    ))
                 }
             </select>
         </div>

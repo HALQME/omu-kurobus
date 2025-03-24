@@ -12,10 +12,15 @@ import {
 import type { CourseReviewSubmission, testTypes } from "@/types/schema";
 
 import { post } from "@/utils/post";
+import { hasSubmitPair } from "@/utils/const";
 
 const { year, semester, id } = Astro.params;
 if (!id || !year || !semester) {
     return Astro.redirect("/404");
+}
+
+if (!hasSubmitPair()) {
+    return Astro.redirect("/404"); // submit type pair がない場合は投稿をブロック
 }
 
 let errors = {
