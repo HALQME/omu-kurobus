@@ -100,7 +100,9 @@ import QuickSearch from "../components/quick-search.astro";
                     class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
                 >
                 </div>
-                <h2 class={styles.section.title} id="term-of-use">利用規約</h2>
+                <h2 class={styles.section.title} id="term-of-use">
+                    利用規約・プライバシーポリシー
+                </h2>
                 <div
                     class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
                 >
@@ -139,10 +141,10 @@ import QuickSearch from "../components/quick-search.astro";
                     <h4
                         class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3 border-b pb-1 border-slate-200 dark:border-slate-700"
                     >
-                        第2条（個人情報の提供）
+                        第2条（利用規約の変更）
                     </h4>
                     <p class="text-slate-700 dark:text-slate-300">
-                        本サービスにおいて、ユーザーの個人情報を取り扱う場合があります。この場合、本サービスは、ユーザーの個人情報の取り扱いについて、本サービスのプライバシーポリシーに従うものとします。
+                        開発者は、必要と判断した場合には，ユーザーに予告することなく，本規約を変更することができるものとします。
                     </p>
                 </div>
 
@@ -193,9 +195,6 @@ import QuickSearch from "../components/quick-search.astro";
                             地震、落雷、火災、停電または天災などの不可抗力により、本サービスの提供が困難となった場合
                         </li>
                         <li>
-                            コンピュータまたは通信回線等が事故により停止した場合
-                        </li>
-                        <li>
                             その他、開発者が本サービスの提供が困難と判断した場合
                         </li>
                     </ol>
@@ -205,28 +204,7 @@ import QuickSearch from "../components/quick-search.astro";
                     <h4
                         class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3 border-b pb-1 border-slate-200 dark:border-slate-700"
                     >
-                        第5条（免責）
-                    </h4>
-                    <ol
-                        class="pl-5 list-decimal space-y-2 text-slate-700 dark:text-slate-300"
-                    >
-                        <li>
-                            本サービスは、本サービスに関連して生じたユーザーの損害において、いっさいの責任を負いません。
-                        </li>
-                        <li>
-                            本サービスは、本サービスに関連して生じたユーザー間または、ユーザーと第三者との間のトラブルについて、いっさいの責任を負いません。
-                        </li>
-                        <li>
-                            開発者は、本サービスに関して、特定のユーザーが特定の目的に適すること、期待する結果が得られること、および本サービスが中断されないことについて保証するものではありません。
-                        </li>
-                    </ol>
-                </div>
-
-                <div class="mb-6">
-                    <h4
-                        class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3 border-b pb-1 border-slate-200 dark:border-slate-700"
-                    >
-                        第6条（サービス内容の変更等）
+                        第5条（サービス内容の変更等）
                     </h4>
                     <p class="text-slate-700 dark:text-slate-300">
                         開発者は、ユーザーに通知することなく、本サービスの内容を変更できるものとします。
@@ -237,19 +215,11 @@ import QuickSearch from "../components/quick-search.astro";
                     <h4
                         class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3 border-b pb-1 border-slate-200 dark:border-slate-700"
                     >
-                        第7条（利用規約の変更）
+                        第6条（個人情報等の取り扱い）
                     </h4>
-                    <p class="text-slate-700 dark:text-slate-300">
-                        本サービスは、必要と判断した場合には，応募者に予告することなく，本規約を変更することができるものとします。
+                    <p class="mb-2 text-slate-700 dark:text-slate-300">
+                        本サービスにおける個人情報の取り扱いについては、以下のプライバシーポリシーに従います。
                     </p>
-                </div>
-
-                <div class="mb-6">
-                    <h4
-                        class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3 border-b pb-1 border-slate-200 dark:border-slate-700"
-                    >
-                        第8条（個人情報等の取り扱い）
-                    </h4>
                     <ol
                         class="pl-5 list-decimal space-y-2 text-slate-700 dark:text-slate-300"
                     >
@@ -266,6 +236,30 @@ import QuickSearch from "../components/quick-search.astro";
                         </li>
                         <li class="mt-2">
                             これらの情報は、本サービスの提供のために利用されるほか、統計情報として利用されることがあります。
+                        </li>
+                        <li>
+                            収集した情報は、適切な安全管理措置を講じ、不正アクセスや漏洩防止に努めます。
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="mb-6">
+                    <h4
+                        class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3 border-b pb-1 border-slate-200 dark:border-slate-700"
+                    >
+                        第7条（免責）
+                    </h4>
+                    <ol
+                        class="pl-5 list-decimal space-y-2 text-slate-700 dark:text-slate-300"
+                    >
+                        <li>
+                            本サービスは、本サービスに関連して生じたユーザーの損害において、いっさいの責任を負いません。
+                        </li>
+                        <li>
+                            本サービスは、本サービスに関連して生じたユーザー間または、ユーザーと第三者との間のトラブルについて、いっさいの責任を負いません。
+                        </li>
+                        <li>
+                            開発者は、本サービスに関して、特定のユーザーが特定の目的に適すること、期待する結果が得られること、および本サービスが中断されないことについて保証するものではありません。
                         </li>
                     </ol>
                 </div>
