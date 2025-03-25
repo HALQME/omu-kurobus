@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "USE_MOCK_API=true astro dev",
+    "vercel-dev": "vercel dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",

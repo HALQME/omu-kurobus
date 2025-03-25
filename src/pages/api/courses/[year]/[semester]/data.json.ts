@@ -14,20 +14,11 @@ export function getStaticPaths() {
 export const GET: APIRoute = async ({ params }) => {
     const { year, semester } = params;
 
-    // 環境変数でモックAPIを使用するかどうかを判断
-    const useMockApi = process.env.USE_MOCK_API === "true";
-
     let data;
 
-    if (useMockApi) {
-        // モックデータを使用
-        console.log(`Using mock data`);
-        data = MockData;
-    } else {
-        data = await fetchData(year!, semester!).then((data) =>
-            summaryData(data, year!, semester!)
-        );
-    }
+    data = await fetchData(year!, semester!).then((data) =>
+        summaryData(data, year!, semester!)
+    );
 
     return new Response(JSON.stringify(data, null, 2), {
         status: 200,
