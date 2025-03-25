@@ -6,7 +6,6 @@ import SimilarCourses from "@/components/similar-courses.astro";
 import CourseInfo from "@/src/components/course-info.astro";
 import { CourseSummarySchema } from "@/types/schema";
 import { z } from "astro/zod";
-import type { CourseSummary } from "@/types/schema";
 export const prerender = false;
 
 const year = Astro.params.year;
@@ -15,6 +14,8 @@ const courseId = Astro.params.id;
 
 if (!courseId || !year || !semester) {
     return new Response("Not Found", { status: 404 });
+} else if (semester != "0" && semester != "1") {
+    return Astro.redirect("/search", 302);
 }
 
 const reviews = await getReviews(courseId);
@@ -41,10 +42,13 @@ if (!course) {
 }
 ---
 
-<Layout
-    title="感想閲覧"
-    description="授業を受講した皆の感想や愚痴が詰まったまとめサイトです。"
->
+<Layout>
+    <title slot="title">ハム大クロバス | 感想検索</title>
+    <meta
+        name="description"
+        content="感想を共有して履修登録を助け合おう！"
+        slot="description"
+    />
     <section class={styles.section.container}>
         <CourseInfo id={courseId} />
         <div class={styles.section.headingWrapper}>
@@ -73,7 +77,6 @@ if (!course) {
         </div>
     </section>
 
-    {/* 類似コースコンポーネントを追加 */}
     <section class={styles.section.container}>
         <div class={styles.section.headingWrapper}>
             <div

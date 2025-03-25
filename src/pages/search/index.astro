@@ -5,10 +5,13 @@ import { styles } from "@/styles/style";
 export const prerender = false;
 ---
 
-<Layout
-    title="ハム大クロバス"
-    description="授業を受講した皆の感想や愚痴が詰まったまとめサイトです。"
->
+<Layout>
+    <title slot="title">ハム大クロバス | 検索</title>
+    <meta
+        name="description"
+        content="授業を受講した皆の感想や愚痴が詰まったまとめサイトです。"
+        slot="description"
+    />
     <section class={styles.section.container}>
         <div class={styles.section.headingWrapper}>
             <div

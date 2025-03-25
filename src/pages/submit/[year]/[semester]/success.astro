@@ -9,13 +9,19 @@ const id = new URL(Astro.request.url).searchParams.get("id");
 if (!id) {
     return Astro.redirect("/failed", 302);
 }
+if (semester != "0" && semester != "1") {
+    return Astro.redirect("/search", 302);
+}
 import CourseInfo from "@/src/components/course-info.astro";
 ---
 
-<Layout
-    title="ハム大クロバス"
-    description="授業を受講した皆の感想や愚痴が詰まったまとめサイトです。"
->
+<Layout>
+    <title slot="title">ハム大クロバス | 投稿成功</title>
+    <meta
+        name="description"
+        content="感想の投稿が完了しました。"
+        slot="description"
+    />
     <section class={styles.section.container}>
         <div class="text-center py-4">
             <h2 class="text-3xl font-bold text-emerald-600 mb-3">

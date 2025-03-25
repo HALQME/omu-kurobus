@@ -1,11 +1,16 @@
 ---
 import Layout from "@/layouts/layout.astro";
-import { PATH_PAIRS } from "@/utils/const";
 import { styles } from "@/styles/style";
 import QuickSearch from "../components/quick-search.astro";
 ---
 
-<Layout title="ハム大クロバス" description="ハム大のクロバスです。">
+<Layout>
+    <title slot="title">ハム大クロバス</title>
+    <meta
+        name="description"
+        content="授業を受講した皆の感想や愚痴が詰まったまとめサイトです。"
+        slot="description"
+    />
     <div class="py-12">
         <div class="max-w-3xl mx-auto px-4">
             <h1
