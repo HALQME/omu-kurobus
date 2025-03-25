@@ -32,9 +32,23 @@ if (typeof window !== "undefined") {
  * @param course
  * @returns course.id
  */
-const setCourse = (course: CourseSummary): string => {
-    coursesMap.setKey(course.id, course);
-    return course.id;
+const setCourse = (course: CourseSummary) => {
+    try {
+        const currentState = coursesMap.get();
+        if (currentState[course.id]) {
+            console.error(`[Store] Course ${course.id} already exists`);
+            return course.id;
+        } else {
+            coursesMap.set({
+                ...currentState,
+                [course.id]: course,
+            });
+            return course.id;
+        }
+    } catch (e) {
+        console.error(`[Store] Failed to add course ${course.id}`);
+        return "failed";
+    }
 };
 
 /**
@@ -47,4 +61,11 @@ const getCourse = (id: string): CourseSummary => {
     return currentState[id];
 };
 
-export { setCourse, getCourse };
+/**
+ * コース情報をすべて削除する
+ */
+const clearCourses = () => {
+    coursesMap.set({});
+};
+
+export { setCourse, getCourse, clearCourses };

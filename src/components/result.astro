@@ -72,7 +72,7 @@ const truncateTeacherName = (name: string, maxLength: number = 15) => {
             </div>
         </div>
         <button
-            id=`button-${result.id}`
+            id=`button-${year}-${semester}-${result.id}`
             class="mt-3 block w-full text-center px-4 py-2 outline outline-blue-500 dark:outline-blue-700 rounded hover:bg-blue-600/20 dark:hover:bg-blue-800/20 transition-colors"
         >
             {target === "search" ? "詳細を見る" : "投稿する"}
@@ -109,10 +109,17 @@ const truncateTeacherName = (name: string, maxLength: number = 15) => {
             this.addEventListener("click", (e) => {
                 if (
                     e.target instanceof HTMLButtonElement &&
-                    e.target.id === `button-${result.id}`
+                    e.target.id === `button-${year}-${semester}-${result.id}`
                 ) {
                     e.preventDefault();
-                    nano.setCourse(result);
+                    nano.setCourse({
+                        id: year + result.id,
+                        name: result.name,
+                        teachers: result.teachers,
+                        campus: result.campus,
+                        period: result.period,
+                        semester: result.semester,
+                    });
                     window.location.href = url.href;
                 }
             });
