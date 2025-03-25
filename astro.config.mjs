@@ -8,6 +8,7 @@ import vercel from "@astrojs/vercel";
 // https://astro.build/config
 export default defineConfig({
     output: "static",
+    site: "https://omu-kurobus.vercel.app",
     adapter: vercel(),
 
     vite: {

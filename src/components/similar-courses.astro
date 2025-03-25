@@ -1,0 +1,70 @@
+---
+interface Props {
+    year: string;
+    courseId: string;
+    name: string;
+    teachers: string;
+    campus: string;
+    period: string;
+    semester?: string;
+}
+const { year, semester, courseId, name, teachers, campus, period } =
+    Astro.props;
+
+import Result from "@/components/result.astro";
+import { styles } from "@/styles/style";
+
+import { type CourseSummary } from "@/types/schema";
+import { similars } from "@/utils/similar-courses";
+
+const courseInfo: CourseSummary = {
+    id: courseId,
+    name: name,
+    teachers: teachers,
+    campus: campus,
+    period: period,
+    semester: semester,
+};
+
+const similarCoursesByYear = await similars(courseInfo);
+---
+
+<div class={`${styles.section.container}`}>
+    <div class="content-container grid grid-cols-1 gap-6">
+        {
+            similarCoursesByYear.map((yearData) => (
+                <div class={styles.section.content}>
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class={styles.badge}>{yearData.year}年度</span>
+                        <span class={styles.badge}>
+                            {yearData.semester === "0" ? "前期" : "後期"}
+                        </span>
+                    </div>
+                    <div class="space-y-4">
+                        {yearData.courses.map((course) => (
+                            <Result
+                                target="search"
+                                year={yearData.year}
+                                semester={yearData.semester}
+                                result={{
+                                    id: course.id,
+                                    name: course.name,
+                                    teachers: course.teachers,
+                                    campus: course.campus,
+                                    period: course.period,
+                                    semester:
+                                        course.semester ??
+                                        yearData.year +
+                                            "年度" +
+                                            (yearData.semester == "0"
+                                                ? "前期"
+                                                : "後期"),
+                                }}
+                            />
+                        ))}
+                    </div>
+                </div>
+            ))
+        }
+    </div>
+</div>

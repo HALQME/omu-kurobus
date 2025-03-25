@@ -2,7 +2,7 @@ import Fuse from "fuse.js";
 import {
     type SearchQuery,
     type Course,
-    type SearchResult,
+    type DetailedSearchResult,
 } from "@/types/schema";
 import { encode } from "./search-engine";
 
@@ -42,7 +42,7 @@ const fuseOptions = {
 export async function search(
     query: SearchQuery,
     courses: Course[]
-): Promise<SearchResult[]> {
+): Promise<DetailedSearchResult[]> {
     const fuse = new Fuse(courses, fuseOptions);
 
     if (!query.campus && !query.course && !query.teacher && !query.class_code) {
