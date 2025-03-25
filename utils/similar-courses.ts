@@ -52,7 +52,7 @@ export async function similars(
         ...new Set(
             PATH_PAIRS()
                 .map(({ path }) => path.year)
-                .filter((year) => year < new Date().getFullYear().toString())
+                .filter((year) => year <= new Date().getFullYear().toString())
         ),
     ];
     const semester = course.semester?.endsWith("前期") ? "0" : "1";
