@@ -98,8 +98,11 @@ const truncateTeacherName = (name: string, maxLength: number = 15) => {
 
             const year = this.getAttribute("data-year") as string;
             const semester = this.getAttribute("data-semester") as string;
+            const target = this.getAttribute("data-target") as
+                | "search"
+                | "submit";
             const url = new URL(
-                `/submit/${year}/${semester}/${result.id}`,
+                `/${target}/${year}/${semester}/${year}${result.id}`,
                 window.location.origin
             );
 

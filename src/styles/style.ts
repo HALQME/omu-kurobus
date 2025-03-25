@@ -32,7 +32,7 @@ const colors = {
         light: "bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800",
         default: "bg-violet-500 hover:bg-violet-600 text-white",
     },
-};
+} as const;
 
 // 共通のスタイル
 const common = {
@@ -40,9 +40,83 @@ const common = {
     transition: "transition-all duration-300 ease-out",
     card: "bg-white/95 dark:bg-slate-800/90 border rounded-lg shadow-sm backdrop-blur-sm",
     container: "max-w-3xl mx-auto",
+} as const;
+
+type Styles = {
+    input: string;
+    inputFocus: string;
+    button: {
+        primary: string;
+        reset: string;
+    };
+    pageBackground: string;
+    header: {
+        header: string;
+        container: string;
+        title: string;
+    };
+    footer: {
+        container: string;
+        content: string;
+    };
+    index: {
+        feature: string;
+        link: string;
+    };
+    label: string;
+    card: {
+        container: string;
+        title: string;
+        label: string;
+        value: string;
+        row: string;
+        badge: string;
+    };
+    suggestions: string;
+    badge: string;
+    sectionHeading: string;
+    errorAlert: string;
+    detailsPanel: string;
+    detailsSummary: string;
+    section: {
+        container: string;
+        headingWrapper: string;
+        headingLine: string;
+        headingLineLeft: string;
+        headingLineRight: string;
+        title: string;
+        content: string;
+    };
+    checkboxGroup: {
+        container: string;
+        item: string;
+        input: string;
+        label: string;
+        other: string;
+        otherInput: string;
+    };
+    form: {
+        label: string;
+        input: string;
+        textarea: string;
+        slider: {
+            container: string;
+            wrapper: string;
+            input: string;
+            value: string;
+            labels: string;
+        };
+        group: {
+            container: string;
+        };
+    };
+    loading: {
+        fallbackText: string;
+        spinner: string;
+    };
 };
 
-export const styles = {
+export const styles: Styles = {
     // 入力フィールド
     input: `w-full px-3 sm:px-4 py-2 h-10 border ${colors.gray.border} rounded-md ${common.transition} bg-white/95 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 hover:border-blue-300/70 dark:hover:border-blue-500/50 hover:shadow-sm ease-in-out`,
 
@@ -153,4 +227,25 @@ export const styles = {
                 "p-4 bg-white mb-2 sm:mb-4 dark:bg-gray-800 rounded-md border border-gray-100 dark:border-gray-700",
         },
     },
+    loading: {
+        fallbackText:
+            "text-gray-500 dark:text-gray-50 animate-pulse opacity-0 fade-in",
+        spinner:
+            "inline-block w-4 h-4 border-2 border-dashed border-blue-500 dark:border-blue-50 rounded-full animate-spin",
+    },
 };
+
+// フェードインアニメーション
+if (typeof document !== "undefined") {
+    const style = document.createElement("style");
+    style.innerHTML = `
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-in {
+            animation: fade-in 0.5s ease-out forwards;
+        }
+    `;
+    document.head.appendChild(style);
+}
