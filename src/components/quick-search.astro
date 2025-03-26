@@ -299,6 +299,10 @@ declare global {
                         e.preventDefault();
                         this.handleSuggestionClick(button);
                     });
+                    button.addEventListener("touchend", (e) => {
+                        e.preventDefault();
+                        this.handleSuggestionClick(button);
+                    });
 
                     return button;
                 });
