@@ -10,11 +10,6 @@ const { scores } = Astro.props;
 const result = await scoreStat(scores);
 const metadata = JSON.parse(result.metadata || "{}");
 
-const formatScore = (score: number | undefined) => {
-    if (score === undefined) return "-";
-    return score.toFixed(2);
-};
-
 const getRank = (score: number | undefined) => {
     if (score === undefined) return "-";
     if (score >= 1.5) return "AA";
