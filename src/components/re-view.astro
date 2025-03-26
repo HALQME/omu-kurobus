@@ -3,29 +3,8 @@ import type { CourseReviewRecord, CourseSummary } from "@/types/schema";
 import { styles } from "@/styles/style";
 interface Props {
     reviews: CourseReviewRecord[];
-    year: string;
-    semester: string;
 }
-const { reviews, year, semester } = Astro.props;
-
-const nameFromId = async (id: string) => {
-    try {
-        const baseUrl = process.env.PUBLIC_BASE_URL || window.location.origin;
-        const url = new URL(`/api/course/${year}/${semester}/${id}`, baseUrl);
-        const response = await fetch(url.toString());
-        if (!response.ok) {
-            console.error(`API request failed with status: ${response.status}`);
-            return ["授業情報取得エラー"];
-        }
-        const data = (await response.json()) as CourseSummary[];
-        return data
-            .filter((course) => course.id === id)
-            .map((course) => course.name);
-    } catch (error) {
-        console.error("Error fetching course name:", error);
-        return ["授業情報取得エラー"];
-    }
-};
+const { reviews } = Astro.props;
 
 // レビュー内容が有効かチェックする関数
 const hasContent = (review: CourseReviewRecord): boolean => {
@@ -42,40 +21,70 @@ const hasContent = (review: CourseReviewRecord): boolean => {
 {/* レビューを項目ごとに表示 */}
 
 <h2 class=`${styles.section.title} my-4`>感想</h2>
-
 {
-    reviews.filter(hasContent).map((review, index) => (
-        <div class={styles.card.card}>
-            <div class={styles.card.body}>
-                <div class="flex justify-between items-center mb-2">
-                    <span class="font-bold">#{index + 1}</span>
-                    <span class="text-sm text-gray-500">
-                        {new Date(review.createdAt).toLocaleString("ja-JP")}
-                    </span>
-                </div>
-
-                {review.goodPoint && review.goodPoint.trim() !== "" && (
-                    <div>
-                        <h3 class="font-semibold text-green-700">良い点</h3>
-                        <p class={styles.card.comment}>{review.goodPoint}</p>
-                    </div>
-                )}
-
-                {review.notGoodPoint && review.notGoodPoint.trim() !== "" && (
-                    <div class="mt-3">
-                        <h3 class="font-semibold text-red-700">改善点</h3>
-                        <p class={styles.card.comment}>{review.notGoodPoint}</p>
-                    </div>
-                )}
-
-                {review.comment && review.comment.trim() !== "" && (
-                    <div class="mt-3">
-                        <h3 class="font-semibold text-blue-700">コメント</h3>
-                        <p class={styles.card.comment}>{review.comment}</p>
-                    </div>
-                )}
-            </div>
-            <div />
+    reviews.length == 0 ? (
+        <div class="flex flex-col items-center justify-center py-8 text-center">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-12 h-12 mb-3 text-gray-400 dark:text-gray-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+            </svg>
+            <p class="text-lg font-medium text-gray-700 dark:text-gray-300">
+                まだ感想がありません。
+            </p>
         </div>
-    ))
+    ) : (
+        reviews.filter(hasContent).map((review, index) => (
+            <div class={styles.card.card}>
+                <div class={styles.card.body}>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold">#{index + 1}</span>
+                        <span class="text-sm text-gray-500">
+                            {new Date(review.createdAt).toLocaleString("ja-JP")}
+                        </span>
+                    </div>
+
+                    {review.goodPoint && review.goodPoint.trim() !== "" && (
+                        <div>
+                            <h3 class="font-semibold text-green-700">良い点</h3>
+                            <p class={styles.card.comment}>
+                                {review.goodPoint}
+                            </p>
+                        </div>
+                    )}
+
+                    {review.notGoodPoint &&
+                        review.notGoodPoint.trim() !== "" && (
+                            <div class="mt-3">
+                                <h3 class="font-semibold text-red-700">
+                                    改善点
+                                </h3>
+                                <p class={styles.card.comment}>
+                                    {review.notGoodPoint}
+                                </p>
+                            </div>
+                        )}
+
+                    {review.comment && review.comment.trim() !== "" && (
+                        <div class="mt-3">
+                            <h3 class="font-semibold text-blue-700">
+                                コメント
+                            </h3>
+                            <p class={styles.card.comment}>{review.comment}</p>
+                        </div>
+                    )}
+                </div>
+                <div />
+            </div>
+        ))
+    )
 }

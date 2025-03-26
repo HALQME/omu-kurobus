@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 export interface Props extends astroHTML.JSX.HTMLAttributes {}
 
 const props = Astro.props as Props;
+export const prerender = false;
 
 const tabs: string[] = [];
 const panels: string[] = [];

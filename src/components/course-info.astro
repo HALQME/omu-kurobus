@@ -3,12 +3,19 @@ interface Props {
     id: string;
 }
 const { id } = Astro.props;
+import Loading from "./loading.astro";
 ---
 
 <astro-course-info data-course-id={id}>
-    <p id="infos" class="text-gray-500 dark:text-gray-400 mb-0"></p>
-    <h3 id="title" class="text-lg mb-0.5"></h3>
-    <p id="teachers" class="text-sm text-gray-500 dark:text-gray-400 mb-4"></p>
+    <div id="loading" class="flex justify-center items-center py-4">
+        <Loading />
+    </div>
+    <div id="content" class="hidden">
+        <p id="infos" class="text-gray-500 dark:text-gray-400 mb-0"></p>
+        <h3 id="title" class="text-lg mb-0.5"></h3>
+        <p id="teachers" class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        </p>
+    </div>
 </astro-course-info>
 
 <script>
@@ -27,12 +34,21 @@ const { id } = Astro.props;
                     return;
                 }
                 console.log("[CourseInfo] Rendering course:", course);
+                this.hideLoading();
                 this.render(course);
             } catch (e) {
                 console.error("[CourseInfo] Error loading course:", e);
                 window.location.href = `/404`;
             }
         }
+
+        hideLoading = () => {
+            const loading = this.querySelector("#loading") as HTMLElement;
+            const content = this.querySelector("#content") as HTMLElement;
+
+            loading.classList.add("hidden");
+            content.classList.remove("hidden");
+        };
 
         render = (course: CourseSummary) => {
             const title = this.querySelector("#title") as HTMLElement;
