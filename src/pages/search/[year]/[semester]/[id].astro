@@ -5,6 +5,8 @@ import { getReviews } from "@/utils/reviews";
 import SimilarCourses from "@/components/similar-courses.astro";
 import CourseInfo from "@/src/components/course-info.astro";
 import { CourseSummarySchema } from "@/types/schema";
+import Tabs from "@/src/components/tabs.astro";
+import ReView from "@/src/components/re-view.astro";
 import { z } from "astro/zod";
 export const prerender = false;
 
@@ -49,51 +51,28 @@ if (!course) {
         content="感想を共有して履修登録を助け合おう！"
         slot="description"
     />
-    <section class={styles.section.container}>
-        <CourseInfo id={courseId} />
-        <div class={styles.section.headingWrapper}>
-            <div
-                class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
-            >
-            </div>
-            <h2 class={styles.section.title}>感想を閲覧</h2>
-            <div
-                class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
-            >
-            </div>
-        </div>
-        <div class={styles.section.content}>
+
+    <CourseInfo id={courseId} />
+
+    <Tabs>
+        <Fragment slot="tab-1">感想</Fragment>
+        <Fragment slot="tab-2">関連</Fragment>
+
+        <section slot="panel-1">
             {
                 !reviews || reviews.length === 0 ? (
                     <p>まだ感想がありません。</p>
                 ) : (
-                    <ul>
-                        {reviews.map((review) => (
-                            <p>{review.comment}</p>
-                        ))}
-                    </ul>
+                    <ReView reviews={reviews} year={year} semester={semester} />
                 )
             }
-        </div>
-    </section>
+        </section>
 
-    <section class={styles.section.container}>
-        <div class={styles.section.headingWrapper}>
-            <div
-                class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
-            >
-            </div>
-            <h2 class={styles.section.title}>類似コース</h2>
-            <div
-                class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
-            >
-            </div>
-        </div>
-        <div class={styles.section.content}>
+        <section slot="panel-2" class={styles.section.container}>
             <div class="mb-6">
-                <h2 class={styles.sectionHeading}>類似コース</h2>
+                <h2 class=`${styles.section.title} my-4`>関連授業</h2>
                 <p class={`text-gray-600 dark:text-gray-400 mb-4`}>
-                    以下のコースは名前、担当教員、キャンパスなどの情報から類似度を計算して表示しています。
+                    以下の授業は名前、担当教員、キャンパスなどの情報から同じ内容と思われる授業を掲載しています。
                 </p>
             </div>
             <SimilarCourses
@@ -113,6 +92,6 @@ if (!course) {
                     <span class={styles.loading.spinner}></span>
                 </span>
             </SimilarCourses>
-        </div>
-    </section>
+        </section>
+    </Tabs>
 </Layout>

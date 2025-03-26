@@ -1,0 +1,81 @@
+---
+import type { CourseReviewRecord, CourseSummary } from "@/types/schema";
+import { styles } from "@/styles/style";
+interface Props {
+    reviews: CourseReviewRecord[];
+    year: string;
+    semester: string;
+}
+const { reviews, year, semester } = Astro.props;
+
+const nameFromId = async (id: string) => {
+    try {
+        const baseUrl = process.env.PUBLIC_BASE_URL || window.location.origin;
+        const url = new URL(`/api/course/${year}/${semester}/${id}`, baseUrl);
+        const response = await fetch(url.toString());
+        if (!response.ok) {
+            console.error(`API request failed with status: ${response.status}`);
+            return ["授業情報取得エラー"];
+        }
+        const data = (await response.json()) as CourseSummary[];
+        return data
+            .filter((course) => course.id === id)
+            .map((course) => course.name);
+    } catch (error) {
+        console.error("Error fetching course name:", error);
+        return ["授業情報取得エラー"];
+    }
+};
+
+// レビュー内容が有効かチェックする関数
+const hasContent = (review: CourseReviewRecord): boolean => {
+    return (
+        (typeof review.goodPoint === "string" &&
+            review.goodPoint.trim() !== "") ||
+        (typeof review.notGoodPoint === "string" &&
+            review.notGoodPoint.trim() !== "") ||
+        (typeof review.comment === "string" && review.comment.trim() !== "")
+    );
+};
+---
+
+{/* レビューを項目ごとに表示 */}
+
+<h2 class=`${styles.section.title} my-4`>感想</h2>
+
+{
+    reviews.filter(hasContent).map((review, index) => (
+        <div class={styles.card.card}>
+            <div class={styles.card.body}>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold">#{index + 1}</span>
+                    <span class="text-sm text-gray-500">
+                        {new Date(review.createdAt).toLocaleString("ja-JP")}
+                    </span>
+                </div>
+
+                {review.goodPoint && review.goodPoint.trim() !== "" && (
+                    <div>
+                        <h3 class="font-semibold text-green-700">良い点</h3>
+                        <p class={styles.card.comment}>{review.goodPoint}</p>
+                    </div>
+                )}
+
+                {review.notGoodPoint && review.notGoodPoint.trim() !== "" && (
+                    <div class="mt-3">
+                        <h3 class="font-semibold text-red-700">改善点</h3>
+                        <p class={styles.card.comment}>{review.notGoodPoint}</p>
+                    </div>
+                )}
+
+                {review.comment && review.comment.trim() !== "" && (
+                    <div class="mt-3">
+                        <h3 class="font-semibold text-blue-700">コメント</h3>
+                        <p class={styles.card.comment}>{review.comment}</p>
+                    </div>
+                )}
+            </div>
+            <div />
+        </div>
+    ))
+}
