@@ -15,6 +15,7 @@ import type {
 } from "@/types/schema";
 import CourseScore from "@/src/components/course-score.astro";
 import CourseAttribute from "@/src/components/course-attribute.astro";
+import CoursePopularity from "@/src/components/course-popularity.astro";
 import Tabs from "@/src/components/tabs.astro";
 import Loading from "@/src/components/loading.astro";
 import ReView from "@/src/components/re-view.astro";
@@ -92,14 +93,30 @@ const attributes: CourseAttributes[] = reviews
 
         {
             popOrScore ? (
-                <section slot="panel-0">
-                    <p>人気</p>
+                <section slot="panel-0" class="flex justify-center py-8">
+                    <CoursePopularity courseId={courseId} />
                 </section>
             ) : (
                 <section slot="panel-1">
-                    <CourseScore scores={scores} />
-                    <hr class="my-8" />
-                    <CourseAttribute attributes={attributes} />
+                    {scores.length === 0 ? (
+                        <div class="text-center my-8">
+                            <p class="text-gray-600 dark:text-gray-400">
+                                おすすめ度の情報が提供されていません。
+                            </p>
+                        </div>
+                    ) : (
+                        <CourseScore scores={scores} />
+                    )}
+                    <div class="my-2" />
+                    {attributes.length === 0 ? (
+                        <div class="text-center my-8">
+                            <p class="text-gray-600 dark:text-gray-400">
+                                授業形態の情報が提供されていません。
+                            </p>
+                        </div>
+                    ) : (
+                        <CourseAttribute attributes={attributes} />
+                    )}
                 </section>
             )
         }
