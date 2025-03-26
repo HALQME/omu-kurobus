@@ -4,9 +4,17 @@ import { styles } from "@/styles/style";
 import { getReviews } from "@/utils/reviews";
 import SimilarCourses from "@/components/similar-courses.astro";
 import CourseInfo from "@/src/components/course-info.astro";
-import { CourseSummarySchema, CourseScoreSchema } from "@/types/schema";
-import type { CourseScore as CourseScoreType } from "@/types/schema";
+import {
+    CourseSummarySchema,
+    CourseScoreSchema,
+    CourseAttributesSchema,
+} from "@/types/schema";
+import type {
+    CourseScore as CourseScoreType,
+    CourseAttributes,
+} from "@/types/schema";
 import CourseScore from "@/src/components/course-score.astro";
+import CourseAttribute from "@/src/components/course-attribute.astro";
 import Tabs from "@/src/components/tabs.astro";
 import Loading from "@/src/components/loading.astro";
 import ReView from "@/src/components/re-view.astro";
@@ -53,6 +61,12 @@ const scores: CourseScoreType[] = reviews
           return CourseScoreSchema.parse(review);
       })
     : [];
+
+const attributes: CourseAttributes[] = reviews
+    ? reviews.map((review) => {
+          return CourseAttributesSchema.parse(review);
+      })
+    : [];
 ---
 
 <Layout>
@@ -84,6 +98,8 @@ const scores: CourseScoreType[] = reviews
             ) : (
                 <section slot="panel-1">
                     <CourseScore scores={scores} />
+                    <hr class="my-8" />
+                    <CourseAttribute attributes={attributes} />
                 </section>
             )
         }

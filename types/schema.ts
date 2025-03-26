@@ -158,3 +158,16 @@ export const CourseScoreSchema = CourseReviewRecordSchema.pick({
     metadata: z.string().optional(), // metadata を追加
 });
 export type CourseScore = z.infer<typeof CourseScoreSchema>;
+
+export const CourseAttributesSchema = CourseReviewRecordSchema.pick({
+    course_id: true,
+    courseType: true,
+    courseTypeOtherText: true,
+    evalCriteria: true,
+    evalCriteriaOtherText: true,
+    testType: true,
+    testTypeOtherText: true,
+    testItems: true,
+    testItemsOtherText: true,
+});
+export type CourseAttributes = z.infer<typeof CourseAttributesSchema>;
