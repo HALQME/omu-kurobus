@@ -1,0 +1,162 @@
+---
+import crypto from "node:crypto";
+
+export interface Props extends astroHTML.JSX.HTMLAttributes {}
+
+const props = Astro.props as Props;
+
+const tabs: string[] = [];
+const panels: string[] = [];
+
+let inlineStyles = "";
+
+{
+    let index = 0;
+    Object.entries(Astro.slots).forEach(([name]) => {
+        if (name.startsWith("tab")) {
+            index += 1;
+            tabs.push(name);
+        } else {
+            panels.push(name);
+        }
+    });
+}
+
+const uid = crypto.randomUUID();
+let activeTabIndex = 0;
+---
+
+<div
+    {...{ ...props, class: undefined, "class:list": undefined }}
+    class:list={["tabs", "relative", props["class:list"], props.class]}
+>
+    <style set:html={inlineStyles}></style>
+
+    <nav
+        class="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700"
+    >
+        {
+            tabs.map(async (name, idx) => {
+                const index = idx; // Use 0-based index
+                if (name.startsWith("tab")) {
+                    const render = await Astro.slots.render(name);
+                    const tabId = `tab-${uid}-${index}`; // Unique ID for each tab button
+                    return (
+                        <div class:list={["tab-wrapper", `tab-${index + 1}`]}>
+                            <button
+                                id={tabId}
+                                type="button"
+                                class:list={[
+                                    "tab",
+                                    "block",
+                                    "whitespace-nowrap",
+                                    "cursor-pointer",
+                                    "py-2",
+                                    "px-4",
+                                    "font-medium",
+                                    "transition-colors",
+                                    "duration-300",
+                                    "border-b-2",
+                                ]}
+                            >
+                                <>{render}</>
+                            </button>
+                        </div>
+                    );
+                }
+                return null;
+            })
+        }
+    </nav>
+
+    <div class="relative">
+        {
+            panels.map(async (name, index) => {
+                const panelId = `panel-${uid}-${index}`;
+                return (
+                    <div
+                        id={panelId}
+                        class:list={[
+                            `panel-${index + 1}`,
+                            "panel",
+                            {
+                                block: activeTabIndex === index,
+                                hidden: activeTabIndex !== index,
+                            },
+                        ]}
+                        set:html={await Astro.slots.render(name)}
+                    />
+                );
+            })
+        }
+    </div>
+</div>
+
+<script>
+    const defaultTabClasses = [
+        "text-gray-500",
+        "hover:text-gray-600",
+        "border-transparent",
+        "hover:border-gray-300",
+        "dark:text-gray-400",
+        "dark:hover:text-gray-300",
+        "dark:border-transparent",
+        "dark:hover:border-gray-700",
+    ];
+
+    const activeTabClasses = [
+        "text-gray-700",
+        "hover:text-gray-800",
+        "border-blue-300",
+        "dark:text-gray-200",
+        "dark:hover:text-gray-100",
+        "dark:border-blue-600",
+    ];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const tabsContainer = document.querySelector(".tabs"); // Tabs コンテナを取得
+        if (tabsContainer) {
+            const tabButtons = tabsContainer.querySelectorAll("button.tab"); // タブボタンを全て取得
+            const tabPanels = tabsContainer.querySelectorAll(".panel"); // パネルを全て取得
+
+            const activateTab = (tab: Element, index: number) => {
+                // すべてのタブをデフォルト状態にリセット
+                tabButtons.forEach((tabBtn) => {
+                    // まず全クラスをリセット
+                    activeTabClasses.forEach((cls) =>
+                        tabBtn.classList.remove(cls)
+                    );
+                    // デフォルトクラスを適用
+                    defaultTabClasses.forEach((cls) =>
+                        tabBtn.classList.add(cls)
+                    );
+                });
+
+                // パネルを非表示に
+                tabPanels.forEach((panel) => panel.classList.add("hidden"));
+
+                // アクティブタブの設定
+                defaultTabClasses.forEach((cls) => tab.classList.remove(cls));
+                activeTabClasses.forEach((cls) => tab.classList.add(cls));
+
+                // パネルを表示
+                tabPanels[index].classList.remove("hidden");
+                tabPanels[index].classList.add("block");
+            };
+
+            tabButtons.forEach((tab, index) => {
+                tab.addEventListener("click", () => {
+                    activateTab(tab, index);
+                });
+                tab.addEventListener("tap", () => {
+                    activateTab(tab, index);
+                });
+            });
+
+            // 初期状態では最初のタブをアクティブに
+            if (tabButtons.length > 0) {
+                activateTab(tabButtons[0], 0);
+            }
+        }
+    });
+</script>
