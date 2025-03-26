@@ -4,12 +4,16 @@ import { styles } from "@/styles/style";
 import { getReviews } from "@/utils/reviews";
 import SimilarCourses from "@/components/similar-courses.astro";
 import CourseInfo from "@/src/components/course-info.astro";
-import { CourseSummarySchema } from "@/types/schema";
+import { CourseSummarySchema, CourseScoreSchema } from "@/types/schema";
+import type { CourseScore as CourseScoreType } from "@/types/schema";
+import CourseScore from "@/src/components/course-score.astro";
 import Tabs from "@/src/components/tabs.astro";
 import Loading from "@/src/components/loading.astro";
 import ReView from "@/src/components/re-view.astro";
 import { z } from "astro/zod";
 export const prerender = false;
+
+import { NEXT_PAIR } from "@/utils/const";
 
 const year = Astro.params.year;
 const semester = Astro.params.semester;
@@ -20,6 +24,7 @@ if (!courseId || !year || !semester) {
 } else if (semester != "0" && semester != "1") {
     return Astro.redirect("/search", 302);
 }
+const popOrScore: boolean = NEXT_PAIR().year === year;
 
 const reviews = await getReviews(courseId);
 const url = new URL(`/api/courses/${year}/${semester}/data.json`, Astro.url);
@@ -43,6 +48,11 @@ const course = courses.find((course) => year + course.id === courseId);
 if (!course) {
     return new Response("Course Not Found", { status: 404 });
 }
+const scores: CourseScoreType[] = reviews
+    ? reviews.map((review) => {
+          return CourseScoreSchema.parse(review);
+      })
+    : [];
 ---
 
 <Layout>
@@ -56,10 +66,29 @@ if (!course) {
     <CourseInfo id={courseId} />
 
     <Tabs>
-        <Fragment slot="tab-1">感想</Fragment>
-        <Fragment slot="tab-2">関連</Fragment>
+        {
+            popOrScore ? (
+                <Fragment slot="tab-0">人気</Fragment>
+            ) : (
+                <Fragment slot="tab-1">評価</Fragment>
+            )
+        }
+        <Fragment slot="tab-2">感想</Fragment>
+        <Fragment slot="tab-3">関連</Fragment>
 
-        <section slot="panel-1">
+        {
+            popOrScore ? (
+                <section slot="panel-0">
+                    <p>人気</p>
+                </section>
+            ) : (
+                <section slot="panel-1">
+                    <CourseScore scores={scores} />
+                </section>
+            )
+        }
+
+        <section slot="panel-2">
             {
                 !reviews ? (
                     <Loading />
@@ -71,7 +100,7 @@ if (!course) {
             }
         </section>
 
-        <section slot="panel-2" class={styles.section.container}>
+        <section slot="panel-3" class={styles.section.container}>
             <div class="mb-6">
                 <h2 class=`${styles.section.title} my-4`>関連授業</h2>
                 <p class={`text-gray-600 dark:text-gray-400 mb-4`}>

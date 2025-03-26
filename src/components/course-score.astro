@@ -1,0 +1,96 @@
+---
+import type { CourseScore } from "@/types/schema";
+import { scoreStat } from "@/utils/score-stat";
+import StarRating from "@/components/star-rating.astro";
+
+interface Props {
+    scores: CourseScore[];
+}
+const { scores } = Astro.props;
+const result = await scoreStat(scores);
+const metadata = JSON.parse(result.metadata || "{}");
+
+const formatScore = (score: number | undefined) => {
+    if (score === undefined) return "-";
+    return score.toFixed(2);
+};
+
+const getRank = (score: number | undefined) => {
+    if (score === undefined) return "-";
+    if (score >= 1.5) return "AA";
+    if (score >= 0.5) return "A";
+    if (score >= -0.5) return "B";
+    if (score >= -1.5) return "C";
+    return "F";
+};
+
+const getRankColor = (rank: string) => {
+    switch (rank) {
+        case "AA":
+            return "bg-emerald-100 text-emerald-800 border-emerald-400";
+        case "A":
+            return "bg-blue-100 text-blue-800 border-blue-400";
+        case "B":
+            return "bg-yellow-100 text-yellow-800 border-yellow-400";
+        case "C":
+            return "bg-orange-100 text-orange-800 border-orange-400";
+        case "F":
+            return "bg-red-100 text-red-800 border-red-400";
+        default:
+            return "bg-gray-100 text-gray-800 border-gray-400";
+    }
+};
+
+const totalScore = result.totalScore || 0;
+const rank = getRank(totalScore);
+const rankColor = getRankColor(rank);
+---
+
+<div class="flex flex-col gap-4">
+    <div class="font-bold my-4">総合評価</div>
+    <div class="flex flex-col items-center">
+        <div
+            class={`text-4xl my-2 px-4 py-2 w-36 rounded-lg border ${rankColor} flex flex-col items-center`}
+        >
+            <span>{rank}</span>
+        </div>
+        <StarRating
+            averageRating={totalScore}
+            medianRating={metadata.medianTotalScore || 0}
+        />
+    </div>
+
+    <div class="flex flex-col gap-4">
+        <div class="font-bold">評価項目</div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+                <div class="font-bold">授業の難易度</div>
+                <StarRating
+                    averageRating={result.classDifficulty || 0}
+                    medianRating={metadata.medianClassDifficulty || 0}
+                />
+            </div>
+            <div class="flex flex-col gap-2">
+                <div class="font-bold">テストの難易度</div>
+                <StarRating
+                    averageRating={result.testDifficulty || 0}
+                    medianRating={metadata.medianTestDifficulty || 0}
+                />
+            </div>
+            <div class="flex flex-col gap-2">
+                <div class="font-bold">テストの量</div>
+                <StarRating
+                    averageRating={result.testAmount || 0}
+                    medianRating={metadata.medianTestAmount || 0}
+                />
+            </div>
+            <div class="flex flex-col gap-2">
+                <div class="font-bold">評価の厳しさ</div>
+                <StarRating
+                    averageRating={result.gradingCriteria || 0}
+                    medianRating={metadata.medianGradingCriteria || 0}
+                />
+            </div>
+        </div>
+    </div>
+</div>
