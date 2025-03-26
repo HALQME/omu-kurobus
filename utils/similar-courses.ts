@@ -33,11 +33,17 @@ async function fetchCourses(
     year: string,
     semester: string
 ): Promise<CourseSummary[]> {
-    // 現在のURLを取得
-    const url = `${
-        import.meta.env.DEV ? "http://localhost:3000" : import.meta.env.SITE
-    }/api/courses/${year}/${semester}/data.json`;
-    const res = await fetch(url.toString());
+    // 実行環境に応じたベースURLを取得
+    const baseUrl =
+        process.env.PUBLIC_BASE_URL || "https://omu-kurobus.vercel.app";
+
+    // 完全なURLを構築
+    const url = new URL(
+        `/api/courses/${year}/${semester}/data.json`,
+        baseUrl
+    ).toString();
+
+    const res = await fetch(url);
     if (!res.ok) {
         throw new Error(`Failed to fetch courses for ${year} ${semester}`);
     }
