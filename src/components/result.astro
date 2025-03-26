@@ -102,7 +102,9 @@ const truncateTeacherName = (name: string, maxLength: number = 15) => {
                 | "search"
                 | "submit";
             const url = new URL(
-                `/${target}/${year}/${semester}/${year}${result.id}`,
+                result.id.length == 14
+                    ? `/${target}/${year}/${semester}/${result.id}`
+                    : `/${target}/${year}/${semester}/${year}${result.id}`,
                 window.location.origin
             );
 
@@ -113,7 +115,10 @@ const truncateTeacherName = (name: string, maxLength: number = 15) => {
                 ) {
                     e.preventDefault();
                     nano.setCourse({
-                        id: year + result.id,
+                        id:
+                            result.id.length == 14
+                                ? result.id
+                                : year + result.id,
                         name: result.name,
                         teachers: result.teachers,
                         campus: result.campus,
