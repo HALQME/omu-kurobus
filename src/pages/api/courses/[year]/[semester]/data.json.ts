@@ -2,7 +2,6 @@ import type { APIRoute } from "astro";
 import { type Course, type CourseSummary } from "@/types/schema";
 import { PATH_PAIRS } from "@/utils/const";
 import fetch from "node-fetch";
-import MockData from "test/_embed_data.json";
 
 export function getStaticPaths() {
     const availableYears = PATH_PAIRS();
@@ -28,7 +27,20 @@ export const GET: APIRoute = async ({ params }) => {
     });
 };
 
+import Mock_251 from "test/_row_data_25_1.json";
+import Mock_241 from "test/_row_data_24_1.json";
+
+const Mock = (year: string, semester: string) => {
+    if (year == "2025" && semester == "1") return Mock_251;
+    if (year == "2024" && semester == "1") return Mock_241;
+    return [];
+};
+
 const fetchData = async (year: string, semester: string) => {
+    console.log(import.meta.env.DEV);
+    if (import.meta.env.DEV) {
+        return Mock(year, semester) as unknown as Course[];
+    }
     const res = await fetch(
         `https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/${year}/${semester}/data.json`
     );
