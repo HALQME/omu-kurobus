@@ -41,22 +41,29 @@ export async function scoreStat(scores: CourseScore[]): Promise<CourseScore> {
     const avgGradingCriteria = calculateAverage(scores, "gradingCriteria");
     const avgTotalScore = calculateAverage(scores, "totalScore");
 
+    // 新しい重み付けでtotalScoreを計算: totalScoreが60%、他の項目がそれぞれ10%
+    const weightedTotalScore =
+        avgTotalScore * 0.6 +
+        avgClassDifficulty * 0.1 +
+        avgTestDifficulty * 0.1 +
+        avgTestAmount * 0.1 +
+        avgGradingCriteria * 0.1;
+
     const medianClassDifficulty = calculateMedian(scores, "classDifficulty");
     const medianTestDifficulty = calculateMedian(scores, "testDifficulty");
     const medianTestAmount = calculateMedian(scores, "testAmount");
     const medianGradingCriteria = calculateMedian(scores, "gradingCriteria");
     const medianTotalScore = calculateMedian(scores, "totalScore");
 
+    // 中央値でも同様に重み付けを適用
+    const weightedMedianTotalScore =
+        medianTotalScore * 0.6 +
+        medianClassDifficulty * 0.1 +
+        medianTestDifficulty * 0.1 +
+        medianTestAmount * 0.1 +
+        medianGradingCriteria * 0.1;
+
     return {
-        student_department: "STAT", // TODO: 平均値・中央値の算出方法を検討
-        courseType: [], // TODO: 平均値・中央値の算出方法を検討
-        courseTypeOtherText: null,
-        evalCriteria: [], // TODO: 平均値・中央値の算出方法を検討
-        evalCriteriaOtherText: null,
-        testType: null, // TODO: 最頻値などを検討
-        testTypeOtherText: null,
-        testItems: null, // TODO: 最頻値などを検討
-        testItemsOtherText: null,
         id: scores[0].course_id,
         createdAt: new Date(),
         user_id: "統計", // TODO: 適切なユーザーIDを検討
@@ -65,7 +72,7 @@ export async function scoreStat(scores: CourseScore[]): Promise<CourseScore> {
         testDifficulty: avgTestDifficulty,
         testAmount: avgTestAmount,
         gradingCriteria: avgGradingCriteria,
-        totalScore: avgTotalScore,
+        totalScore: weightedTotalScore, // 重み付けされた総合スコアを使用
         // Median values stored as string metadata since they're not in the type
         metadata: JSON.stringify({
             medianClassDifficulty,
@@ -73,6 +80,7 @@ export async function scoreStat(scores: CourseScore[]): Promise<CourseScore> {
             medianTestAmount,
             medianGradingCriteria,
             medianTotalScore,
+            weightedMedianTotalScore, // 重み付けされた中央値の総合スコアも追加
         }),
     } as CourseScore;
 }
