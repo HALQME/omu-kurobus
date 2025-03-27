@@ -15,7 +15,6 @@ import type {
 } from "@/types/schema";
 import CourseScore from "@/src/components/course-score.astro";
 import CourseAttribute from "@/src/components/course-attribute.astro";
-import CoursePopularity from "@/src/components/course-popularity.astro";
 import Tabs from "@/src/components/tabs.astro";
 import Loading from "@/src/components/loading.astro";
 import ReView from "@/src/components/re-view.astro";
@@ -41,15 +40,24 @@ let res;
 try {
     res = await fetch(url);
 } catch (e) {
-    return new Response("Internal Server Error", { status: 500 });
+    return new Response("Internal Server Error: " + e, { status: 500 });
+}
+if (res.status !== 200) {
+    return new Response("Internal Server Error: Response is not Defined", {
+        status: 500,
+    });
 }
 const resonse = await res.json();
 if (!resonse) {
-    return new Response("Internal Server Error", { status: 500 });
+    return new Response("Internal Server Error: Response is not Correct", {
+        status: 500,
+    });
 }
 const coursesResult = z.array(CourseSummarySchema).safeParse(resonse);
 if (!coursesResult.success) {
-    return new Response("Internal Server Error", { status: 500 });
+    return new Response("Internal Server Error: No Course Found", {
+        status: 500,
+    });
 }
 const courses = coursesResult.data;
 const course = courses.find((course) => year + course.id === courseId);
@@ -68,6 +76,9 @@ const attributes: CourseAttributes[] = reviews
           return CourseAttributesSchema.parse(review);
       })
     : [];
+
+import { actions } from "astro:actions";
+const result = Astro.getActionResult(actions.course.addFavorite);
 ---
 
 <Layout>
@@ -93,8 +104,29 @@ const attributes: CourseAttributes[] = reviews
 
         {
             popOrScore ? (
-                <section slot="panel-0" class="flex justify-center py-8">
-                    <CoursePopularity courseId={courseId} />
+                <section
+                    slot="panel-0"
+                    class="flex justify-center py-8 flex-col items-center"
+                >
+                    <astro-post-fav data-action-course={courseId}>
+                        <p>
+                            この授業をお気にリ登録した人:
+                            {Astro.callAction(actions.course.getFavorite, {
+                                course_id: courseId,
+                            }).then((res) => res.data?.count)}
+                            人
+                        </p>
+                        <form method="POST" action={actions.course.addFavorite}>
+                            <input
+                                type="hidden"
+                                name="course_id"
+                                value={courseId}
+                            />
+                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed">
+                                お気に入りに追加
+                            </button>
+                        </form>
+                    </astro-post-fav>
                 </section>
             ) : (
                 <section slot="panel-1">
@@ -135,7 +167,7 @@ const attributes: CourseAttributes[] = reviews
 
         <section slot="panel-3" class={styles.section.container}>
             <div class="mb-6">
-                <h2 class=`${styles.section.title} my-4`>関連授業</h2>
+                <h2 class={`${styles.section.title} my-4`}>関連授業</h2>
                 <p class={`text-gray-600 dark:text-gray-400 mb-4`}>
                     以下の授業は名前、担当教員、キャンパスなどの情報から同じ内容と思われる授業を掲載しています。
                 </p>
@@ -160,3 +192,24 @@ const attributes: CourseAttributes[] = reviews
         </section>
     </Tabs>
 </Layout>
+
+<script>
+    import { addFavorite, isFavorite } from "@/utils/store";
+    class AstroPostFav extends HTMLElement {
+        constructor() {
+            super();
+            const courseId = this.getAttribute("data-action-course") as string;
+            this.addEventListener("click", () => {
+                addFavorite(courseId);
+            });
+            if (isFavorite(courseId)) {
+                const button = this.querySelector("button");
+                if (button) {
+                    button.disabled = true;
+                }
+            }
+        }
+    }
+
+    customElements.define("astro-post-fav", AstroPostFav);
+</script>
