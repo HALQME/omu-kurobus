@@ -14,11 +14,10 @@ export const course = {
             course_id: z.string(),
         }),
         handler: async (input) => {
-            console.log("removeFavorite", input);
             if ((await redis.get(`course:${input.course_id}`)) === null) {
                 return { status: "ok", course: input.course_id };
             }
-            // await redis.incr(`course:${input.course_id}`);
+            await redis.incr(`course:${input.course_id}`);
             return { status: "ok", course: input.course_id };
         },
     }),
@@ -29,11 +28,10 @@ export const course = {
             course_id: z.string(),
         }),
         handler: async (input) => {
-            console.log("removeFavorite", input);
             if ((await redis.get(`course:${input.course_id}`)) === null) {
                 return { status: "ok", course: input.course_id };
             }
-            // await redis.decr(`course:${input.course_id}`);
+            await redis.decr(`course:${input.course_id}`);
             return { status: "ok", course: input.course_id };
         },
     }),
