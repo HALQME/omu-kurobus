@@ -1,26 +1,21 @@
 ---
 import crypto from "node:crypto";
-
 export interface Props extends astroHTML.JSX.HTMLAttributes {}
-
 const props = Astro.props as Props;
-export const prerender = false;
-
 const tabs: string[] = [];
 const panels: string[] = [];
-
-let inlineStyles = "";
-
-// タブとパネルのスロット名を収集
-Object.entries(Astro.slots).forEach(([name]) => {
-    if (name.startsWith("tab")) {
-        tabs.push(name);
-    } else if (name.startsWith("panel")) {
-        panels.push(name);
-    }
-});
-
-// タブをソート（tab-0, tab-1, ... の順になるようにする）
+export const prerender = true;
+{
+    let index = 0;
+    Object.entries(Astro.slots).forEach(([name]) => {
+        if (name.startsWith("tab")) {
+            index += 1;
+            tabs.push(name);
+        } else {
+            panels.push(name);
+        }
+    });
+}
 tabs.sort((a, b) => {
     const indexA = parseInt(a.replace("tab-", ""));
     const indexB = parseInt(b.replace("tab-", ""));
@@ -33,34 +28,32 @@ panels.sort((a, b) => {
     const indexB = parseInt(b.replace("panel-", ""));
     return indexA - indexB;
 });
-
 const uid = crypto.randomUUID();
-let activeTabIndex = 0;
+const tabsUid = uid.slice(-4);
 ---
 
-<div
+<astro-tabs
     {...{ ...props, class: undefined, "class:list": undefined }}
     class:list={["tabs", "relative", props["class:list"], props.class]}
+    data-tabs-uid={tabsUid}
 >
-    <style set:html={inlineStyles}></style>
-
     <nav
         class="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700"
+        role="tablist"
     >
         {
             tabs.map(async (name, idx) => {
-                const tabIndex = parseInt(name.replace("tab-", ""));
-                const render = await Astro.slots.render(name);
-                const tabId = `tab-${uid}-${tabIndex}`;
-
-                return (
-                    <div class:list={["tab-wrapper", `tab-${tabIndex}`]}>
-                        <button
-                            id={tabId}
-                            type="button"
-                            data-tab-index={tabIndex}
+                const index = idx;
+                if (name.startsWith("tab")) {
+                    const render = await Astro.slots.render(name);
+                    const tabId = `${tabsUid}-${index}`;
+                    return (
+                        <a
+                            href={`#tabs-${tabsUid}-${index}`}
+                            id={`tab-${tabId}`}
+                            data-astro-history="replace"
                             class:list={[
-                                "tab",
+                                "tab-button",
                                 "block",
                                 "whitespace-nowrap",
                                 "cursor-pointer",
@@ -70,12 +63,23 @@ let activeTabIndex = 0;
                                 "transition-colors",
                                 "duration-300",
                                 "border-b-2",
+                                "text-gray-500",
+                                "hover:text-gray-600",
+                                "border-transparent",
+                                "hover:border-gray-300",
+                                "dark:text-gray-400",
+                                "dark:hover:text-gray-300",
+                                "dark:border-transparent",
+                                "dark:hover:border-gray-700",
                             ]}
-                        >
-                            <>{render}</>
-                        </button>
-                    </div>
-                );
+                            role="tab"
+                            aria-selected="false"
+                            aria-controls={`panel-${tabId}`}
+                            data-tab-index={index}
+                            set:html={render}
+                        />
+                    );
+                }
             })
         }
     </nav>
@@ -102,77 +106,127 @@ let activeTabIndex = 0;
             })
         }
     </div>
-</div>
+</astro-tabs>
 
 <script>
-    const defaultTabClasses = [
-        "text-gray-500",
-        "hover:text-gray-600",
-        "border-transparent",
-        "hover:border-gray-300",
-        "dark:text-gray-400",
-        "dark:hover:text-gray-300",
-        "dark:border-transparent",
-        "dark:hover:border-gray-700",
-    ];
+    class AstroTabs extends HTMLElement {
+        private tabLinks: HTMLAnchorElement[];
+        private panels: HTMLElement[];
+        private tabsUid: string;
+        private defaultTabClasses = [
+            "text-gray-500",
+            "hover:text-gray-600",
+            "border-transparent",
+            "hover:border-gray-300",
+            "dark:text-gray-400",
+            "dark:hover:text-gray-300",
+            "dark:border-transparent",
+            "dark:hover:border-gray-700",
+        ];
+        private activeTabClasses = [
+            "text-gray-700",
+            "hover:text-gray-800",
+            "border-blue-300",
+            "dark:text-gray-200",
+            "dark:hover:text-gray-100",
+            "dark:border-blue-600",
+        ];
 
-    const activeTabClasses = [
-        "text-gray-700",
-        "hover:text-gray-800",
-        "border-blue-300",
-        "dark:text-gray-200",
-        "dark:hover:text-gray-100",
-        "dark:border-blue-600",
-    ];
+        constructor() {
+            super();
+            this.tabsUid = this.dataset.tabsUid || "";
+            this.tabLinks = Array.from(
+                this.querySelectorAll(".tab-button")
+            ) as HTMLAnchorElement[];
+            this.panels = Array.from(this.querySelectorAll(".panel"));
+            this.init();
+        }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const tabsContainers = document.querySelectorAll(".tabs");
-
-        tabsContainers.forEach((tabsContainer) => {
-            const tabButtons = tabsContainer.querySelectorAll("button.tab");
-            const tabPanels = tabsContainer.querySelectorAll(".panel");
-
-            const activateTab = (tab: Element) => {
-                // すべてのタブをデフォルト状態にリセット
-                tabButtons.forEach((tabBtn) => {
-                    activeTabClasses.forEach((cls) =>
-                        tabBtn.classList.remove(cls)
-                    );
-                    defaultTabClasses.forEach((cls) =>
-                        tabBtn.classList.add(cls)
-                    );
+        private init() {
+            // タブクリックイベントの設定
+            this.tabLinks.forEach((tabLink, index) => {
+                tabLink.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    this.activateTab(index);
                 });
-
-                // パネルを非表示に
-                tabPanels.forEach((panel) => {
-                    panel.classList.add("hidden");
-                    panel.classList.remove("block");
-                });
-
-                // アクティブタブの設定
-                defaultTabClasses.forEach((cls) => tab.classList.remove(cls));
-                activeTabClasses.forEach((cls) => tab.classList.add(cls));
-
-                // 対応するパネルを表示
-                const tabIndex = tab.getAttribute("data-tab-index");
-                const targetPanel = tabsContainer.querySelector(
-                    `.panel[data-panel-index="${tabIndex}"]`
-                );
-
-                if (targetPanel) {
-                    targetPanel.classList.remove("hidden");
-                    targetPanel.classList.add("block");
-                }
-            };
-
-            tabButtons.forEach((tab) => {
-                tab.addEventListener("click", () => activateTab(tab));
-                tab.addEventListener("tap", () => activateTab(tab));
             });
 
-            if (tabButtons.length > 0) {
-                activateTab(tabButtons[0]);
+            // 初期タブの設定
+            const initialIndex = this.getTabIndexFromHash();
+            this.activateTab(initialIndex !== null ? initialIndex : 0);
+
+            // hashchangeイベントのリスナー
+            window.addEventListener("hashchange", () => {
+                const index = this.getTabIndexFromHash();
+                if (index !== null) {
+                    this.activateTab(index);
+                }
+            });
+        }
+
+        private getTabIndexFromHash(): number | null {
+            const hash = window.location.hash;
+            if (hash.startsWith(`#tabs-${this.tabsUid}-`)) {
+                const indexStr = hash.substring(
+                    `#tabs-${this.tabsUid}-`.length
+                );
+                const index = parseInt(indexStr, 10);
+                if (
+                    !isNaN(index) &&
+                    index >= 0 &&
+                    index < this.tabLinks.length
+                ) {
+                    return index;
+                }
             }
-        });
-    });
+            return null;
+        }
+
+        private activateTab(index: number) {
+            // すべてのタブをデフォルト状態にリセット
+            this.tabLinks.forEach((tabLink) => {
+                tabLink.setAttribute("aria-selected", "false");
+                this.activeTabClasses.forEach((cls) =>
+                    tabLink.classList.remove(cls)
+                );
+                this.defaultTabClasses.forEach((cls) =>
+                    tabLink.classList.add(cls)
+                );
+            });
+
+            // パネルを非表示に
+            this.panels.forEach((panel) => {
+                panel.classList.add("hidden");
+                panel.classList.remove("block");
+            });
+
+            // アクティブタブの設定
+            const activeTab = this.tabLinks[index];
+            if (activeTab) {
+                activeTab.setAttribute("aria-selected", "true");
+                this.defaultTabClasses.forEach((cls) =>
+                    activeTab.classList.remove(cls)
+                );
+                this.activeTabClasses.forEach((cls) =>
+                    activeTab.classList.add(cls)
+                );
+            }
+
+            // 対応するパネルを表示
+            const activePanel = this.panels[index];
+            if (activePanel) {
+                activePanel.classList.remove("hidden");
+                activePanel.classList.add("block");
+            }
+
+            // URLハッシュの更新
+            window.history.replaceState(
+                {},
+                "",
+                `#tabs-${this.tabsUid}-${index}`
+            );
+        }
+    }
+
+    customElements.define("astro-tabs", AstroTabs);
 </script>
