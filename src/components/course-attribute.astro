@@ -1,0 +1,85 @@
+---
+import type { CourseAttributes } from "@/types/schema";
+
+interface Props {
+    attributes: CourseAttributes[];
+}
+
+const { attributes } = Astro.props;
+
+// 最新のデータを使用
+const latestAttribute = attributes[0];
+
+// その他のテキストがある場合の表示用ヘルパー関数
+const getDisplayWithOther = (items: string[], otherText: string | null) => {
+    if (!items.length) return ["データなし"];
+    if (items.includes("その他") && otherText) {
+        return [
+            ...items.filter((item) => item !== "その他"),
+            `その他: ${otherText}`,
+        ];
+    }
+    return items;
+};
+---
+
+<div class="flex flex-col gap-4">
+    <div class="font-bold my-4">授業の特徴</div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-2 p-4 bg-gray-50 rounded-lg">
+            <div class="font-bold text-gray-700">授業形態</div>
+            <ul class="list-disc list-inside text-gray-600">
+                {
+                    getDisplayWithOther(
+                        latestAttribute?.courseType || [],
+                        latestAttribute?.courseTypeOtherText
+                    ).map((type) => <li>{type}</li>)
+                }
+            </ul>
+        </div>
+
+        <div class="flex flex-col gap-2 p-4 bg-gray-50 rounded-lg">
+            <div class="font-bold text-gray-700">評価基準</div>
+            <ul class="list-disc list-inside text-gray-600">
+                {
+                    getDisplayWithOther(
+                        latestAttribute?.evalCriteria || [],
+                        latestAttribute?.evalCriteriaOtherText
+                    ).map((criteria) => <li>{criteria}</li>)
+                }
+            </ul>
+        </div>
+
+        <div class="flex flex-col gap-2 p-4 bg-gray-50 rounded-lg">
+            <div class="font-bold text-gray-700">テスト形式</div>
+            <ul class="list-disc list-inside text-gray-600">
+                {
+                    latestAttribute?.testType ? (
+                        <li>
+                            {latestAttribute.testType}
+                            {latestAttribute.testTypeOtherText &&
+                                latestAttribute.testType === "その他" && (
+                                    <>: {latestAttribute.testTypeOtherText}</>
+                                )}
+                        </li>
+                    ) : (
+                        <li>データなし</li>
+                    )
+                }
+            </ul>
+        </div>
+
+        <div class="flex flex-col gap-2 p-4 bg-gray-50 rounded-lg">
+            <div class="font-bold text-gray-700">テスト持ち込み</div>
+            <ul class="list-disc list-inside text-gray-600">
+                {
+                    getDisplayWithOther(
+                        latestAttribute?.testItems || [],
+                        latestAttribute?.testItemsOtherText
+                    ).map((item) => <li>{item}</li>)
+                }
+            </ul>
+        </div>
+    </div>
+</div>

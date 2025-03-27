@@ -1,0 +1,232 @@
+---
+import crypto from "node:crypto";
+export interface Props extends astroHTML.JSX.HTMLAttributes {}
+const props = Astro.props as Props;
+const tabs: string[] = [];
+const panels: string[] = [];
+export const prerender = true;
+{
+    let index = 0;
+    Object.entries(Astro.slots).forEach(([name]) => {
+        if (name.startsWith("tab")) {
+            index += 1;
+            tabs.push(name);
+        } else {
+            panels.push(name);
+        }
+    });
+}
+tabs.sort((a, b) => {
+    const indexA = parseInt(a.replace("tab-", ""));
+    const indexB = parseInt(b.replace("tab-", ""));
+    return indexA - indexB;
+});
+
+// パネルもソート
+panels.sort((a, b) => {
+    const indexA = parseInt(a.replace("panel-", ""));
+    const indexB = parseInt(b.replace("panel-", ""));
+    return indexA - indexB;
+});
+const uid = crypto.randomUUID();
+const tabsUid = uid.slice(-4);
+---
+
+<astro-tabs
+    {...{ ...props, class: undefined, "class:list": undefined }}
+    class:list={["tabs", "relative", props["class:list"], props.class]}
+    data-tabs-uid={tabsUid}
+>
+    <nav
+        class="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700"
+        role="tablist"
+    >
+        {
+            tabs.map(async (name, idx) => {
+                const index = idx;
+                if (name.startsWith("tab")) {
+                    const render = await Astro.slots.render(name);
+                    const tabId = `${tabsUid}-${index}`;
+                    return (
+                        <a
+                            href={`#tabs-${tabsUid}-${index}`}
+                            id={`tab-${tabId}`}
+                            data-astro-history="replace"
+                            class:list={[
+                                "tab-button",
+                                "block",
+                                "whitespace-nowrap",
+                                "cursor-pointer",
+                                "py-2",
+                                "px-4",
+                                "font-medium",
+                                "transition-colors",
+                                "duration-300",
+                                "border-b-2",
+                                "text-gray-500",
+                                "hover:text-gray-600",
+                                "border-transparent",
+                                "hover:border-gray-300",
+                                "dark:text-gray-400",
+                                "dark:hover:text-gray-300",
+                                "dark:border-transparent",
+                                "dark:hover:border-gray-700",
+                            ]}
+                            role="tab"
+                            aria-selected="false"
+                            aria-controls={`panel-${tabId}`}
+                            data-tab-index={index}
+                            set:html={render}
+                        />
+                    );
+                }
+            })
+        }
+    </nav>
+
+    <div class="relative">
+        {
+            panels.map(async (name, idx) => {
+                const panelIndex = parseInt(name.replace("panel-", ""));
+                const panelId = `panel-${uid}-${panelIndex}`;
+                const content = await Astro.slots.render(name);
+
+                return (
+                    <div
+                        id={panelId}
+                        data-panel-index={panelIndex}
+                        class:list={[
+                            `panel-${panelIndex}`,
+                            "panel",
+                            "hidden", // 最初はすべて非表示
+                        ]}
+                        set:html={content}
+                    />
+                );
+            })
+        }
+    </div>
+</astro-tabs>
+
+<script>
+    class AstroTabs extends HTMLElement {
+        private tabLinks: HTMLAnchorElement[];
+        private panels: HTMLElement[];
+        private tabsUid: string;
+        private defaultTabClasses = [
+            "text-gray-500",
+            "hover:text-gray-600",
+            "border-transparent",
+            "hover:border-gray-300",
+            "dark:text-gray-400",
+            "dark:hover:text-gray-300",
+            "dark:border-transparent",
+            "dark:hover:border-gray-700",
+        ];
+        private activeTabClasses = [
+            "text-gray-700",
+            "hover:text-gray-800",
+            "border-blue-300",
+            "dark:text-gray-200",
+            "dark:hover:text-gray-100",
+            "dark:border-blue-600",
+        ];
+
+        constructor() {
+            super();
+            this.tabsUid = this.dataset.tabsUid || "";
+            this.tabLinks = Array.from(
+                this.querySelectorAll(".tab-button")
+            ) as HTMLAnchorElement[];
+            this.panels = Array.from(this.querySelectorAll(".panel"));
+            this.init();
+        }
+
+        private init() {
+            // タブクリックイベントの設定
+            this.tabLinks.forEach((tabLink, index) => {
+                tabLink.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    this.activateTab(index);
+                });
+            });
+
+            // 初期タブの設定
+            const initialIndex = this.getTabIndexFromHash();
+            this.activateTab(initialIndex !== null ? initialIndex : 0);
+
+            // hashchangeイベントのリスナー
+            window.addEventListener("hashchange", () => {
+                const index = this.getTabIndexFromHash();
+                if (index !== null) {
+                    this.activateTab(index);
+                }
+            });
+        }
+
+        private getTabIndexFromHash(): number | null {
+            const hash = window.location.hash;
+            if (hash.startsWith(`#tabs-${this.tabsUid}-`)) {
+                const indexStr = hash.substring(
+                    `#tabs-${this.tabsUid}-`.length
+                );
+                const index = parseInt(indexStr, 10);
+                if (
+                    !isNaN(index) &&
+                    index >= 0 &&
+                    index < this.tabLinks.length
+                ) {
+                    return index;
+                }
+            }
+            return null;
+        }
+
+        private activateTab(index: number) {
+            // すべてのタブをデフォルト状態にリセット
+            this.tabLinks.forEach((tabLink) => {
+                tabLink.setAttribute("aria-selected", "false");
+                this.activeTabClasses.forEach((cls) =>
+                    tabLink.classList.remove(cls)
+                );
+                this.defaultTabClasses.forEach((cls) =>
+                    tabLink.classList.add(cls)
+                );
+            });
+
+            // パネルを非表示に
+            this.panels.forEach((panel) => {
+                panel.classList.add("hidden");
+                panel.classList.remove("block");
+            });
+
+            // アクティブタブの設定
+            const activeTab = this.tabLinks[index];
+            if (activeTab) {
+                activeTab.setAttribute("aria-selected", "true");
+                this.defaultTabClasses.forEach((cls) =>
+                    activeTab.classList.remove(cls)
+                );
+                this.activeTabClasses.forEach((cls) =>
+                    activeTab.classList.add(cls)
+                );
+            }
+
+            // 対応するパネルを表示
+            const activePanel = this.panels[index];
+            if (activePanel) {
+                activePanel.classList.remove("hidden");
+                activePanel.classList.add("block");
+            }
+
+            // URLハッシュの更新
+            window.history.replaceState(
+                {},
+                "",
+                `#tabs-${this.tabsUid}-${index}`
+            );
+        }
+    }
+
+    customElements.define("astro-tabs", AstroTabs);
+</script>

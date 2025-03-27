@@ -50,7 +50,7 @@ export const CURRENT_PAIR = () => {
 export const NEXT_PAIR = () => {
     const now = CURRENT_PAIR();
     const year =
-        now.semester === "1" ? now.year : (Number(now.year) + 1).toString();
+        now.semester === "1" ? (Number(now.year) + 1).toString() : now.year;
     const semester = now.semester === "1" ? "0" : "1";
     return { year, semester };
 };

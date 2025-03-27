@@ -65,7 +65,21 @@ type Styles = {
     };
     label: string;
     card: {
+        // card スタイルの型定義を修正
         container: string;
+        card: string;
+        header: string;
+        headerLeft: string;
+        headerLeftTop: string;
+        courseId: string;
+        courseName: string;
+        headerLeftBottom: string;
+        year: string;
+        semester: string;
+        headerRight: string;
+        score: string;
+        body: string;
+        comment: string;
         title: string;
         label: string;
         value: string;
@@ -159,7 +173,22 @@ export const styles: Styles = {
 
     // 検索結果カード
     card: {
+        // styles.card のスタイル定義を修正
         container: `${common.card} mb-4 p-3 sm:p-4 ${colors.gray.border} hover:shadow-md hover:border-blue-200/70 dark:hover:border-blue-600/40 ${common.transition} cursor-pointer hover:translate-y-[-2px] hover:bg-gradient-to-br hover:from-white hover:to-blue-50/30 dark:hover:from-slate-800/95 dark:hover:to-blue-900/20 ease-in-out`,
+        card: `${common.card} mb-4 p-3 sm:p-4 ${colors.gray.border} hover:shadow-md hover:border-blue-200/70 dark:hover:border-blue-600/40 ${common.transition} ease-in-out`, // レビューカードの基本スタイル (container とほぼ同じ)
+        header: "flex justify-between items-center mb-2",
+        headerLeft: "flex flex-col",
+        headerLeftTop: "flex items-center gap-2",
+        courseId: "text-sm text-slate-500 dark:text-slate-400",
+        courseName: "text-lg font-semibold",
+        headerLeftBottom:
+            "flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400",
+        year: "",
+        semester: "",
+        headerRight: "",
+        score: "text-2xl font-bold text-blue-500 dark:text-blue-300",
+        body: "",
+        comment: "text-slate-700 dark:text-slate-200",
         title: `text-lg font-semibold ${colors.gray.heading} mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300 ease-in-out group-hover:translate-x-0.5`,
         label: "w-20 sm:w-24 font-medium text-slate-500/90 dark:text-slate-400/90",
         value: "text-slate-800 dark:text-slate-200 flex-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 ease-in-out pl-2",

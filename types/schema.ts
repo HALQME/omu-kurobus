@@ -146,3 +146,28 @@ export const CourseReviewRecordSchema = CourseReviewSubmissionSchema.extend({
     user_id: z.string().optional(),
 });
 export type CourseReviewRecord = z.infer<typeof CourseReviewRecordSchema>;
+
+export const CourseScoreSchema = CourseReviewRecordSchema.pick({
+    course_id: true,
+    classDifficulty: true,
+    testDifficulty: true,
+    testAmount: true,
+    gradingCriteria: true,
+    totalScore: true,
+}).extend({
+    metadata: z.string().optional(), // metadata を追加
+});
+export type CourseScore = z.infer<typeof CourseScoreSchema>;
+
+export const CourseAttributesSchema = CourseReviewRecordSchema.pick({
+    course_id: true,
+    courseType: true,
+    courseTypeOtherText: true,
+    evalCriteria: true,
+    evalCriteriaOtherText: true,
+    testType: true,
+    testTypeOtherText: true,
+    testItems: true,
+    testItemsOtherText: true,
+});
+export type CourseAttributes = z.infer<typeof CourseAttributesSchema>;

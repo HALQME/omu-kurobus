@@ -4,10 +4,25 @@ import { styles } from "@/styles/style";
 import { getReviews } from "@/utils/reviews";
 import SimilarCourses from "@/components/similar-courses.astro";
 import CourseInfo from "@/src/components/course-info.astro";
-import { CourseSummarySchema } from "@/types/schema";
+import {
+    CourseSummarySchema,
+    CourseScoreSchema,
+    CourseAttributesSchema,
+} from "@/types/schema";
+import type {
+    CourseScore as CourseScoreType,
+    CourseAttributes,
+} from "@/types/schema";
+import CourseScore from "@/src/components/course-score.astro";
+import CourseAttribute from "@/src/components/course-attribute.astro";
+import Tabs from "@/src/components/tabs.astro";
+import Loading from "@/src/components/loading.astro";
+import ReView from "@/src/components/re-view.astro";
 import { z } from "astro/zod";
-import type { CourseSummary } from "@/types/schema";
 export const prerender = false;
+
+import { NEXT_PAIR } from "@/utils/const";
+import FavosAdd from "@/src/components/favos-add";
 
 const year = Astro.params.year;
 const semester = Astro.params.semester;
@@ -15,7 +30,10 @@ const courseId = Astro.params.id;
 
 if (!courseId || !year || !semester) {
     return new Response("Not Found", { status: 404 });
+} else if (semester != "0" && semester != "1") {
+    return Astro.redirect("/search", 302);
 }
+const popOrScore: boolean = NEXT_PAIR().year === year;
 
 const reviews = await getReviews(courseId);
 const url = new URL(`/api/courses/${year}/${semester}/data.json`, Astro.url);
@@ -23,15 +41,24 @@ let res;
 try {
     res = await fetch(url);
 } catch (e) {
-    return new Response("Internal Server Error", { status: 500 });
+    return new Response("Internal Server Error: " + e, { status: 500 });
+}
+if (res.status !== 200) {
+    return new Response("Internal Server Error: Response is not Defined", {
+        status: 500,
+    });
 }
 const resonse = await res.json();
 if (!resonse) {
-    return new Response("Internal Server Error", { status: 500 });
+    return new Response("Internal Server Error: Response is not Correct", {
+        status: 500,
+    });
 }
 const coursesResult = z.array(CourseSummarySchema).safeParse(resonse);
 if (!coursesResult.success) {
-    return new Response("Internal Server Error", { status: 500 });
+    return new Response("Internal Server Error: No Course Found", {
+        status: 500,
+    });
 }
 const courses = coursesResult.data;
 const course = courses.find((course) => year + course.id === courseId);
@@ -39,58 +66,105 @@ const course = courses.find((course) => year + course.id === courseId);
 if (!course) {
     return new Response("Course Not Found", { status: 404 });
 }
+const scores: CourseScoreType[] = reviews
+    ? reviews.map((review) => {
+          return CourseScoreSchema.parse(review);
+      })
+    : [];
+
+const attributes: CourseAttributes[] = reviews
+    ? reviews.map((review) => {
+          return CourseAttributesSchema.parse(review);
+      })
+    : [];
+
+import { actions } from "astro:actions";
+import Result from "@/src/components/result.astro";
+const actionResult = Astro.getActionResult(actions.course.getFavorite);
+const favoriteCount = (await Astro.callAction(actions.course.getFavorite, {
+    course_id: courseId,
+}).then((res) => res.data?.count || 0)) as unknown as number;
 ---
 
-<Layout
-    title="感想閲覧"
-    description="授業を受講した皆の感想や愚痴が詰まったまとめサイトです。"
->
-    <section class={styles.section.container}>
-        <CourseInfo id={courseId} />
-        <div class={styles.section.headingWrapper}>
-            <div
-                class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
-            >
-            </div>
-            <h2 class={styles.section.title}>感想を閲覧</h2>
-            <div
-                class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
-            >
-            </div>
-        </div>
-        <div class={styles.section.content}>
+<Layout>
+    <title slot="title">ハム大クロバス | 感想検索</title>
+    <meta
+        name="description"
+        content="感想を共有して履修登録を助け合おう！"
+        slot="description"
+    />
+
+    <CourseInfo id={courseId} />
+
+    <Tabs>
+        {
+            popOrScore ? (
+                <Fragment slot="tab-0">人気</Fragment>
+            ) : (
+                <Fragment slot="tab-1">評価</Fragment>
+            )
+        }
+        <Fragment slot="tab-2">感想</Fragment>
+        <Fragment slot="tab-3">関連</Fragment>
+
+        {
+            popOrScore ? (
+                <section
+                    slot="panel-0"
+                    class="flex justify-center py-8 flex-col items-center"
+                >
+                    <FavosAdd
+                        courseId={courseId}
+                        initialCount={favoriteCount}
+                        initialStatus={actionResult?.data?.status}
+                        client:load
+                    />
+                    <p class="my-3">
+                        この数値は参考値です。履修希望者数を表すものではありません
+                    </p>
+                </section>
+            ) : (
+                <section slot="panel-1">
+                    {scores.length === 0 ? (
+                        <div class="text-center my-8">
+                            <p class="text-gray-600 dark:text-gray-400">
+                                おすすめ度の情報が提供されていません。
+                            </p>
+                        </div>
+                    ) : (
+                        <CourseScore scores={scores} />
+                    )}
+                    <div class="my-2" />
+                    {attributes.length === 0 ? (
+                        <div class="text-center my-8">
+                            <p class="text-gray-600 dark:text-gray-400">
+                                授業形態の情報が提供されていません。
+                            </p>
+                        </div>
+                    ) : (
+                        <CourseAttribute attributes={attributes} />
+                    )}
+                </section>
+            )
+        }
+
+        <section slot="panel-2">
             {
-                !reviews || reviews.length === 0 ? (
-                    <p>まだ感想がありません。</p>
+                !reviews ? (
+                    <Loading />
                 ) : (
-                    <ul>
-                        {reviews.map((review) => (
-                            <p>{review.comment}</p>
-                        ))}
-                    </ul>
+                    <ReView reviews={reviews} server:defer>
+                        <Loading slot="fallback" />
+                    </ReView>
                 )
             }
-        </div>
-    </section>
+        </section>
 
-    {/* 類似コースコンポーネントを追加 */}
-    <section class={styles.section.container}>
-        <div class={styles.section.headingWrapper}>
-            <div
-                class={`${styles.section.headingLine} ${styles.section.headingLineLeft}`}
-            >
-            </div>
-            <h2 class={styles.section.title}>類似コース</h2>
-            <div
-                class={`${styles.section.headingLine} ${styles.section.headingLineRight}`}
-            >
-            </div>
-        </div>
-        <div class={styles.section.content}>
+        <section slot="panel-3" class={styles.section.container}>
             <div class="mb-6">
-                <h2 class={styles.sectionHeading}>類似コース</h2>
+                <h2 class={`${styles.section.title} my-4`}>関連授業</h2>
                 <p class={`text-gray-600 dark:text-gray-400 mb-4`}>
-                    以下のコースは名前、担当教員、キャンパスなどの情報から類似度を計算して表示しています。
+                    以下の授業は名前、担当教員、キャンパスなどの情報から同じ内容と思われる授業を掲載しています。
                 </p>
             </div>
             <SimilarCourses
@@ -110,6 +184,24 @@ if (!course) {
                     <span class={styles.loading.spinner}></span>
                 </span>
             </SimilarCourses>
-        </div>
-    </section>
+        </section>
+    </Tabs>
 </Layout>
+
+<style>
+    .animate-favorite {
+        animation: pulse 1s;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+</style>

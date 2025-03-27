@@ -1,6 +1,7 @@
 ---
 import { styles } from "@/styles/style";
 import type { CourseSummary } from "@/types/schema";
+import Loading from "@/components/loading.astro";
 interface Props {
     target: "search" | "submit";
     year?: string;
@@ -78,7 +79,7 @@ declare global {
             </div>
         )
     }
-    <div class="w-full">
+    <div class="w-full relative">
         <input
             type="text"
             class={`quick-search-input ${styles.input} ${styles.inputFocus}`}
@@ -86,9 +87,12 @@ declare global {
             aria-describedby="search-results"
             placeholder="検索"
         />
+        <div id="loading-component" class="hidden">
+            <Loading />
+        </div>
     </div>
     <div
-        class="quick-search-results absolute top-[calc(100%)] left-0 right-0 w-full z-50 bg-white/95 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700/60 rounded-md max-h-60 h-auto overflow-y-auto backdrop-blur-sm transition-all duration-200 hidden"
+        class="quick-search-results absolute top-[calc(100%)] left-0 right-0 w-full z-40 bg-white/95 dark:bg-slate-800/90 shadow-sm border border-slate-200 dark:border-slate-700/60 rounded-md max-h-60 h-auto overflow-y-auto backdrop-blur-sm transition-all duration-200 hidden"
         role="listbox"
         aria-hidden="true"
     >
@@ -108,6 +112,8 @@ declare global {
         private instanceId: string;
         private input: HTMLInputElement | null = null;
         private resultsDiv: HTMLDivElement | null = null;
+        private loadingComponent: HTMLElement | null = null;
+        private _isLoading: boolean = false;
 
         constructor() {
             super();
@@ -122,9 +128,19 @@ declare global {
             this.fetchCourseData();
         }
 
+        get isLoading(): boolean {
+            return this._isLoading;
+        }
+
+        set isLoading(value: boolean) {
+            this._isLoading = value;
+            this.toggleLoadingComponent();
+        }
+
         private initializeElements(): void {
             this.input = this.querySelector(".quick-search-input");
             this.resultsDiv = this.querySelector(".quick-search-results");
+            this.loadingComponent = this.querySelector("#loading-component");
 
             if (this.input) {
                 this.input.setAttribute(
@@ -148,8 +164,8 @@ declare global {
         private setupEventListeners(): void {
             if (this.input) {
                 this.input.addEventListener("input", () => this.handleInput());
-                this.input.addEventListener("blur", (e) => {
-                    const relatedTarget = e.relatedTarget as HTMLElement;
+                this.input.addEventListener("blur", (event: FocusEvent) => {
+                    const relatedTarget = event.relatedTarget as HTMLElement;
                     if (relatedTarget?.closest(".quick-search-results")) {
                         return;
                     }
@@ -168,6 +184,17 @@ declare global {
                         this.fetchCourseData();
                     }
                 });
+            }
+        }
+
+        private handleSuggestionClick(button: HTMLButtonElement): void {
+            this.isLoading = true;
+            const course = this.courseData.find(
+                (c) => c.id === button.dataset.id
+            );
+            if (course) {
+                this.setNanoCourse(course);
+                window.location.href = button.dataset.href || "";
             }
         }
 
@@ -255,57 +282,52 @@ declare global {
             const searchResults = await quickSearch(
                 searchText,
                 this.courseData
-            ); // 変数名をsearchResultsに変更
+            );
 
             if (searchResults.length > 0 && this.resultsDiv) {
                 this.resultsDiv.setAttribute("aria-hidden", "false");
-                // 内容を設定
-                this.resultsDiv.innerHTML = searchResults
-                    .map((result) => {
-                        const score = result.score || 0;
-                        let matchClass = this.getMatchClass(score);
 
-                        return `
-                        <a
-                            data-id="${result.id}"
-                            href="/${this.target}/${this.year}/${this.semester}/${this.year}${result.id}"
-                            class="suggestion-item"
-                        >
-                            <div class="p-2 ${matchClass}">
-                                <div class="text-xs t-gray-500 dark:text-gray-300">
-                                    ${this.year}${result.id} | ${result.campus} | ${result.period}
-                                </div>
-                                <div class="text-m text-gray-600 dark:text-gray-200">
-                                    ${result.name}
-                                </div>
-                                <div class="text-sm text-gray-500 dark:text-gray-300">
-                                    ${result.teachers}
-                                </div>
+                const buttons = searchResults.map((result) => {
+                    const score = result.score || 0;
+                    let matchClass = this.getMatchClass(score);
+
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.dataset.id = result.id;
+                    button.dataset.href = `/${this.target}/${this.year}/${this.semester}/${this.year}${result.id}`;
+                    button.className =
+                        "suggestion-item w-full text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-sm";
+
+                    button.innerHTML = `
+                        <div class="p-2 ${matchClass}">
+                            <div class="text-xs t-gray-500 dark:text-gray-300">
+                                ${this.year}${result.id} | ${result.campus} | ${result.period}
                             </div>
-                        </a>`;
-                    })
-                    .join("");
+                            <div class="text-m text-gray-600 dark:text-gray-200">
+                                ${result.name}
+                            </div>
+                            <div class="text-sm text-gray-500 dark:text-gray-300">
+                                ${result.teachers}
+                            </div>
+                        </div>
+                    `;
 
-                this.resultsDiv.classList.remove("hidden");
-
-                // 候補クリックイベントの設定
-                this.resultsDiv
-                    .querySelectorAll(".suggestion-item")
-                    .forEach((item) => {
-                        item.addEventListener("click", (e) => {
-                            e.preventDefault();
-                            const course = this.courseData.find(
-                                (c) => c.id === (item as HTMLElement).dataset.id
-                            );
-                            if (course) {
-                                this.setNanoCourse(course);
-                                window.location.href =
-                                    (item as HTMLElement).getAttribute(
-                                        "href"
-                                    ) || "";
-                            }
-                        });
+                    button.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        this.handleSuggestionClick(button);
                     });
+                    button.addEventListener("touchend", (e) => {
+                        e.preventDefault();
+                        this.handleSuggestionClick(button);
+                    });
+
+                    return button;
+                });
+
+                buttons.forEach((button) =>
+                    this.resultsDiv?.appendChild(button)
+                );
+                this.resultsDiv.classList.remove("hidden");
             } else {
                 this.clearSuggestions();
             }
@@ -339,6 +361,21 @@ declare global {
                     `${this.year}年度${this.semester === "0" ? "前期" : "後期"}`,
             };
             setCourse(courseData);
+        }
+
+        private toggleLoadingComponent(): void {
+            if (!this.loadingComponent) {
+                this.loadingComponent =
+                    this.querySelector("#loading-component");
+            }
+            if (this.loadingComponent) {
+                if (this.isLoading) {
+                    this.loadingComponent.classList.remove("hidden");
+                    this.loadingComponent.classList.add("flex");
+                } else {
+                    this.loadingComponent.classList.add("hidden");
+                }
+            }
         }
     }
 

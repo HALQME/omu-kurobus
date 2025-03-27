@@ -1,0 +1,55 @@
+---
+interface Props {
+    averageRating: number;
+    medianRating: number;
+    maxRating?: number;
+}
+
+const { averageRating, medianRating, maxRating = 2 } = Astro.props;
+
+// -2から2の評価を0から5に変換する関数
+const convertRating = (rating: number): number => {
+    return (rating + 2) * 1.25; // -2 -> 0, -1 -> 1.25, 0 -> 2.5, 1 -> 3.75, 2 -> 5
+};
+
+const createStars = (rating: number, colorClass: string): string[] => {
+    const convertedRating = convertRating(rating);
+    const fullStars = Math.floor(convertedRating);
+    const hasHalf = convertedRating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+
+    const result = [];
+    for (let i = 0; i < fullStars; i++) {
+        result.push("★");
+    }
+    if (hasHalf) {
+        result.push("★");
+    }
+    for (let i = 0; i < emptyStars; i++) {
+        result.push("☆");
+    }
+    return result;
+};
+
+const formatRating = (rating: number): string => {
+    return `${rating.toFixed(1)} (${convertRating(rating).toFixed(1)}/5.0)`;
+};
+
+const averageStars = createStars(averageRating, "yellow-500");
+const medianStars = createStars(medianRating, "blue-500");
+---
+
+<div class="flex flex-col gap-2">
+    <div class="flex items-center">
+        <div class="mr-2">平均値:</div>
+        <div class="flex items-center">
+            <span class="text-yellow-500">{averageStars.join("")}</span>
+        </div>
+    </div>
+    <div class="flex items-center opacity-50">
+        <div class="mr-2">中央値:</div>
+        <div class="flex items-center">
+            <span class="text-blue-500">{medianStars.join("")}</span>
+        </div>
+    </div>
+</div>
