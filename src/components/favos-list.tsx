@@ -85,7 +85,7 @@ export const FavoriteCourses: React.FC = () => {
                             </h3>
 
                             <div className="flex flex-col justify-between mt-0.5">
-                                <p className="text-gray-600 text-sm te">
+                                <p className="text-gray-600 text-sm">
                                     {course.teachers &&
                                     course.teachers.length > 30
                                         ? `${course.teachers.substring(
