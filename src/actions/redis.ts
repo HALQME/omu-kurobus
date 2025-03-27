@@ -30,6 +30,8 @@ export const course = {
         handler: async (input) => {
             if ((await redis.get(`course:${input.course_id}`)) === null) {
                 return { status: "ok", course: input.course_id };
+            } else if ((await redis.get(`course:${input.course_id}`)) === "0") {
+                return { status: "ok", course: input.course_id };
             }
             await redis.decr(`course:${input.course_id}`);
             return { status: "ok", course: input.course_id };
