@@ -109,24 +109,52 @@ const result = Astro.getActionResult(actions.course.addFavorite);
                     class="flex justify-center py-8 flex-col items-center"
                 >
                     <astro-post-fav data-action-course={courseId}>
-                        <p>
-                            この授業をお気にリ登録した人:
-                            {Astro.callAction(actions.course.getFavorite, {
-                                course_id: courseId,
-                            }).then((res) => res.data?.count)}
-                            人
-                        </p>
-                        <form method="POST" action={actions.course.addFavorite}>
-                            <input
-                                type="hidden"
-                                name="course_id"
-                                value={courseId}
-                            />
-                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed">
-                                お気に入りに追加
-                            </button>
-                        </form>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 max-w-sm w-full transition-all hover:shadow-lg">
+                            <div class="flex items-center justify-center mb-4">
+                                <svg
+                                    class="favorite-icon w-8 h-8 text-gray-400 dark:text-gray-500"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                </svg>
+                            </div>
+                            <p class="text-center text-gray-700 dark:text-gray-300 mb-4">
+                                この授業をお気に入り登録した人:
+                                <span class="font-bold text-blue-600 dark:text-blue-400">
+                                    {Astro.callAction(
+                                        actions.course.getFavorite,
+                                        {
+                                            course_id: courseId,
+                                        }
+                                    ).then((res) => res.data?.count)}
+                                    人
+                                </span>
+                            </p>
+                            <form
+                                method="POST"
+                                action={actions.course.addFavorite}
+                                class="flex justify-center"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="course_id"
+                                    value={courseId}
+                                />
+                                <button class="favorite-button flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed">
+                                    <span class="favorite-text">
+                                        お気に入りに追加
+                                    </span>
+                                </button>
+                            </form>
+                        </div>
                     </astro-post-fav>
+                    <p class="my-3">
+                        この数値は参考値です。履修希望者数を表すものではありません
+                    </p>
                 </section>
             ) : (
                 <section slot="panel-1">
@@ -199,17 +227,74 @@ const result = Astro.getActionResult(actions.course.addFavorite);
         constructor() {
             super();
             const courseId = this.getAttribute("data-action-course") as string;
-            this.addEventListener("click", () => {
-                addFavorite(courseId);
-            });
+            const button = this.querySelector(
+                ".favorite-button"
+            ) as HTMLButtonElement;
+            const icon = this.querySelector(".favorite-icon") as Element;
+            const text = this.querySelector(".favorite-text") as Element;
+
+            // 初期状態の設定
             if (isFavorite(courseId)) {
-                const button = this.querySelector("button");
-                if (button) {
-                    button.disabled = true;
+                this.setFavoriteState(button, icon, text);
+            }
+
+            button?.addEventListener("click", (e) => {
+                // すでにお気に入り登録済みの場合は何もしない
+                if (isFavorite(courseId)) {
+                    e.preventDefault();
+                    return;
                 }
+
+                addFavorite(courseId);
+                this.setFavoriteState(button, icon, text);
+
+                // クリック時のアニメーション
+                icon?.classList.add("animate-favorite");
+                setTimeout(() => {
+                    icon?.classList.remove("animate-favorite");
+                }, 1000);
+            });
+        }
+
+        setFavoriteState(
+            button: HTMLButtonElement | null,
+            icon: Element | null,
+            text: Element | null
+        ) {
+            if (button) {
+                button.disabled = true;
+                button.classList.remove("bg-blue-500", "hover:bg-blue-600");
+                button.classList.add("bg-pink-500");
+            }
+
+            if (icon) {
+                icon.classList.remove("text-gray-400", "dark:text-gray-500");
+                icon.classList.add("text-pink-500", "fill-current");
+            }
+
+            if (text) {
+                text.textContent = "お気に入り登録済み";
             }
         }
     }
 
     customElements.define("astro-post-fav", AstroPostFav);
 </script>
+
+<style>
+    .animate-favorite {
+        animation: pulse 1s;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+</style>
