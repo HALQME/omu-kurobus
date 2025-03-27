@@ -14,10 +14,12 @@ export const course = {
             course_id: z.string(),
         }),
         handler: async (input) => {
-            if ((await redis.get(`course:${input.course_id}`)) === null) {
+            const courseKey = `course:${input.course_id}`;
+            const courseValue = await redis.get(courseKey);
+            if (courseValue === null) {
                 return { status: "ok", course: input.course_id };
             }
-            await redis.incr(`course:${input.course_id}`);
+            await redis.incr(courseKey);
             return { status: "ok", course: input.course_id };
         },
     }),
@@ -28,10 +30,14 @@ export const course = {
             course_id: z.string(),
         }),
         handler: async (input) => {
-            if ((await redis.get(`course:${input.course_id}`)) === null) {
+            const courseKey = `course:${input.course_id}`;
+            const courseValue = await redis.get(courseKey);
+            if (courseValue === null) {
+                return { status: "ok", course: input.course_id };
+            } else if (courseValue === "0") {
                 return { status: "ok", course: input.course_id };
             }
-            await redis.decr(`course:${input.course_id}`);
+            await redis.decr(courseKey);
             return { status: "ok", course: input.course_id };
         },
     }),
