@@ -68,18 +68,38 @@ export const FavoriteCourses: React.FC = () => {
                             </div>
 
                             <h3 className="text-xl font-bold text-gray-900 mt-1">
-                                {course.name}
+                                <a
+                                    href={`/search/${course.semester?.slice(
+                                        0,
+                                        4
+                                    )}/${
+                                        course.semester?.slice(-2) == "前期"
+                                            ? "0"
+                                            : "1"
+                                    }/${course.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {course.name}
+                                </a>
                             </h3>
 
-                            <div className="flex items-center justify-between mt-1">
-                                <p className="text-gray-600 text-sm">
-                                    🧑‍🏫 {course.teachers}
+                            <div className="flex flex-col justify-between mt-0.5">
+                                <p className="text-gray-600 text-sm te">
+                                    {course.teachers &&
+                                    course.teachers.length > 30
+                                        ? `${course.teachers.substring(
+                                              0,
+                                              30
+                                          )}...`
+                                        : course.teachers}
                                 </p>
                                 <form
                                     action={actions.course.removeFavorite}
                                     onSubmit={(e) =>
                                         handleRemoveFavorite(e, course.id)
                                     }
+                                    className="mt-2"
                                 >
                                     <input
                                         type="hidden"

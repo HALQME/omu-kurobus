@@ -75,7 +75,7 @@ export const FavosAdd: React.FC<FavosAddProps> = ({
             <p className="text-center text-gray-700 dark:text-gray-300 mb-4">
                 この授業をお気に入り登録した人:
                 <span className="font-bold text-blue-600 dark:text-blue-400">
-                    {count}人
+                    {count.toString()}人
                 </span>
             </p>
             <form
