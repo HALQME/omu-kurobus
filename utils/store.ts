@@ -146,6 +146,7 @@ export {
     getCourse,
     clearCourses,
     addFavorite,
+    removeFavorite,
     isFavorite,
     getFavorites,
 };

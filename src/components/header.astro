@@ -17,6 +17,18 @@ const currentPath = Astro.url.pathname;
             class="flex gap-4 text-gray-600 dark:text-gray-200"
         >
             <a
+                href="/favorites"
+                class="relative group text-sm sm:text-base font-medium py-2 px-1"
+            >
+                <span
+                    class="relative z-10 hover:text-black dark:hover:text-white transition-colors duration-200"
+                    >お気に入り</span
+                >
+                <span
+                    class={`absolute bottom-0 left-0 w-full h-0.5 bg-gray-600 dark:bg-gray-400 transform ${currentPath.startsWith("/favorites") ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"} transition-transform duration-200`}
+                ></span>
+            </a>
+            <a
                 href="/search"
                 class="relative group text-sm sm:text-base font-medium py-2 px-1"
             >
