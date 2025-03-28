@@ -20,7 +20,7 @@ const hasContent = (review: CourseReviewRecord): boolean => {
 
 {/* レビューを項目ごとに表示 */}
 
-<h2 class=`${styles.section.title} my-4`>感想</h2>
+<h2 class=`${styles.section.title} my-4 dark:text-gray-100`>感想</h2>
 {
     reviews.length == 0 ? (
         <div class="flex flex-col items-center justify-center py-8 text-center">
@@ -44,19 +44,27 @@ const hasContent = (review: CourseReviewRecord): boolean => {
         </div>
     ) : (
         reviews.filter(hasContent).map((review, index) => (
-            <div class={styles.card.card}>
-                <div class={styles.card.body}>
+            <div
+                class={`${styles.card.card} dark:bg-gray-800 dark:border-gray-700`}
+            >
+                <div class={`${styles.card.body} dark:text-gray-200`}>
                     <div class="flex justify-between items-center mb-2">
-                        <span class="font-bold">#{index + 1}</span>
-                        <span class="text-sm text-gray-500">
+                        <span class="font-bold dark:text-white">
+                            #{index + 1}
+                        </span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">
                             {new Date(review.createdAt).toLocaleString("ja-JP")}
                         </span>
                     </div>
 
                     {review.goodPoint && review.goodPoint.trim() !== "" && (
                         <div>
-                            <h3 class="font-semibold text-green-700">良い点</h3>
-                            <p class={styles.card.comment}>
+                            <h3 class="font-semibold text-green-700 dark:text-green-500">
+                                良い点
+                            </h3>
+                            <p
+                                class={`${styles.card.comment} dark:text-gray-300`}
+                            >
                                 {review.goodPoint}
                             </p>
                         </div>
@@ -65,10 +73,12 @@ const hasContent = (review: CourseReviewRecord): boolean => {
                     {review.notGoodPoint &&
                         review.notGoodPoint.trim() !== "" && (
                             <div class="mt-3">
-                                <h3 class="font-semibold text-red-700">
+                                <h3 class="font-semibold text-red-700 dark:text-red-500">
                                     改善点
                                 </h3>
-                                <p class={styles.card.comment}>
+                                <p
+                                    class={`${styles.card.comment} dark:text-gray-300`}
+                                >
                                     {review.notGoodPoint}
                                 </p>
                             </div>
@@ -76,10 +86,14 @@ const hasContent = (review: CourseReviewRecord): boolean => {
 
                     {review.comment && review.comment.trim() !== "" && (
                         <div class="mt-3">
-                            <h3 class="font-semibold text-blue-700">
+                            <h3 class="font-semibold text-blue-700 dark:text-blue-400">
                                 コメント
                             </h3>
-                            <p class={styles.card.comment}>{review.comment}</p>
+                            <p
+                                class={`${styles.card.comment} dark:text-gray-300`}
+                            >
+                                {review.comment}
+                            </p>
                         </div>
                     )}
                 </div>

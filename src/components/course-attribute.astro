@@ -24,12 +24,16 @@ const getDisplayWithOther = (items: string[], otherText: string | null) => {
 ---
 
 <div class="flex flex-col gap-4">
-    <div class="font-bold my-4">授業の特徴</div>
+    <div class="font-bold my-4 dark:text-gray-200">授業の特徴</div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="flex flex-col gap-2 p-4 bg-gray-50 rounded-lg">
-            <div class="font-bold text-gray-700">授業形態</div>
-            <ul class="list-disc list-inside text-gray-600">
+        <div
+            class="flex flex-col gap-2 p-4 bg-gray-50 dark:bg-gray-800 dark:text-gray-200 rounded-lg"
+        >
+            <div class="font-bold text-gray-700 dark:text-gray-300">
+                授業形態
+            </div>
+            <ul class="list-disc list-inside text-gray-600 dark:text-gray-400">
                 {
                     getDisplayWithOther(
                         latestAttribute?.courseType || [],
@@ -39,9 +43,13 @@ const getDisplayWithOther = (items: string[], otherText: string | null) => {
             </ul>
         </div>
 
-        <div class="flex flex-col gap-2 p-4 bg-gray-50 rounded-lg">
-            <div class="font-bold text-gray-700">評価基準</div>
-            <ul class="list-disc list-inside text-gray-600">
+        <div
+            class="flex flex-col gap-2 p-4 bg-gray-50 dark:bg-gray-800 dark:text-gray-200 rounded-lg"
+        >
+            <div class="font-bold text-gray-700 dark:text-gray-300">
+                評価基準
+            </div>
+            <ul class="list-disc list-inside text-gray-600 dark:text-gray-400">
                 {
                     getDisplayWithOther(
                         latestAttribute?.evalCriteria || [],
@@ -51,9 +59,13 @@ const getDisplayWithOther = (items: string[], otherText: string | null) => {
             </ul>
         </div>
 
-        <div class="flex flex-col gap-2 p-4 bg-gray-50 rounded-lg">
-            <div class="font-bold text-gray-700">テスト形式</div>
-            <ul class="list-disc list-inside text-gray-600">
+        <div
+            class="flex flex-col gap-2 p-4 bg-gray-50 dark:bg-gray-800 dark:text-gray-200 rounded-lg"
+        >
+            <div class="font-bold text-gray-700 dark:text-gray-300">
+                テスト形式
+            </div>
+            <ul class="list-disc list-inside text-gray-600 dark:text-gray-400">
                 {
                     latestAttribute?.testType ? (
                         <li>
@@ -70,9 +82,13 @@ const getDisplayWithOther = (items: string[], otherText: string | null) => {
             </ul>
         </div>
 
-        <div class="flex flex-col gap-2 p-4 bg-gray-50 rounded-lg">
-            <div class="font-bold text-gray-700">テスト持ち込み</div>
-            <ul class="list-disc list-inside text-gray-600">
+        <div
+            class="flex flex-col gap-2 p-4 bg-gray-50 dark:bg-gray-800 dark:text-gray-200 rounded-lg"
+        >
+            <div class="font-bold text-gray-700 dark:text-gray-300">
+                テスト持ち込み
+            </div>
+            <ul class="list-disc list-inside text-gray-600 dark:text-gray-400">
                 {
                     getDisplayWithOther(
                         latestAttribute?.testItems || [],
