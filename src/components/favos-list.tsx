@@ -62,12 +62,12 @@ export const FavoriteCourses: React.FC = () => {
                                 <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-medium">
                                     {course.semester}
                                 </span>
-                                <span className="text-sm text-gray-600">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
                                     {course.campus} | {course.period}
                                 </span>
                             </div>
 
-                            <h3 className="text-xl font-bold text-gray-900 mt-1">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">
                                 <a
                                     href={`/search/${course.semester?.slice(
                                         0,
@@ -85,7 +85,7 @@ export const FavoriteCourses: React.FC = () => {
                             </h3>
 
                             <div className="flex flex-col justify-between mt-0.5">
-                                <p className="text-gray-600 text-sm">
+                                <p className="text-gray-600 dark:text-gray-400 text-sm">
                                     {course.teachers &&
                                     course.teachers.length > 30
                                         ? `${course.teachers.substring(
@@ -109,7 +109,7 @@ export const FavoriteCourses: React.FC = () => {
                                     <button
                                         type="submit"
                                         disabled={isLoading[course.id]}
-                                        className={`text-red-500 hover:text-red-700 text-sm px-2 py-1 border border-red-300 rounded hover:bg-red-50 transition-colors ${
+                                        className={`text-red-500 hover:text-red-700 text-sm px-2 py-1 border border-red-300 rounded hover:bg-red-50 dark:hover:text-red-100 dark:hover:bg-red-700 transition-colors ${
                                             isLoading[course.id]
                                                 ? "opacity-50 cursor-not-allowed"
                                                 : ""
