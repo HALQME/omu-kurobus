@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const DeatilCourseSchema = z.object({
+export const DetailCourseSchema = z.object({
     id: z.string(),
     name: z.string(),
     teachers: z.array(z.string()),
@@ -22,7 +22,7 @@ export const DeatilCourseSchema = z.object({
     credits: z.number(),
     description: z.string(),
 });
-export type DeatilCourse = z.infer<typeof DeatilCourseSchema>;
+export type DetailCourse = z.infer<typeof DetailCourseSchema>;
 
 export const CourseSchema = z.object({
     id: z.string(),

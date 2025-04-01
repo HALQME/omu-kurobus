@@ -37,7 +37,6 @@ const Mock = (year: string, semester: string) => {
 };
 
 const fetchData = async (year: string, semester: string) => {
-    console.log(import.meta.env.DEV);
     if (import.meta.env.DEV) {
         return Mock(year, semester) as unknown as Course[];
     }

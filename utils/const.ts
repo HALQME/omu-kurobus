@@ -112,7 +112,7 @@ const SUBMIT_PAIRS = () => {
 };
 
 const data = await fetch(
-    "https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/index.json"
+    "https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/index.json"
 ).then((res) => res.json());
 
 const SEARCH_PAIRS = () => {

@@ -1,4 +1,4 @@
-import type { CourseSummary, DeatilCourse } from "@/types/schema";
+import type { CourseSummary, DetailCourse } from "@/types/schema";
 
 export async function getCourseSummary(
     year: string,
@@ -8,11 +8,11 @@ export async function getCourseSummary(
     let det = await fetch(
         `https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/${year}/${semester}/id/${id}.json`
     );
-    const data: DeatilCourse = await det.json();
+    const data: DetailCourse = await det.json();
     return convertToSummary(data);
 }
 
-export function convertToSummary(data: DeatilCourse): CourseSummary {
+export function convertToSummary(data: DetailCourse): CourseSummary {
     var periodValue: string;
 
     if (data.period.length === 1) {

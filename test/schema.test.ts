@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-    DeatilCourseSchema,
+    DetailCourseSchema,
     type CourseReviewRecord,
     type CourseReviewSubmission,
 } from "@/types/schema";
@@ -159,7 +159,7 @@ describe("スキーマ変換テスト", () => {
 import { convertToSummary } from "@/utils/fetch-course";
 const deatil = await import("test/_details.json");
 const details = deatil.default;
-const detail = DeatilCourseSchema.safeParse(details);
+const detail = DetailCourseSchema.safeParse(details);
 describe("詳細情報のスキーマ検証", () => {
     it("詳細情報が正しい形式であること", () => {
         expect(detail.success).toBe(true);
