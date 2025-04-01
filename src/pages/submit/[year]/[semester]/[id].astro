@@ -165,7 +165,7 @@ if (Astro.request.method === "POST") {
             </div>
         </div>
         <div class={styles.section.content}>
-            <CourseInfo id={id} />
+            <CourseInfo id={id} year={year} semester={semester} />
             <form method="POST">
                 <input type="hidden" name="course_id" value={id} />
                 <div class="mb-4">

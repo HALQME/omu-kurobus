@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Course, SearchQuery } from "@/types/schema";
 import { search } from "@/utils/search";
 
-import mockData from "test/_row_data.json";
+import mockData from "test/_row_data_24_1.json";
 
 describe("Search Queries", () => {
     const courses = mockData as Course[];

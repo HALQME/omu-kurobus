@@ -1,5 +1,29 @@
 import { z } from "zod";
 
+export const DetailCourseSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    teachers: z.array(z.string()),
+    semester: z.string(),
+    year: z.string(),
+    period: z.array(
+        z.object({
+            semester: z.string(),
+            timetable: z.array(
+                z.object({
+                    period: z.string(),
+                    weekday: z.string(),
+                })
+            ),
+        })
+    ),
+    campus: z.string(),
+    grade: z.string(),
+    credits: z.number(),
+    description: z.string(),
+});
+export type DetailCourse = z.infer<typeof DetailCourseSchema>;
+
 export const CourseSchema = z.object({
     id: z.string(),
     name: z.string(),

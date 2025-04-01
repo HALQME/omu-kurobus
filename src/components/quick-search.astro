@@ -243,7 +243,7 @@ declare global {
                 this.year = result.year;
                 this.semester = result.semester;
 
-                const courseUrl = `${window.location.origin}/api/courses/${this.year}/${this.semester}/data.json`;
+                const courseUrl = `${window.location.origin}/api/courses/${this.year}/${this.semester}/index.json`;
                 const response = await fetch(courseUrl);
 
                 if (!response.ok) {

@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
-import type {
-    CourseReviewRecord,
-    CourseReviewSubmission,
+import {
+    DetailCourseSchema,
+    type CourseReviewRecord,
+    type CourseReviewSubmission,
 } from "@/types/schema";
 import { reviews } from "db/schema";
 import {
@@ -152,5 +153,34 @@ describe("スキーマ変換テスト", () => {
         expect(parsedRecord.createdAt.toISOString()).toBe(
             sampleReviewDB.createdAt
         );
+    });
+});
+
+import { convertToSummary } from "@/utils/fetch-course";
+const deatil = await import("test/_details.json");
+const details = deatil.default;
+const detail = DetailCourseSchema.safeParse(details);
+describe("詳細情報のスキーマ検証", () => {
+    it("詳細情報が正しい形式であること", () => {
+        expect(detail.success).toBe(true);
+    });
+
+    it("詳細情報のエラーメッセージが正しいこと", () => {
+        if (!detail.success) {
+            expect(detail.error).toBeDefined();
+        } else {
+            expect(detail.error).toBeUndefined();
+        }
+    });
+
+    it("Summaryへの変換", () => {
+        const summary = convertToSummary(details);
+        expect(summary).toBeDefined();
+        console.log(summary);
+        expect(summary).toHaveProperty("id");
+        expect(summary).toHaveProperty("name");
+        expect(summary).toHaveProperty("teachers");
+        expect(summary).toHaveProperty("campus");
+        expect(summary).toHaveProperty("period");
     });
 });

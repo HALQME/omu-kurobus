@@ -108,7 +108,7 @@ if (Astro.request.method === "POST") {
             try {
                 // 適切なURLを構築
                 const courseUrl = new URL(
-                    `https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/${year}/${semester}/data.json`
+                    `https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/${year}/${semester}/index.json`
                 );
 
                 const response = await fetch(courseUrl);
@@ -489,7 +489,7 @@ if (Astro.request.method === "POST") {
                         return;
                     }
 
-                    const courseUrl = `${window.location.origin}/api/courses/${year}/${semester}/data.json`;
+                    const courseUrl = `${window.location.origin}/api/courses/${year}/${semester}/index.json`;
                     console.log("Fetching courses from:", courseUrl);
 
                     const response = await fetch(courseUrl);

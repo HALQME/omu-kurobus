@@ -1,12 +1,18 @@
 ---
 interface Props {
     id: string;
+    year: string;
+    semester: string;
 }
-const { id } = Astro.props;
+const { id, year, semester } = Astro.props;
 import Loading from "./loading.astro";
 ---
 
-<astro-course-info data-course-id={id}>
+<astro-course-info
+    data-course-id={id}
+    data-year={year}
+    data-semester={semester}
+>
     <div id="loading" class="flex justify-center items-center py-4">
         <Loading />
     </div>
@@ -21,17 +27,28 @@ import Loading from "./loading.astro";
 <script>
     import * as store from "@/utils/store";
     import type { CourseSummary } from "@/types/schema";
-
+    import { getCourseSummary } from "@/utils/fetch-course";
     class AstroCourseInfo extends HTMLElement {
         constructor() {
             super();
             const id = this.getAttribute("data-course-id") as string;
+            const year = this.getAttribute("data-year") as string;
+            const semester = this.getAttribute("data-semester") as string;
+            this.initCourse(id, year, semester);
+        }
+
+        async initCourse(id: string, year: string, semester: string) {
             try {
                 let course: CourseSummary | null = store.getCourse(id);
                 if (!course) {
                     console.error("[CourseInfo] Course not found:", id);
-                    window.location.href = `/404`;
-                    return;
+                    console.log("[CourseInfo] Fetching course from API");
+                    const response = await getCourseSummary(year, semester, id);
+                    course = response;
+                    if (!course) {
+                        window.location.href = `/404`;
+                        return;
+                    }
                 }
                 console.log("[CourseInfo] Rendering course:", course);
                 this.hideLoading();
@@ -62,4 +79,6 @@ import Loading from "./loading.astro";
     }
 
     customElements.define("astro-course-info", AstroCourseInfo);
+
+    const fetchCourseInfo = (id: string) => {};
 </script>

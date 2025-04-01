@@ -36,7 +36,7 @@ if (!courseId || !year || !semester) {
 const popOrScore: boolean = NEXT_PAIR().year === year;
 
 const reviews = await getReviews(courseId);
-const url = new URL(`/api/courses/${year}/${semester}/data.json`, Astro.url);
+const url = new URL(`/api/courses/${year}/${semester}/index.json`, Astro.url);
 let res;
 try {
     res = await fetch(url);
@@ -94,7 +94,7 @@ const favoriteCount = (await Astro.callAction(actions.course.getFavorite, {
         slot="description"
     />
 
-    <CourseInfo id={courseId} />
+    <CourseInfo id={courseId} year={year} semester={semester} />
 
     <Tabs>
         {
