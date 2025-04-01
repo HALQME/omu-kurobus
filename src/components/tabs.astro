@@ -1,5 +1,4 @@
 ---
-import crypto from "node:crypto";
 export interface Props extends astroHTML.JSX.HTMLAttributes {}
 const props = Astro.props as Props;
 const tabs: string[] = [];
@@ -28,14 +27,11 @@ panels.sort((a, b) => {
     const indexB = parseInt(b.replace("panel-", ""));
     return indexA - indexB;
 });
-const uid = crypto.randomUUID();
-const tabsUid = uid.slice(-4);
 ---
 
 <astro-tabs
     {...{ ...props, class: undefined, "class:list": undefined }}
     class:list={["tabs", "relative", props["class:list"], props.class]}
-    data-tabs-uid={tabsUid}
 >
     <nav
         class="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700"
@@ -46,10 +42,10 @@ const tabsUid = uid.slice(-4);
                 const index = idx;
                 if (name.startsWith("tab")) {
                     const render = await Astro.slots.render(name);
-                    const tabId = `${tabsUid}-${index}`;
+                    const tabId = `${index}`;
                     return (
                         <a
-                            href={`#tabs-${tabsUid}-${index}`}
+                            href={`#tabs-${index}`}
                             id={`tab-${tabId}`}
                             data-astro-history="replace"
                             class:list={[
@@ -88,7 +84,7 @@ const tabsUid = uid.slice(-4);
         {
             panels.map(async (name, idx) => {
                 const panelIndex = parseInt(name.replace("panel-", ""));
-                const panelId = `panel-${uid}-${panelIndex}`;
+                const panelId = `panel-${panelIndex}`;
                 const content = await Astro.slots.render(name);
 
                 return (
@@ -112,7 +108,6 @@ const tabsUid = uid.slice(-4);
     class AstroTabs extends HTMLElement {
         private tabLinks: HTMLAnchorElement[];
         private panels: HTMLElement[];
-        private tabsUid: string;
         private defaultTabClasses = [
             "text-gray-500",
             "hover:text-gray-600",
@@ -134,7 +129,6 @@ const tabsUid = uid.slice(-4);
 
         constructor() {
             super();
-            this.tabsUid = this.dataset.tabsUid || "";
             this.tabLinks = Array.from(
                 this.querySelectorAll(".tab-button")
             ) as HTMLAnchorElement[];
@@ -166,10 +160,8 @@ const tabsUid = uid.slice(-4);
 
         private getTabIndexFromHash(): number | null {
             const hash = window.location.hash;
-            if (hash.startsWith(`#tabs-${this.tabsUid}-`)) {
-                const indexStr = hash.substring(
-                    `#tabs-${this.tabsUid}-`.length
-                );
+            if (hash.startsWith(`#tabs-`)) {
+                const indexStr = hash.substring(`#tabs-`.length);
                 const index = parseInt(indexStr, 10);
                 if (
                     !isNaN(index) &&
@@ -220,11 +212,7 @@ const tabsUid = uid.slice(-4);
             }
 
             // URLハッシュの更新
-            window.history.replaceState(
-                {},
-                "",
-                `#tabs-${this.tabsUid}-${index}`
-            );
+            window.history.replaceState({}, "", `#tabs-${index}`);
         }
     }
 
