@@ -3,7 +3,7 @@
 import { CourseSummarySchema } from "@/types/schema";
 import type { CourseSummary, Course } from "@/types/schema";
 
-const courses = require("./_row_data.json") as Course[];
+const courses = require("./_row_data_24_1.json") as Course[];
 
 const year = "2024";
 const semester = "1";
