@@ -31,9 +31,9 @@ import Mock_251 from "test/_row_data_25_1.json";
 import Mock_241 from "test/_row_data_24_1.json";
 
 const Mock = (year: string, semester: string) => {
-    if (year == "2025" && semester == "1") return Mock_251;
+    if (year == "2025" && semester == "0") return Mock_251;
     if (year == "2024" && semester == "1") return Mock_241;
-    return [];
+    return Mock_241;
 };
 
 const fetchData = async (year: string, semester: string) => {
