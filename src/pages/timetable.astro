@@ -1,0 +1,108 @@
+---
+import TimeTable from "../components/timetable";
+import Layout from "../layouts/layout.astro";
+import { PATH_PAIRS, CURRENT_PAIR } from "@/utils/const";
+
+// 利用可能な年度・学期のペアを取得
+const pairs = PATH_PAIRS();
+// 重複なしの年度リストを作成（新しい順）
+const years = [...new Set(pairs.map((pair) => pair.path.year))]
+    .sort()
+    .reverse();
+
+// デフォルトで現在の年度を選択
+const currentPair = CURRENT_PAIR();
+const defaultYear = years.includes(currentPair.year)
+    ? currentPair.year
+    : years[0];
+---
+
+<Layout title="時間割表">
+    <div class="max-w-5xl mx-auto px-4">
+        <h1
+            class="text-2xl md:text-3xl font-bold text-center mb-6 bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent"
+        >
+            時間割表
+        </h1>
+
+        <div class="mb-6">
+            <label
+                for="yearSelect"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+                年度を選択:
+            </label>
+            <select
+                id="yearSelect"
+                class="w-full md:w-auto bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+            >
+                {
+                    years.map((year) => (
+                        <option value={year} selected={year === defaultYear}>
+                            {year}年度
+                        </option>
+                    ))
+                }
+            </select>
+        </div>
+
+        {
+            years.map((year) => (
+                <div
+                    id={`year-${year}`}
+                    class={year === defaultYear ? "" : "hidden"}
+                >
+                    <div class="mb-10">
+                        <h2 class="text-xl font-bold mb-4 flex items-center">
+                            <span class="mr-2 text-pink-500 dark:text-pink-400">
+                                📅
+                            </span>
+                            {year}年度 前期
+                        </h2>
+                        <TimeTable
+                            client:only="react"
+                            semester="0"
+                            year={year}
+                        />
+                    </div>
+
+                    <div class="mb-10">
+                        <h2 class="text-xl font-bold mb-4 flex items-center">
+                            <span class="mr-2 text-violet-500 dark:text-violet-400">
+                                🍁
+                            </span>
+                            {year}年度 後期
+                        </h2>
+                        <TimeTable
+                            client:only="react"
+                            semester="1"
+                            year={year}
+                        />
+                    </div>
+                </div>
+            ))
+        }
+    </div>
+</Layout>
+
+<script>
+    // クライアントサイドで年度選択の変更を処理
+    const yearSelect = document.getElementById(
+        "yearSelect"
+    ) as HTMLSelectElement;
+    yearSelect?.addEventListener("change", () => {
+        // すべての年度のコンテナを非表示
+        document.querySelectorAll('[id^="year-"]').forEach((el) => {
+            el.classList.add("hidden");
+        });
+
+        // 選択された年度のコンテナを表示
+        const selectedYear = yearSelect.value;
+        const selectedContainer = document.getElementById(
+            `year-${selectedYear}`
+        );
+        if (selectedContainer) {
+            selectedContainer.classList.remove("hidden");
+        }
+    });
+</script>
