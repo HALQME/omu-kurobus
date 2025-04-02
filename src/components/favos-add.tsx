@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { addFavorite, isFavorite } from "@/utils/store";
 import { actions } from "astro:actions";
+import { NEXT_PAIR } from "@/utils/const";
 
 interface FavosAddProps {
     courseId: string;
@@ -16,6 +17,7 @@ export const FavosAdd: React.FC<FavosAddProps> = ({
     const [count, setCount] = useState<number>(initialCount);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isFavorited, setIsFavorited] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState<string>("");
 
     // 初期状態の設定
     useEffect(() => {
@@ -28,25 +30,30 @@ export const FavosAdd: React.FC<FavosAddProps> = ({
         event.preventDefault();
         if (isFavorited) return;
 
+        // コースIDから年度を抽出（最初の4文字）
+        const courseYear = courseId.substring(0, 4);
+        // 現在の年度を取得
+        const currentYear = NEXT_PAIR().year;
+
         setIsLoading(true);
 
         try {
             const formData = new FormData(event.currentTarget);
-            const result = await actions.course.addFavorite(formData);
-
-            if (!result.error) {
-                // ローカルストアにも追加
-                addFavorite(courseId);
-                setIsFavorited(true);
-                setCount((prevCount) => prevCount + 1);
-
-                // アイコンのアニメーション
-                const icon = document.querySelector(".favorite-icon");
-                icon?.classList.add("animate-favorite");
-                setTimeout(() => {
-                    icon?.classList.remove("animate-favorite");
-                }, 1000);
+            if (courseYear == currentYear) {
+                await actions.course.addFavorite(formData);
             }
+
+            // ローカルストアにも追加
+            addFavorite(courseId);
+            setIsFavorited(true);
+            setCount((prevCount) => prevCount + 1);
+
+            // アイコンのアニメーション
+            const icon = document.querySelector(".favorite-icon");
+            icon?.classList.add("animate-favorite");
+            setTimeout(() => {
+                icon?.classList.remove("animate-favorite");
+            }, 1000);
         } catch (error) {
             console.error("Failed to add favorite:", error);
         } finally {
@@ -78,6 +85,11 @@ export const FavosAdd: React.FC<FavosAddProps> = ({
                     {count.toString()}人
                 </span>
             </p>
+            {errorMessage && (
+                <div className="text-red-500 text-center mb-3 text-sm">
+                    {errorMessage}
+                </div>
+            )}
             <form
                 method="POST"
                 action={actions.course.addFavorite}
