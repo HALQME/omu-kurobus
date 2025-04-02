@@ -97,56 +97,50 @@ const favoriteCount = (await Astro.callAction(actions.course.getFavorite, {
     <CourseInfo id={courseId} year={year} semester={semester} />
 
     <Tabs>
-        {
-            popOrScore ? (
-                <Fragment slot="tab-0">人気</Fragment>
-            ) : (
-                <Fragment slot="tab-1">評価</Fragment>
-            )
-        }
+        <Fragment slot="tab-0">Favos</Fragment>
+        <Fragment slot="tab-1">評価</Fragment>
         <Fragment slot="tab-2">感想</Fragment>
         <Fragment slot="tab-3">関連</Fragment>
 
-        {
-            popOrScore ? (
-                <section
-                    slot="panel-0"
-                    class="flex justify-center py-8 flex-col items-center"
-                >
-                    <FavosAdd
-                        courseId={courseId}
-                        initialCount={favoriteCount}
-                        initialStatus={actionResult?.data?.status}
-                        client:load
-                    />
-                    <p class="my-3">
-                        この数値は参考値です。履修希望者数を表すものではありません
-                    </p>
-                </section>
-            ) : (
-                <section slot="panel-1">
-                    {scores.length === 0 ? (
-                        <div class="text-center my-8">
-                            <p class="text-gray-600 dark:text-gray-400">
-                                おすすめ度の情報が提供されていません。
-                            </p>
-                        </div>
-                    ) : (
-                        <CourseScore scores={scores} />
-                    )}
-                    <div class="my-2" />
-                    {attributes.length === 0 ? (
-                        <div class="text-center my-8">
-                            <p class="text-gray-600 dark:text-gray-400">
-                                授業形態の情報が提供されていません。
-                            </p>
-                        </div>
-                    ) : (
-                        <CourseAttribute attributes={attributes} />
-                    )}
-                </section>
-            )
-        }
+        <section
+            slot="panel-0"
+            class="flex justify-center py-8 flex-col items-center"
+        >
+            <FavosAdd
+                courseId={courseId}
+                initialCount={favoriteCount}
+                initialStatus={actionResult?.data?.status}
+                client:load
+            />
+            <p class="my-3">
+                この数値は参考値です。履修希望者数を表すものではありません
+            </p>
+        </section>
+        <section slot="panel-1">
+            {
+                scores.length === 0 ? (
+                    <div class="text-center my-8">
+                        <p class="text-gray-600 dark:text-gray-400">
+                            おすすめ度の情報が提供されていません。
+                        </p>
+                    </div>
+                ) : (
+                    <CourseScore scores={scores} />
+                )
+            }
+            <div class="my-2"></div>
+            {
+                attributes.length === 0 ? (
+                    <div class="text-center my-8">
+                        <p class="text-gray-600 dark:text-gray-400">
+                            授業形態の情報が提供されていません。
+                        </p>
+                    </div>
+                ) : (
+                    <CourseAttribute attributes={attributes} />
+                )
+            }
+        </section>
 
         <section slot="panel-2">
             {
