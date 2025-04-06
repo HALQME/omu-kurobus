@@ -137,22 +137,12 @@ export default function TimeTable({ semester, year }: TimetableProps) {
     );
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [availableYears, setAvailableYears] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchCourseData = async () => {
             setIsLoading(true);
             setError(null);
             const favorites = getFavorites();
-            console.log("[Timetable] Semester:", semester);
-            console.log("[Timetable] Year:", year);
-            console.log("[Timetable] Favorites:", favorites);
-
-            // 利用可能な年度を収集
-            const years = [
-                ...new Set(favorites.map((id: string) => id.substring(0, 4))),
-            ];
-            setAvailableYears(years.sort().reverse());
 
             try {
                 const courseData = await Promise.all(
@@ -200,7 +190,6 @@ export default function TimeTable({ semester, year }: TimetableProps) {
                             periodInfo.semester ===
                             (semester === "0" ? "前期" : "後期")
                         ) {
-                            console.log(periodInfo);
                             periodInfo.timetable.forEach((time) => {
                                 const weekdayMap: Record<string, number> = {
                                     月曜日: 0,
@@ -229,9 +218,6 @@ export default function TimeTable({ semester, year }: TimetableProps) {
                                     weekdayIndex !== undefined &&
                                     periodIndex >= 0
                                 ) {
-                                    console.log(
-                                        `[Timetable] Placing ${course.name} at [${periodIndex}][${weekdayIndex}]`
-                                    );
                                     newTimetable[periodIndex][weekdayIndex] =
                                         course;
                                 }
