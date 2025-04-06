@@ -25,9 +25,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
         });
     }
 
-    const isAuthed = await auth.api.getSession({
-        headers: context.request.headers,
-    });
+    async function getAuthSession() {
+        return auth.api.getSession({
+            headers: context.request.headers,
+        });
+    }
+
+    const authSessionPromise = getAuthSession();
+    const isAuthed = await authSessionPromise;
 
     if (isAuthed) {
         context.locals.user = isAuthed.user;
