@@ -55,9 +55,9 @@ export const NEXT_PAIR = () => {
     return { year, semester };
 };
 
-export const PATH_PAIRS = () => {
+export const PATH_PAIRS = async () => {
     const submits = SUBMIT_PAIRS();
-    const searches = SEARCH_PAIRS();
+    const searches = await SEARCH_PAIRS();
 
     const paris = [...submits, ...searches];
     return paris
@@ -67,8 +67,8 @@ export const PATH_PAIRS = () => {
         .sort((a, b) => Number(b.path.year) - Number(a.path.year));
 };
 
-export const hasSubmitPair = () => {
-    return PATH_PAIRS().some((pair) => pair.type === "submit");
+export const hasSubmitPair = async () => {
+    return (await PATH_PAIRS()).some((pair) => pair.type === "submit");
 };
 
 const SUBMIT_PAIRS = () => {
@@ -111,17 +111,22 @@ const SUBMIT_PAIRS = () => {
     return pairs;
 };
 
-const data = await fetch(
-    "https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/index.json"
-).then((res) => res.json());
+async function getData() {
+    const data = await fetch(
+        "https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/index.json"
+    ).then((res) => res.json());
+    return data;
+}
 
-const SEARCH_PAIRS = () => {
+const SEARCH_PAIRS = async () => {
     const availablePairs = SUBMIT_PAIRS();
 
     const archivedPairs: {
         type: "submit" | "search";
         path: { year: string; semester: string };
     }[] = [];
+
+    const data = await getData();
 
     for (const yearData of data) {
         for (const semester of yearData.semester) {
