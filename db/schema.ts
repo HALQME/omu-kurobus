@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import * as auth from "auth-schema";
 
 export const reviews = sqliteTable("reviews", {
     id: text("id").primaryKey(),
@@ -36,3 +37,20 @@ export const reviews = sqliteTable("reviews", {
     notGoodPoint: text("not_good_point"),
     comment: text("comment"),
 });
+
+export const user = auth.user;
+export const session = auth.session;
+export const account = auth.account;
+export const verification = auth.verification;
+export const passkey = auth.passkey;
+
+export const favCourses = sqliteTable("fav_courses", {
+    userId: text("user_id")
+        .primaryKey()
+        .references(() => user.id, { onDelete: "cascade" }),
+    // JSON 配列
+    courseId: text("course_id").notNull(),
+});
+// | userId | courseId |
+// |--------|----------|
+// | asdfa  | [1,2,3]  |

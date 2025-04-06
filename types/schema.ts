@@ -43,7 +43,7 @@ export const CourseSummarySchema = CourseSchema.pick({
     period: true,
     campus: true,
 }).extend({
-    semester: z.string().optional(),
+    semester: z.string(),
 });
 export type CourseSummary = z.infer<typeof CourseSummarySchema>;
 

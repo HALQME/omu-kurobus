@@ -7,6 +7,38 @@ const redis = new Redis({
     token: import.meta.env.KV_REST_API_TOKEN,
 });
 
+// Redis操作のヘルパー関数
+const getCourseKey = (courseId: string) => `course:${courseId}`;
+
+const incrementFavoriteCount = async (courseId: string) => {
+    const courseKey = getCourseKey(courseId);
+    const courseValue = await redis.get(courseKey);
+    if (courseValue === null) {
+        return false;
+    }
+    await redis.incr(courseKey);
+    return true;
+};
+
+export const decrementFavoriteCount = async (courseId: string) => {
+    const courseKey = getCourseKey(courseId);
+    const courseValue = await redis.get(courseKey);
+    if (courseValue === null || courseValue === "0") {
+        return false;
+    }
+    await redis.decr(courseKey);
+    return true;
+};
+
+const getFavoriteCount = async (courseId: string) => {
+    const count = await redis.get(getCourseKey(courseId));
+    if (count === null || count === undefined || count === "") {
+        await redis.set(getCourseKey(courseId), 0);
+        return "0";
+    }
+    return count as string;
+};
+
 export const course = {
     addFavorite: defineAction({
         accept: "form",
@@ -14,12 +46,7 @@ export const course = {
             course_id: z.string(),
         }),
         handler: async (input) => {
-            const courseKey = `course:${input.course_id}`;
-            const courseValue = await redis.get(courseKey);
-            if (courseValue === null) {
-                return { status: "ok", course: input.course_id };
-            }
-            await redis.incr(courseKey);
+            await incrementFavoriteCount(input.course_id);
             return { status: "ok", course: input.course_id };
         },
     }),
@@ -30,14 +57,7 @@ export const course = {
             course_id: z.string(),
         }),
         handler: async (input) => {
-            const courseKey = `course:${input.course_id}`;
-            const courseValue = await redis.get(courseKey);
-            if (courseValue === null) {
-                return { status: "ok", course: input.course_id };
-            } else if (courseValue === "0") {
-                return { status: "ok", course: input.course_id };
-            }
-            await redis.decr(courseKey);
+            await decrementFavoriteCount(input.course_id);
             return { status: "ok", course: input.course_id };
         },
     }),
@@ -48,19 +68,11 @@ export const course = {
         }),
         handler: async (input) => {
             console.log("getFavorite", input);
-            const count = await redis.get(`course:${input.course_id}`);
-            if (count === null || count === undefined || count === "") {
-                await redis.set(`course:${input.course_id}`, 0);
-                return {
-                    status: "ok",
-                    course: input.course_id,
-                    count: "0",
-                };
-            }
+            const count = await getFavoriteCount(input.course_id);
             return {
                 status: "ok",
                 course: input.course_id,
-                count: count as string,
+                count,
             };
         },
     }),

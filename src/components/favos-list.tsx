@@ -1,32 +1,64 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { getFavorites, getCourse, removeFavorite } from "@/utils/store";
+import {
+    getFavorites,
+    removeFavorite,
+    addFavorite,
+    clearFavorites,
+} from "@/utils/store";
 import { actions } from "astro:actions";
+import {
+    getFavCourses,
+    removeFavCourse,
+    setFavCourses,
+    syncFavorites,
+} from "@/utils/favos";
+import { getCourseSummary } from "@/utils/fetch-course";
+import type { CourseSummary } from "@/types/schema";
 
-export const FavoriteCourses: React.FC = () => {
-    // お気に入りリストを状態として管理
-    const [favorites, setFavorites] = useState<string[]>([]);
+interface FavoriteCoursesProps {
+    userId: string;
+}
+
+export const FavoriteCourses: React.FC<FavoriteCoursesProps> = ({ userId }) => {
+    const [courses, setCourses] = useState<CourseSummary[]>([]);
     const [isLoading, setIsLoading] = useState<Record<string, boolean>>({});
-    // フィルタリング用の状態
     const [selectedYear, setSelectedYear] = useState<string>("all");
-    const [selectedSemester, setSelectedSemester] = useState<string>("all"); // all, 前期, 後期
+    const [selectedSemester, setSelectedSemester] = useState<string>("all");
 
-    // コンポーネントマウント時にお気に入りを取得
     useEffect(() => {
-        setFavorites(getFavorites());
-        console.log("お気に入りリスト:", getFavorites());
-    }, []);
+        const loadCourses = async () => {
+            try {
+                const favorites = await syncFavorites(userId);
 
-    // 全てのお気に入り授業を取得
-    const allFavoriteCourses = useMemo(() => {
-        return favorites.map((id) => getCourse(id)).filter(Boolean);
-    }, [favorites]);
+                await setFavCourses(userId, favorites);
 
-    // 利用可能な年度と学期を抽出
-    const { years, semesters } = useMemo(() => {
+                const coursesData = await Promise.all(
+                    favorites.map(async (id) => {
+                        try {
+                            const summaries = await getCourseSummary(id);
+                            return summaries;
+                        } catch (error) {
+                            return [];
+                        }
+                    })
+                ).then((res) => res.flat());
+
+                setCourses(
+                    coursesData.filter((c): c is CourseSummary => c !== null)
+                );
+            } catch (error) {
+                console.error("Error loading favorite courses:", error);
+            }
+        };
+
+        loadCourses();
+    }, [userId]);
+
+    const { years } = useMemo(() => {
         const yearsSet = new Set<string>();
         const semestersSet = new Set<string>();
 
-        allFavoriteCourses.forEach((course) => {
+        courses.forEach((course) => {
             if (course.semester) {
                 const year = course.semester.slice(0, 4);
                 const semester = course.semester.includes("前期")
@@ -39,15 +71,14 @@ export const FavoriteCourses: React.FC = () => {
         });
 
         return {
-            years: Array.from(yearsSet).sort().reverse(), // 新しい年度順
+            years: Array.from(yearsSet).sort().reverse(),
             semesters: Array.from(semestersSet),
         };
-    }, [allFavoriteCourses]);
+    }, [courses]);
 
-    // フィルタリングされたお気に入り授業
-    const filteredFavoriteCourses = useMemo(() => {
-        return allFavoriteCourses.filter((course) => {
-            if (!course.semester) return false;
+    const filteredCourses = useMemo(() => {
+        return courses.filter((course) => {
+            if (!course?.semester) return false;
 
             const courseYear = course.semester.slice(0, 4);
             const courseSemester = course.semester.includes("前期")
@@ -62,14 +93,13 @@ export const FavoriteCourses: React.FC = () => {
 
             return yearMatch && semesterMatch;
         });
-    }, [allFavoriteCourses, selectedYear, selectedSemester]);
+    }, [courses, selectedYear, selectedSemester]);
 
-    // 年度・学期でグループ分けされたお気に入り授業
     const groupedCourses = useMemo(() => {
-        const groups: Record<string, typeof allFavoriteCourses> = {};
+        const groups: Record<string, typeof courses> = {};
 
-        filteredFavoriteCourses.forEach((course) => {
-            if (course.semester) {
+        filteredCourses.forEach((course) => {
+            if (course?.semester) {
                 if (!groups[course.semester]) {
                     groups[course.semester] = [];
                 }
@@ -77,46 +107,49 @@ export const FavoriteCourses: React.FC = () => {
             }
         });
 
-        // グループを年度と学期でソート
         return Object.entries(groups).sort(([semA], [semB]) => {
             const yearA = semA.slice(0, 4);
             const yearB = semB.slice(0, 4);
-
             if (yearA !== yearB) {
-                return parseInt(yearB) - parseInt(yearA); // 新しい年度順
+                return parseInt(yearB) - parseInt(yearA);
             }
-
-            // 同じ年度なら前期を先に
             return semA.includes("前期") ? -1 : 1;
         });
-    }, [filteredFavoriteCourses]);
+    }, [filteredCourses]);
 
-    // 取り消しボタンのクリックハンドラ
     const handleRemoveFavorite = async (
         event: React.FormEvent<HTMLFormElement>,
         courseId: string
     ) => {
         event.preventDefault();
-        setIsLoading({ ...isLoading, [courseId]: true });
+        setIsLoading((prev) => ({ ...prev, [courseId]: true }));
 
         try {
-            // フォームデータ取得とAPIアクション呼び出し
             const formData = new FormData(event.currentTarget);
             await actions.course.removeFavorite(formData);
 
-            // ローカルストアからも削除
+            await removeFavCourse(userId, courseId);
             removeFavorite(courseId);
 
-            // 状態を更新して再レンダリング
-            setFavorites(getFavorites());
+            setCourses((prev) =>
+                prev.filter((course) => course.id !== courseId)
+            );
         } catch (error) {
             console.error("Failed to remove favorite:", error);
         } finally {
-            setIsLoading({ ...isLoading, [courseId]: false });
+            setIsLoading((prev) => ({ ...prev, [courseId]: false }));
         }
     };
 
-    if (allFavoriteCourses.length === 0) {
+    if (!userId) {
+        return (
+            <div className="p-6 text-center text-gray-500 italic">
+                ログインしてお気に入りを管理しましょう
+            </div>
+        );
+    }
+
+    if (courses.length === 0) {
         return (
             <div className="p-6 text-center text-gray-500 italic">
                 お気に入りに登録した授業はありません
@@ -126,7 +159,6 @@ export const FavoriteCourses: React.FC = () => {
 
     return (
         <div className="favorite-courses">
-            {/* フィルタリングコントロール */}
             <div className="mb-6 p-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <h2 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">
                     フィルター
@@ -211,17 +243,15 @@ export const FavoriteCourses: React.FC = () => {
                 </div>
             </div>
 
-            {/* フィルター結果カウント */}
             <div className="mb-5">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 py-2 px-4 rounded-lg inline-block">
                     <span className="text-blue-600 dark:text-blue-400 font-bold mr-1">
-                        {filteredFavoriteCourses.length}
+                        {filteredCourses.length}
                     </span>
                     件の授業が見つかりました
                 </p>
             </div>
 
-            {/* 学期ごとにグループ化された授業一覧 */}
             {groupedCourses.length === 0 ? (
                 <div className="p-10 text-center text-gray-500 italic bg-gray-50 dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
                     <p className="text-lg">条件に一致する授業はありません</p>
@@ -299,7 +329,7 @@ export const FavoriteCourses: React.FC = () => {
                                     </p>
 
                                     <form
-                                        action={actions.course.removeFavorite}
+                                        method="POST"
                                         onSubmit={(e) =>
                                             handleRemoveFavorite(e, course.id)
                                         }
@@ -313,16 +343,17 @@ export const FavoriteCourses: React.FC = () => {
                                         <button
                                             type="submit"
                                             disabled={isLoading[course.id]}
-                                            className={`w-full text-red-500 hover:text-white border border-red-300 hover:bg-red-600 text-sm px-3 py-1.5 rounded-md dark:border-red-700 dark:hover:bg-red-700 transition-colors ${
+                                            className={`w-full text-red-500 dark:text-red-300 hover:text-white border border-red-300 hover:bg-red-600 text-sm px-3 py-1.5 rounded-md dark:border-red-400 dark:hover:bg-red-400 transition-colors ${
                                                 isLoading[course.id]
                                                     ? "opacity-50 cursor-not-allowed"
                                                     : ""
                                             }`}
+                                            title="お気に入りから削除"
                                         >
-                                            {isLoading[course.id] ? (
-                                                <span className="flex items-center justify-center">
+                                            <span className="flex items-center justify-center">
+                                                {isLoading[course.id] ? (
                                                     <svg
-                                                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-red-500"
+                                                        className="animate-spin h-5 w-5"
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         fill="none"
                                                         viewBox="0 0 24 24"
@@ -341,25 +372,26 @@ export const FavoriteCourses: React.FC = () => {
                                                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                                         ></path>
                                                     </svg>
-                                                    処理中...
-                                                </span>
-                                            ) : (
-                                                <span className="flex items-center justify-center">
-                                                    <svg
-                                                        className="w-4 h-4 mr-1.5"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 20 20"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                    >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                            clipRule="evenodd"
-                                                        ></path>
-                                                    </svg>
-                                                    お気に入りから削除
-                                                </span>
-                                            )}
+                                                ) : (
+                                                    <span className="flex items-center">
+                                                        <svg
+                                                            className="h-5 w-5"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                            ></path>
+                                                        </svg>
+                                                        お気に入りから削除
+                                                    </span>
+                                                )}
+                                            </span>
                                         </button>
                                     </form>
                                 </li>
@@ -368,21 +400,6 @@ export const FavoriteCourses: React.FC = () => {
                     </div>
                 ))
             )}
-
-            {allFavoriteCourses.length > 0 &&
-                filteredFavoriteCourses.length === 0 && (
-                    <div className="mt-8 p-6 text-center">
-                        <button
-                            onClick={() => {
-                                setSelectedYear("all");
-                                setSelectedSemester("all");
-                            }}
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                        >
-                            すべての授業を表示
-                        </button>
-                    </div>
-                )}
         </div>
     );
 };

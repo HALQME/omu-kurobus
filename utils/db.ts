@@ -1,9 +1,11 @@
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client/web";
 
+import * as schema from "db/schema.ts";
+
 let turso;
 
-if (process.env.NODE_ENV === "development") {
+if (import.meta.env.DEV) {
     turso = createClient({
         url: "http://127.0.0.1:8080",
     });
@@ -14,4 +16,4 @@ if (process.env.NODE_ENV === "development") {
     });
 }
 
-export const db = drizzle(turso);
+export const db = drizzle(turso, { schema });

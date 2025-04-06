@@ -67,6 +67,7 @@ const summaryData = (
                 teachers: course.teachers,
                 campus: course.campus,
                 period: course.period,
+                semester: course.semester,
             };
         } else {
             courseEmbed = {

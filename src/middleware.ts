@@ -1,13 +1,18 @@
 // This helper automatically types middleware params
+import { auth } from "@/lib/auth";
 import { defineMiddleware } from "astro:middleware";
+
 import { PATH_PAIRS } from "@/utils/const";
+
 export const onRequest = defineMiddleware(async (context, next) => {
     // URLパスを取得
     const url = new URL(context.request.url);
     const path = url.pathname;
+
     if (path.startsWith("/api/courses")) {
         return next();
     }
+
     // 入力期間外で、かつパスが/submit/で始まる場合
     const isSubmissionPeriod = isWithinSubmissionPeriod();
     if (!isSubmissionPeriod && path.startsWith("/submit")) {
@@ -20,7 +25,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
         });
     }
 
+    const isAuthed = await auth.api.getSession({
+        headers: context.request.headers,
+    });
 
+    if (isAuthed) {
+        context.locals.user = isAuthed.user;
+        context.locals.session = isAuthed.session;
+    } else {
+        context.locals.user = null;
+        context.locals.session = null;
+    }
 
     return next();
 });

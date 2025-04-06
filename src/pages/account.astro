@@ -1,0 +1,34 @@
+---
+import Passkey from "@/components/auth/passkey.astro";
+import Layout from "@/layouts/layout.astro";
+---
+
+<Layout>
+    <title slot="title">ハム大クロバス | アカウント</title>
+    <meta
+        name="description"
+        content="アカウント情報の管理ページです"
+        slot="description"
+    />
+
+    <Passkey />
+
+    <div class="max-w-3xl my-8">
+        <h1
+            class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4 pb-2 border-b border-primary-500"
+        >
+            パスキーとは？
+        </h1>
+        <div class="text-gray-700 dark:text-gray-300 space-y-2">
+            <p>
+                パスキーは、パスワードに代わる新しい認証方法です。
+                <br />
+                パスキーを利用することで、より安全で便利なログイン体験ができます。
+                <br />
+                認証は、お使いのデバイスに保存される秘密鍵と、サーバーに保存される公開鍵のペアで行われます。
+                <br />
+                パスキーとして登録したスマートフォンなどを使って、PCやタブレットなどの他のデバイスでも簡単にログインできます。
+            </p>
+        </div>
+    </div>
+</Layout>

@@ -79,17 +79,25 @@ const attributes: CourseAttributes[] = reviews
     : [];
 
 import { actions } from "astro:actions";
-const actionResult = Astro.getActionResult(actions.course.getFavorite);
 const favoriteCount = (await Astro.callAction(actions.course.getFavorite, {
     course_id: courseId,
 }).then((res) => res.data?.count || 0)) as unknown as number;
+
+import AnonymousLogin from "@/components/auth/anonymous-login";
 ---
 
 <Layout>
-    <title slot="title">ハム大クロバス | 感想検索</title>
+    <title slot="title">
+        ハム大クロバス | {year}年度{semester == "0" ? "前期" : "後期"} | {
+            course.name
+        }
+    </title>
     <meta
         name="description"
-        content="感想を共有して履修登録を助け合おう！"
+        content=`${year}
+        ${semester == "0" ? "前期" : "後期"}
+        |
+        ${course.name}の詳細情報`
         slot="description"
     />
 
@@ -108,7 +116,6 @@ const favoriteCount = (await Astro.callAction(actions.course.getFavorite, {
             <FavosAdd
                 courseId={courseId}
                 initialCount={favoriteCount}
-                initialStatus={actionResult?.data?.status}
                 client:load
             />
             <p class="my-3">
@@ -180,6 +187,8 @@ const favoriteCount = (await Astro.callAction(actions.course.getFavorite, {
         </section>
     </Tabs>
 </Layout>
+
+<AnonymousLogin client:only="react" />
 
 <style>
     .animate-favorite {

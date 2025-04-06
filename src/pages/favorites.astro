@@ -1,6 +1,15 @@
 ---
 import Layout from "@/layouts/layout.astro";
 import Favos from "@/src/components/favos-list";
+
+const session = () => {
+    if (Astro.locals.session) {
+        return Astro.locals.session;
+    } else {
+        return null;
+    }
+};
+const userId = session() ? session()!.userId : null;
 ---
 
 <Layout title="Favorites">
@@ -18,19 +27,42 @@ import Favos from "@/src/components/favos-list";
     <div class="text-gray-600 dark:text-gray-400 mb-4">
         お気に入り登録した授業の一覧です。
         <br />
-        <span
-            >* Xアプリのブラウザとクローム、Safariなどのブラウザでは
-            お気に入りの情報は共有されません。
-        </span>
+        <span>* 通常、お気に入り登録した授業は、端末間で同期されません。 </span>
     </div>
 
-    <a href="/timetable">
-        <button
-            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mb-4"
+    <details class="max-w-md my-8">
+        <summary
+            class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4 pb-2 border-b border-primary-500 cursor-pointer"
         >
-            時間割表で見る
-        </button>
-    </a>
+            関連メニュー
+        </summary>
+        <div class="space-y-2">
+            <a href="/timetable" class="block">
+                <button
+                    class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                >
+                    時間割表
+                </button>
+            </a>
+            <a href="/account" class="block">
+                <button
+                    class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                >
+                    アカウント
+                </button>
+            </a>
+        </div>
+    </details>
 
-    <Favos client:only="react" />
+    {
+        !userId ? (
+            <div class="text-center my-8">
+                <p class="text-gray-600 dark:text-gray-400">
+                    お気に入りの授業がありません。
+                </p>
+            </div>
+        ) : (
+            <Favos userId={userId} client:only="react" />
+        )
+    }
 </Layout>

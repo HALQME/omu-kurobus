@@ -1,50 +1,42 @@
-import React, { useState, useEffect } from "react";
-import { addFavorite, isFavorite } from "@/utils/store";
+import React, { useEffect, useState } from "react";
 import { actions } from "astro:actions";
-import { NEXT_PAIR } from "@/utils/const";
+import { getFavorites } from "@/utils/store";
 
 interface FavosAddProps {
     courseId: string;
     initialCount?: number;
-    initialStatus?: string;
+    initialIsFavorited?: boolean;
 }
 
 export const FavosAdd: React.FC<FavosAddProps> = ({
     courseId,
     initialCount = 0,
-    initialStatus,
+    initialIsFavorited = false,
 }) => {
     const [count, setCount] = useState<number>(initialCount);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isFavorited, setIsFavorited] = useState<boolean>(false);
+    const [isFavorited, setIsFavorited] = useState<boolean>(initialIsFavorited);
     const [errorMessage, setErrorMessage] = useState<string>("");
 
-    // 初期状態の設定
     useEffect(() => {
-        setIsFavorited(isFavorite(courseId) || initialStatus === "success");
-    }, [courseId, initialStatus]);
+        const favorites = getFavorites();
+        if (favorites && favorites.includes(courseId)) {
+            setIsFavorited(true);
+        }
+    }, [courseId]);
 
     const handleAddFavorite = async (
         event: React.FormEvent<HTMLFormElement>
     ) => {
         event.preventDefault();
-        if (isFavorited) return;
-
-        // コースIDから年度を抽出（最初の4文字）
-        const courseYear = courseId.substring(0, 4);
-        // 現在の年度を取得
-        const currentYear = NEXT_PAIR().year;
 
         setIsLoading(true);
+        setErrorMessage("");
 
         try {
             const formData = new FormData(event.currentTarget);
-            if (courseYear == currentYear) {
-                await actions.course.addFavorite(formData);
-            }
+            await actions.course.addFavorite(formData);
 
-            // ローカルストアにも追加
-            addFavorite(courseId);
             setIsFavorited(true);
             setCount((prevCount) => prevCount + 1);
 
@@ -56,6 +48,7 @@ export const FavosAdd: React.FC<FavosAddProps> = ({
             }, 1000);
         } catch (error) {
             console.error("Failed to add favorite:", error);
+            setErrorMessage("お気に入りの追加に失敗しました");
         } finally {
             setIsLoading(false);
         }
@@ -92,7 +85,6 @@ export const FavosAdd: React.FC<FavosAddProps> = ({
             )}
             <form
                 method="POST"
-                action={actions.course.addFavorite}
                 onSubmit={handleAddFavorite}
                 className="flex justify-center"
             >

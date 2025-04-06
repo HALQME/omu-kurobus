@@ -34,30 +34,24 @@ import Loading from "./loading.astro";
             const id = this.getAttribute("data-course-id") as string;
             const year = this.getAttribute("data-year") as string;
             const semester = this.getAttribute("data-semester") as string;
-            this.initCourse(id, year, semester);
+            this.initCourse(id, semester);
         }
 
-        async initCourse(id: string, year: string, semester: string) {
+        async initCourse(id: string, semester: string) {
             try {
                 let course: CourseSummary | null = store.getCourse(id);
                 if (!course) {
-                    console.error("[CourseInfo] Course not found:", id);
-                    console.log("[CourseInfo] Fetching course from API");
                     const response = await getCourseSummary(id);
                     course = response.filter(
-                        (course) => course.semester === semester
+                        (course) =>
+                            course.semester.slice(-2) ===
+                            (semester === "0" ? "前期" : "後期")
                     )[0];
-                    if (!course) {
-                        window.location.href = `/404`;
-                        return;
-                    }
                 }
-                console.log("[CourseInfo] Rendering course:", course);
                 this.hideLoading();
                 this.render(course);
             } catch (e) {
                 console.error("[CourseInfo] Error loading course:", e);
-                window.location.href = `/404`;
             }
         }
 
