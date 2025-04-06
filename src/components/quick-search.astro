@@ -67,6 +67,7 @@ declare global {
             <div class="w-full sm:w-[12rem]">
                 <select
                     class={`year_semester ${styles.input} ${styles.inputFocus} w-full`}
+                    aria-label="年度学期選択"
                     aria-required="true"
                 >
                     {PATH_PAIRS().map((pair) => (
@@ -84,8 +85,11 @@ declare global {
             type="text"
             class={`quick-search-input ${styles.input} ${styles.inputFocus}`}
             autocomplete="off"
-            aria-describedby="search-results"
-            placeholder="検索"
+            aria-label="授業検索"
+            aria-autocomplete="list"
+            aria-controls="search-results"
+            aria-expanded="false"
+            placeholder="授業名、教員名、キャンパスなどで検索"
         />
         <div id="loading-component" class="hidden">
             <Loading />
@@ -102,7 +106,6 @@ declare global {
 <script>
     import type { CourseSummary } from "@/types/schema";
     import { quickSearch } from "@/utils/quicksearch";
-    import { setCourse } from "@/utils/store";
 
     class AstroQuickSearch extends HTMLElement {
         private courseData: CourseSummary[] = [];
@@ -187,15 +190,19 @@ declare global {
             }
         }
 
-        private handleSuggestionClick(button: HTMLButtonElement): void {
+        private handleSuggestionClick(link: HTMLAnchorElement): void {
             this.isLoading = true;
             const course = this.courseData.find(
-                (c) => c.id === button.dataset.id
+                (c) => c.id === link.dataset.id
             );
-            if (course) {
-                this.setNanoCourse(course);
-                window.location.href = button.dataset.href || "";
+
+            if (course && link.href) {
+                window.location.href = link.href;
+            } else {
+                console.error("Course not found or href not set");
             }
+
+            this.isLoading = false;
         }
 
         private detectYearSemester() {
@@ -287,18 +294,34 @@ declare global {
             if (searchResults.length > 0 && this.resultsDiv) {
                 this.resultsDiv.setAttribute("aria-hidden", "false");
 
-                const buttons = searchResults.map((result) => {
+                this.resultsDiv.addEventListener(
+                    "click",
+                    (e) => {
+                        const target = e.target as HTMLElement;
+                        const suggestionItem = target.closest(
+                            ".suggestion-item"
+                        ) as HTMLAnchorElement;
+                        if (suggestionItem) {
+                            e.preventDefault();
+                            this.handleSuggestionClick(suggestionItem);
+                        }
+                    },
+                    false
+                );
+
+                const suggestions = searchResults.map((result) => {
                     const score = result.score || 0;
                     let matchClass = this.getMatchClass(score);
 
-                    const button = document.createElement("button");
-                    button.type = "button";
-                    button.dataset.id = result.id;
-                    button.dataset.href = `/${this.target}/${this.year}/${this.semester}/${this.year}${result.id}`;
-                    button.className =
-                        "suggestion-item w-full text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-sm";
+                    const link = document.createElement("a");
+                    link.href = `/${this.target}/${this.year}/${this.semester}/${this.year}${result.id}`;
+                    link.dataset.id = result.id;
+                    link.className =
+                        "suggestion-item block w-full text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-sm cursor-pointer";
+                    link.setAttribute("role", "option");
+                    link.setAttribute("aria-selected", "false");
 
-                    button.innerHTML = `
+                    link.innerHTML = `
                         <div class="p-2 ${matchClass}">
                             <div class="text-xs t-gray-500 dark:text-gray-300">
                                 ${this.year}${result.id} | ${result.campus} | ${result.period}
@@ -312,20 +335,11 @@ declare global {
                         </div>
                     `;
 
-                    button.addEventListener("click", (e) => {
-                        e.preventDefault();
-                        this.handleSuggestionClick(button);
-                    });
-                    button.addEventListener("touchend", (e) => {
-                        e.preventDefault();
-                        this.handleSuggestionClick(button);
-                    });
-
-                    return button;
+                    return link;
                 });
 
-                buttons.forEach((button) =>
-                    this.resultsDiv?.appendChild(button)
+                suggestions.forEach((link) =>
+                    this.resultsDiv?.appendChild(link)
                 );
                 this.resultsDiv.classList.remove("hidden");
             } else {
@@ -342,25 +356,14 @@ declare global {
         }
 
         private clearSuggestions(): void {
-            if (this.resultsDiv) {
-                this.resultsDiv.innerHTML = "";
-                this.resultsDiv.classList.add("hidden");
-                this.resultsDiv.setAttribute("aria-hidden", "true");
-            }
-        }
-
-        private setNanoCourse(course: CourseSummary): void {
-            const courseData: CourseSummary = {
-                id: this.year + course.id,
-                name: course.name,
-                teachers: course.teachers,
-                campus: course.campus,
-                period: course.period,
-                semester:
-                    course.semester ??
-                    `${this.year}年度${this.semester === "0" ? "前期" : "後期"}`,
-            };
-            setCourse(courseData);
+            // 0.5秒待ってからクリア
+            setTimeout(() => {
+                if (this.resultsDiv) {
+                    this.resultsDiv.innerHTML = "";
+                    this.resultsDiv.classList.add("hidden");
+                    this.resultsDiv.setAttribute("aria-hidden", "true");
+                }
+            }, 500);
         }
 
         private toggleLoadingComponent(): void {
