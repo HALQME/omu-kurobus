@@ -55,9 +55,9 @@ export const NEXT_PAIR = () => {
     return { year, semester };
 };
 
-export const PATH_PAIRS = async () => {
+export const PATH_PAIRS = () => {
     const submits = SUBMIT_PAIRS();
-    const searches = await SEARCH_PAIRS();
+    const searches = SEARCH_PAIRS();
 
     const paris = [...submits, ...searches];
     return paris
@@ -110,23 +110,28 @@ const SUBMIT_PAIRS = () => {
     }
     return pairs;
 };
-
-async function getData() {
-    const data = await fetch(
+// データを取得する関数
+const fetchData = async () => {
+    return await fetch(
         "https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/index.json"
     ).then((res) => res.json());
-    return data;
-}
+};
 
-const SEARCH_PAIRS = async () => {
+// 初期データ
+let data: any[] = [];
+
+// データを読み込む
+fetchData().then((result) => {
+    data = result;
+});
+
+const SEARCH_PAIRS = () => {
     const availablePairs = SUBMIT_PAIRS();
 
     const archivedPairs: {
         type: "submit" | "search";
         path: { year: string; semester: string };
     }[] = [];
-
-    const data = await getData();
 
     for (const yearData of data) {
         for (const semester of yearData.semester) {

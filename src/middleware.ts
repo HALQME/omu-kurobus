@@ -42,7 +42,7 @@ export const onRequest = defineMiddleware((context, next) => {
 
 // 入力期間内かどうかを確認する関数
 async function isWithinSubmissionPeriod(): Promise<boolean> {
-    return (await PATH_PAIRS()).some((pair) => pair.type === "submit");
+    return PATH_PAIRS().some((pair) => pair.type === "submit");
 }
 
 async function getAuthSession(context: any) {

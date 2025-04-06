@@ -4,8 +4,8 @@ import fetch from "node-fetch";
 
 export const prerender = true;
 
-export async function getStaticPaths() {
-    const availableYears = await PATH_PAIRS();
+export function getStaticPaths() {
+    const availableYears = PATH_PAIRS();
     return availableYears.map(({ type, path }) => ({
         params: { year: path.year, semester: path.semester, type },
     }));

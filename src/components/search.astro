@@ -80,7 +80,7 @@ if (Astro.request.method === "POST") {
             year = parts[0];
             semester = parts[1];
         } else {
-            const defaultPair = (await PATH_PAIRS()).find(
+            const defaultPair = PATH_PAIRS().find(
                 (pair: { type: string }) => pair.type == target
             );
             if (defaultPair) {
