@@ -20,7 +20,7 @@ const incrementFavoriteCount = async (courseId: string) => {
     return true;
 };
 
-export const decrementFavoriteCount = async (courseId: string) => {
+const decrementFavoriteCount = async (courseId: string) => {
     const courseKey = getCourseKey(courseId);
     const courseValue = await redis.get(courseKey);
     if (courseValue === null || courseValue === "0") {
