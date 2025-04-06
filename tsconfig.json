@@ -10,30 +10,15 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/src/*": [
-        "src/*"
-      ],
-      "@/actions/*": [
-        "src/actions/*"
-      ],
-      "@/components/*": [
-        "src/components/*"
-      ],
-      "@/layouts/*": [
-        "src/layouts/*"
-      ],
-      "@/styles/*": [
-        "src/styles/*"
-      ],
-      "@/pages/*": [
-        "src/pages/*"
-      ],
-      "@/utils/*": [
-        "utils/*"
-      ],
-      "@/types/*": [
-        "types/*"
-      ]
+        "@/src/*": ["src/*"],
+        "@/actions/*": ["src/actions/*"],
+        "@/components/*": ["src/components/*"],
+        "@/layouts/*": ["src/layouts/*"],
+        "@/styles/*": ["src/styles/*"],
+        "@/pages/*": ["src/pages/*"],
+        "@/utils/*": ["utils/*"],
+        "@/types/*": ["types/*"],
+        "@/lib/*": ["lib/*"]
     },
     "jsx": "react-jsx",
     "jsxImportSource": "react"

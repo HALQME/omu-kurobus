@@ -8,7 +8,13 @@ interface TimetableProps {
     year: string; // 必須パラメータに変更
 }
 
-function CourseCard({ course }: { course: DetailCourse }) {
+function CourseCard({
+    course,
+    semester,
+}: {
+    course: DetailCourse;
+    semester: "0" | "1";
+}) {
     return (
         <div className="text-xs sm:text-sm group h-full">
             <div
@@ -17,9 +23,7 @@ function CourseCard({ course }: { course: DetailCourse }) {
                 aria-label={`${course.name} 講義情報`}
             >
                 <a
-                    href={`search/${course.year}/${
-                        course.semester === "前期" ? "0" : "1"
-                    }/${course.id}`}
+                    href={`search/${course.year}/${semester}/${course.id}`}
                     className="flex flex-col h-full justify-between"
                 >
                     <div>
@@ -63,7 +67,13 @@ function CourseCard({ course }: { course: DetailCourse }) {
 }
 
 // 集中講義用の専用カードコンポーネント
-function IntensiveCourseCard({ course }: { course: DetailCourse }) {
+function IntensiveCourseCard({
+    course,
+    semester,
+}: {
+    course: DetailCourse;
+    semester: "0" | "1";
+}) {
     return (
         <div className="text-xs group h-full">
             <div
@@ -72,9 +82,7 @@ function IntensiveCourseCard({ course }: { course: DetailCourse }) {
                 aria-label={`${course.name} 集中講義情報`}
             >
                 <a
-                    href={`search/${course.year}/${
-                        course.semester === "前期" ? "0" : "1"
-                    }/${course.id}`}
+                    href={`search/${course.year}/${semester}/${course.id}`}
                     className="flex flex-col h-full justify-between"
                 >
                     <div>
@@ -156,7 +164,7 @@ export default function TimeTable({ semester, year }: TimetableProps) {
                             return null;
                         }
 
-                        const url = `https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/${courseYear}/${semester}/id/${id}.json`;
+                        const url = `https://raw.githubusercontent.com/HALQME/omu-course-library/refs/heads/main/data/${courseYear}/id/${id}.json`;
 
                         try {
                             const response = await fetch(url);
@@ -385,6 +393,9 @@ export default function TimeTable({ semester, year }: TimetableProps) {
                                                                     course={
                                                                         course
                                                                     }
+                                                                    semester={
+                                                                        semester
+                                                                    }
                                                                 />
                                                             )}
                                                         </td>
@@ -416,6 +427,7 @@ export default function TimeTable({ semester, year }: TimetableProps) {
                                         >
                                             <IntensiveCourseCard
                                                 course={course}
+                                                semester={semester}
                                             />
                                         </div>
                                     ))}

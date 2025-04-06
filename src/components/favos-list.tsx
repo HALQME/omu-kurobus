@@ -13,6 +13,7 @@ export const FavoriteCourses: React.FC = () => {
     // コンポーネントマウント時にお気に入りを取得
     useEffect(() => {
         setFavorites(getFavorites());
+        console.log("お気に入りリスト:", getFavorites());
     }, []);
 
     // 全てのお気に入り授業を取得

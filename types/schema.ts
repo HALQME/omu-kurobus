@@ -4,7 +4,6 @@ export const DetailCourseSchema = z.object({
     id: z.string(),
     name: z.string(),
     teachers: z.array(z.string()),
-    semester: z.string(),
     year: z.string(),
     period: z.array(
         z.object({

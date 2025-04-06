@@ -79,7 +79,6 @@ const attributes: CourseAttributes[] = reviews
     : [];
 
 import { actions } from "astro:actions";
-import Result from "@/src/components/result.astro";
 const actionResult = Astro.getActionResult(actions.course.getFavorite);
 const favoriteCount = (await Astro.callAction(actions.course.getFavorite, {
     course_id: courseId,

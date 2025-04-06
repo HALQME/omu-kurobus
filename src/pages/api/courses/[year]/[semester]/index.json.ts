@@ -1,7 +1,8 @@
-import type { APIRoute } from "astro";
 import { type Course, type CourseSummary } from "@/types/schema";
 import { PATH_PAIRS } from "@/utils/const";
 import fetch from "node-fetch";
+
+export const prerender = true;
 
 export function getStaticPaths() {
     const availableYears = PATH_PAIRS();
@@ -10,7 +11,12 @@ export function getStaticPaths() {
     }));
 }
 
-export const GET: APIRoute = async ({ params }) => {
+// APIRoute型を使用せず、直接関数をエクスポート
+export async function GET({
+    params,
+}: {
+    params: { year: string; semester: string };
+}) {
     const { year, semester } = params;
 
     let data;
@@ -25,7 +31,7 @@ export const GET: APIRoute = async ({ params }) => {
             "Content-Type": "application/json",
         },
     });
-};
+}
 
 import Mock_251 from "test/_row_data_25_1.json";
 import Mock_241 from "test/_row_data_24_1.json";

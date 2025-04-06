@@ -43,8 +43,10 @@ import Loading from "./loading.astro";
                 if (!course) {
                     console.error("[CourseInfo] Course not found:", id);
                     console.log("[CourseInfo] Fetching course from API");
-                    const response = await getCourseSummary(year, semester, id);
-                    course = response;
+                    const response = await getCourseSummary(id);
+                    course = response.filter(
+                        (course) => course.semester === semester
+                    )[0];
                     if (!course) {
                         window.location.href = `/404`;
                         return;
@@ -79,6 +81,4 @@ import Loading from "./loading.astro";
     }
 
     customElements.define("astro-course-info", AstroCourseInfo);
-
-    const fetchCourseInfo = (id: string) => {};
 </script>
