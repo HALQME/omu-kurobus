@@ -34,8 +34,7 @@ async function fetchCourses(
     semester: string
 ): Promise<CourseSummary[]> {
     // 実行環境に応じたベースURLを取得
-    const baseUrl =
-        process.env.PUBLIC_BASE_URL || "https://omu-kurobus.vercel.app";
+    const baseUrl = import.meta.env.BASE_URL;
 
     // 完全なURLを構築
     const url = new URL(
